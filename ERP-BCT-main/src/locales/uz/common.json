@@ -1,0 +1,1334 @@
+{
+  "header": {
+    "dashboard": {
+      "title": "UZ bosh sahifa",
+      "li1": "Bosh sahifa",
+      "li2": "Mijozlar",
+      "liGroup": "Hamkorlar",
+      "li3": "Mahsulotlar",
+      "li4": "Ombor",
+      "li5": "Shartnomalar",
+      "li6": "Kompaniyalar",
+      "li7": "Kontragentlar",
+      "li8": "Moliya",
+      "settings": "Sozlamalar",
+      "add-deal": "Shartnoma yaratish",
+      "logout": "Chiqish"
+    },
+    "menuDialog": {
+      "setting": "Sozlamalar",
+      "settingP": "Profil sozlamalari",
+      "logout": "Chiqish",
+      "notif": "Bildirishnoma",
+      "newOrder": "Yangi buyurtma!",
+      "newOrderSite": "Saytdan yangi buyurtma!",
+      "youSure": "Ishonchingiz komilmi?",
+      "youSureDesc": "Bu amalni bekor qilib bo‘lmaydi. Siz tizimdan chiqarilasiz."
+    }
+  },
+  "dealProduct": {
+    "fields": {
+      "product": "Mahsulot*",
+      "serialNumber": "Seriya raqami*",
+      "guarantee": "Kafolat*",
+      "comment": "Izohlar",
+      "quantity": "Miqdor*"
+    },
+    "placeholders": {
+      "serialNumber": "Seriya raqamini kiriting",
+      "guarantee": "Kafolat shartlarini kiriting",
+      "comment": "Izohlar"
+    },
+    "actions": {
+      "add": "Qo‘shish",
+      "cancel": "Bekor qilish",
+      "reset": "Tiklash",
+      "scan": "Skanerlash"
+    },
+    "messages": {
+      "unavailableTitle": "Mahsulotni qo‘shib bo‘lmadi",
+      "unavailableDescription": "Mahsulotni aniqlab bo‘lmadi. Qayta urinib ko‘ring.",
+      "addedTitle": "Mahsulot bitimga qo‘shildi"
+    },
+    "inStock": "Omborda: {{count}} dona",
+    "stockCount": "Omborda: {{count}} dona",
+    "stockUnknown": "Mavjudligini menejerdan aniqlang",
+    "noImage": "Rasm yo‘q",
+    "scanHint": "Shtrix-kodni skanerlang"
+  },
+  "login": {
+    "title": "Kirish",
+    "form": {
+      "label": {
+        "name": "Login",
+        "phone": "Login",
+        "password": "Parol"
+      },
+      "placeholder": {
+        "name": "",
+        "phone": ""
+      },
+      "fogotPassword": {
+        "title": "Parolni unutdingizmi?",
+        "submit": "Tiklash"
+      }
+    },
+    "error": {
+      "name": "Login/telefon kiriting",
+      "phone": "Login/telefon kiriting",
+      "password": "Kamida 6 ta belgi"
+    },
+    "submit": "Kirish",
+    "register": "Ro‘yxatdan o‘tish",
+    "haveAcc": "Hisobingiz yo‘qmi?",
+    "loadingTitle": "Kirish jarayoni...",
+    "loadingDescription": "Maʼlumotlaringiz tekshirilmoqda",
+    "successTitle": "Xush kelibsiz!",
+    "successDescription": "Siz tizimga muvaffaqiyatli kirdingiz.",
+    "errorTitle": "Kirish amalga oshmadi",
+    "errorDescription": "Login va parolni tekshiring."
+  },
+  "resetPassword": {
+    "title": "Parolni tiklash",
+    "phoneStepTitle": "Telefon raqamingizni kiriting",
+    "otpStepTitle": "Tasdiqlash kodini kiriting",
+    "newPassStepTitle": "Yangi parolni kiriting",
+    "form": {
+      "label": {
+        "phone": "Telefon",
+        "otp": "Tasdiqlash kodi",
+        "newPassword": "Yangi parol",
+        "confirmPassword": "Parolni tasdiqlang"
+      },
+      "errors": {
+        "phoneRequired": "Telefon raqamini kiriting",
+        "otpRequired": "6 xonali kodni kiriting",
+        "passwordMin": "Kamida 6 ta belgi",
+        "passwordMatch": "Parollar bir xil bo‘lishi kerak",
+        "server": "Server xatosi"
+      },
+      "buttons": {
+        "sendCode": "Kod yuborish",
+        "verifyCode": "Tasdiqlash",
+        "resetPassword": "Parolni tiklash",
+        "resendCode": "Kod qayta yuborish",
+        "resendIn": "Qayta yuborish vaqti"
+      }
+    },
+    "messages": {
+      "codeSentTo": "Kod yuborildi:",
+      "invalidOtp": "Noto‘g‘ri tasdiqlash kodi",
+      "success": "Parol muvaffaqiyatli o‘zgartirildi"
+    }
+  },
+  "adminProfile": {
+    "title": "Administrator profili",
+    "loginRequiredTitle": "Avtorizatsiya kerak",
+    "loginRequiredDescription": "Administrator maʼlumotlarini boshqarish uchun avval tizimga kiring.",
+    "updatingTitle": "O‘zgartirishlar saqlanmoqda...",
+    "updatingDescription": "Administrator login va paroli yangilanmoqda.",
+    "successTitle": "Maʼlumotlar yangilandi",
+    "successDescription": "Administratorning login va paroli muvaffaqiyatli yangilandi.",
+    "errorTitle": "Yangilash amalga oshmadi",
+    "errorDescription": "Qaytadan urinib ko‘ring yoki ishlab chiquvchiga murojaat qiling.",
+    "loadErrorTitle": "Profilni yuklab bo‘lmadi",
+    "loadErrorDescription": "Sahifani yangilab ko‘ring.",
+    "authRequiredTitle": "Avval tizimga kiring",
+    "authRequiredDescription": "Administrator maʼlumotlarini o‘zgartirish uchun tizimga kirish kerak.",
+    "fields": {
+      "login": "Login",
+      "password": "Yangi parol",
+      "confirmPassword": "Parolni tasdiqlang"
+    },
+    "placeholders": {
+      "login": "admin",
+      "password": "Yangi parolni kiriting",
+      "confirmPassword": "Parolni qayta kiriting",
+      "passwordOptional": "Parolni o‘zgartirmasangiz, bo‘sh qoldiring",
+      "confirmPasswordOptional": "Yangi parolni qayta kiriting"
+    },
+    "errors": {
+      "name": "Login kamida 3 ta belgidan iborat bo‘lishi kerak",
+      "password": "Parol kamida 6 ta belgidan iborat bo‘lishi kerak",
+      "passwordMatch": "Parollar bir xil bo‘lishi kerak"
+    },
+    "actions": {
+      "save": "O‘zgarishlarni saqlash",
+      "reset": "Bekor qilish"
+    },
+    "currentAdmin": "Joriy administrator: {{name}}"
+  },
+  "homePage": {
+    "page": {
+      "homeTitle": "Bosh sahifa"
+    },
+    "menu": {
+      "newOrder": {
+        "title": "Yangi buyurtma",
+        "desc": "Buyurtma yaratish"
+      },
+      "deal": {
+        "title": "Shartnoma",
+        "desc": "Shartnomalarni ko‘rish, qo‘shish va tahrirlash"
+      },
+      "clients": {
+        "title": "Mijozlar",
+        "desc": "Mijozlar bazasi"
+      },
+      "products": {
+        "title": "Mahsulotlar",
+        "desc": "Mahsulotlarni ko‘rish, qo‘shish va tahrirlash"
+      },
+      "warehouse": {
+        "title": "Ombor",
+        "desc": "Qoldiq, kelib tushgan va hisobdan chiqarish"
+      }
+    }
+  },
+  "dealCategories": {
+    "title": "Kategoriyani tanlang",
+    "subtitle": "Avvalo, kelishuv uchun mavjud mahsulotlarni ko‘rish uchun kategoriyani tanlang.",
+    "empty": "Kategoriyalar topilmadi. Ularni «Mahsulotlar» bo‘limida qo‘shing.",
+    "select": "Tanlash",
+    "noImage": "Rasm yo‘q",
+    "fallbackName": "Kategoriya {{index}}"
+  },
+  "dealProducts": {
+    "subtitle": "Kelishuvga qo‘shish uchun mahsulotni tanlang.",
+    "back": "Kategoriyalarga qaytish",
+    "empty": "Bu kategoriyada mahsulotlar topilmadi.",
+    "noImage": "Rasm yo‘q",
+    "noDescription": "Tavsif ko‘rsatilmagan",
+    "inStock": "Omborda: {{count}} dona",
+    "stockUnknown": "Mavjudligini menejerdan so‘rang",
+    "searchPlaceholder": "Mahsulotlarni qidirish",
+    "fallbackName": "Mahsulot {{index}}",
+    "fallbackCategory": "Kategoriya"
+  },
+  "deal": {
+    "table": {
+      "barcode": "Shtrix-kod",
+      "name": "Nomi",
+      "quantity": "Miqdor",
+      "accepted": "Qabul qilingan",
+      "available": "Mavjud",
+      "amountWithoutVat": "QQSsiz summa",
+      "amountWithVat": "QQS bilan summa",
+      "discount": "Chegirma",
+      "amount": "Summa",
+      "empty": "Mahsulotni qo‘lda yoki shtrix-kod orqali qo‘shing",
+      "productsInContract": "Shartnomadagi mahsulotlar",
+      "quantitySuffix": "dona"
+    }
+  },
+  "dealForm": {
+    "title": "Bitim tafsilotlari",
+    "fields": {
+      "client": {
+        "label": "Mijoz",
+        "placeholder": "Mijozni tanlang"
+      },
+      "counterparty": {
+        "label": "Kontragent",
+        "placeholder": "Kontragentni tanlang"
+      },
+      "company": {
+        "label": "Kompaniya",
+        "placeholder": "Kompaniyani tanlang"
+      },
+      "contractNumber": {
+        "label": "Shartnoma raqami",
+        "placeholder": "№3251"
+      },
+      "plannedShipmentDate": {
+        "label": "Jo‘natish sanasi"
+      },
+      "dealAmount": {
+        "label": "Bitim summasi",
+        "placeholder": "0.00"
+      },
+      "funnel": {
+        "label": "Vоронка ustuni",
+        "placeholder": "Ustunni tanlang"
+      },
+      "currency": {
+        "label": "Valyuta",
+        "placeholder": "Valyutani tanlang"
+      },
+      "payCard": {
+        "label": "Karta orqali to‘lov",
+        "placeholder": "0.00"
+      },
+      "payCash": {
+        "label": "Naqd to‘lov",
+        "placeholder": "0.00"
+      },
+      "comments": {
+        "label": "Izohlar",
+        "placeholder": "Izohlarni kiriting..."
+      },
+      "guarantee": {
+        "label": "Kafolat",
+        "placeholder": "Kafolat shartlarini kiriting"
+      }
+    },
+    "buttons": {
+      "saving": "Saqlanmoqda...",
+      "submit": "Saqlash",
+      "cancel": "Bekor qilish"
+    },
+    "multiPayment": {
+      "title": "Ko‘p usulli to‘lov",
+      "help": "To‘lovni bo‘lish mumkin: bir qismi o‘tkazma, bir qismi naqd."
+    }
+  },
+  "dealTable": {
+    "headers": {
+      "serial": "Seriya №",
+      "name": "Nom",
+      "quantity": "Soni",
+      "price": "Narx",
+      "vat": "QQS",
+      "discount": "Chegirma",
+      "total": "Jami"
+    },
+    "empty": "Hozircha mahsulotlar qo‘shilmagan. Bitimga mahsulot qo‘shish uchun pastdagi tugmalardan foydalaning.",
+    "values": {
+      "percent": "{{value}}%"
+    },
+    "summary": {
+      "items": "Mahsulotlar: {{count}}",
+      "subtotal": "Oraliq jami: {{amount}}",
+      "vat": "QQS: {{amount}}",
+      "discount": "Chegirma: {{amount}}"
+    }
+  },
+  "dealAdd": {
+    "errors": {
+      "notFound": "Bitim topilmadi.",
+      "load": {
+        "title": "Bitimni yuklab bo‘lmadi",
+        "description": "Bitim ma’lumotlarini olishning imkoni bo‘lmadi."
+      }
+    },
+    "title": {
+      "create": "Yangi bitim",
+      "edit": "Bitimni tahrirlash"
+    },
+    "description": {
+      "create": "Bitim ma’lumotlarini to‘ldiring va mahsulotlarni qo‘shing.",
+      "edit": "Bitim tafsilotlarini yangilab, o‘zgarishlarni saqlang."
+    },
+    "defaults": {
+      "draft": "Qoralama"
+    },
+    "status": {
+      "label": "Holat",
+      "inProgress": "Jarayonda",
+      "draft": "Qoralama",
+      "creating": "Yaratilmoqda"
+    },
+    "payment": {
+      "label": "To‘lov",
+      "partial": "Qisman to‘langan",
+      "paid": "To‘langan",
+      "unpaid": "To‘lanmagan"
+    },
+    "buttons": {
+      "create": "Yaratish",
+      "save": "Saqlash",
+      "saving": "Saqlanmoqda...",
+      "cancel": "Bekor qilish",
+      "reset": "Tozalash",
+      "deleting": "O‘chirilmoqda...",
+      "deleteDeal": "Bitimni o‘chirish"
+    },
+    "toasts": {
+      "required": {
+        "title": "Majburiy maydonlarni to‘ldiring",
+        "description": "Mijoz, kontragent va kompaniyani tanlang."
+      },
+      "noProducts": {
+        "title": "Mahsulot qo‘shing",
+        "description": "Bitimni saqlashdan oldin kamida bitta mahsulot kiriting."
+      },
+      "updateSuccess": {
+        "title": "Bitim yangilandi",
+        "description": "Shartnoma {{number}} muvaffaqiyatli yangilandi."
+      },
+      "createSuccess": {
+        "title": "Bitim yaratildi",
+        "description": "Shartnoma {{number}} muvaffaqiyatli yaratildi."
+      },
+      "saveError": {
+        "title": "Saqlash muvaffaqiyatsiz",
+        "description": "Yana urinib ko‘ring yoki administratorga murojaat qiling."
+      },
+      "deleteSuccess": {
+        "title": "Bitim o‘chirildi"
+      },
+      "deleteError": {
+        "title": "Bitimni o‘chirib bo‘lmadi",
+        "description": "Iltimos, birozdan so‘ng yana urinib ko‘ring."
+      },
+      "reset": {
+        "title": "Forma tozalandi",
+        "description": "Bitim qoralamasi qayta tiklandi."
+      }
+    },
+    "actions": {
+      "printSoon": {
+        "title": "Chop etish oynasi ochildi",
+        "description": "Chop etishdan oldin shartnoma ma’lumotlarini tekshiring."
+      },
+      "documents": {
+        "title": "Hujjatlar",
+        "description": "Bitim hujjatlarini yuklang.",
+        "uploading": "Hujjatlar yuklanmoqda...",
+        "uploadedTitle": "Hujjatlar yuklandi",
+        "uploadedDescription": "Yuklangan fayllar: {{count}}",
+        "attachedCount": "Biriktirilgan hujjatlar: {{count}}",
+        "errorTitle": "Hujjatlarni yuklab bo‘lmadi"
+      },
+      "tax": {
+        "title": "Soliqlar hisobga olindi",
+        "description": "QQS va yig‘imlar bitim mahsulotlari bo‘yicha hisoblanadi."
+      }
+    },
+    "products": {
+      "heading": "Bitim mahsulotlari",
+      "add": "Mahsulot qo‘shish",
+      "scan": "Shtrix-kodni skanerlash"
+    },
+    "dialog": {
+      "delete": {
+        "title": "Bitimni o‘chirish?",
+        "description": "Bu amalni ortga qaytarib bo‘lmaydi."
+      },
+      "cancel": "Bekor qilish",
+      "confirm": "O‘chirish"
+    }
+  },
+  "funnelPage": {
+    "fallbackName": "Ustun {{index}}",
+    "title": "Savdo voronkasi",
+    "addButton": "Ustun qo‘shish",
+    "emptyState": "Voronka ustunlari mavjud emas. Bitimlarni tartibga solish uchun yangi ustun yarating.",
+    "tableHeaders": {
+      "order": "Tartib",
+      "name": "Nom",
+      "color": "Rang",
+      "comment": "Izoh",
+      "number": "№",
+      "actions": "Harakatlar"
+    },
+    "colorPreview": "Ustun rangi",
+    "actions": {
+      "save": "Saqlash",
+      "cancel": "Bekor qilish",
+      "edit": "Tahrirlash",
+      "delete": "O‘chirish"
+    },
+    "savingOrder": "Ustunlar tartibi saqlanmoqda...",
+    "noComment": "Izoh yo‘q",
+    "toasts": {
+      "orderError": {
+        "title": "Tartibni saqlab bo‘lmadi",
+        "description": "Sahifani yangilab, yana urinib ko‘ring."
+      },
+      "invalidOrder": {
+        "title": "Noto‘g‘ri raqam",
+        "description": "Noldan katta son kiriting."
+      },
+      "nameRequired": {
+        "title": "Nom talab etiladi",
+        "description": "Ustun nomi bo‘sh bo‘lishi mumkin emas."
+      },
+      "updateSuccess": {
+        "title": "Ustun yangilandi"
+      },
+      "updateError": {
+        "title": "Ustunni yangilab bo‘lmadi",
+        "description": "Iltimos, birozdan so‘ng yana urinib ko‘ring."
+      },
+      "deleteBlocked": {
+        "title": "Ustunni o‘chirib bo‘lmaydi",
+        "description": "Ustunda bitimlar mavjud. O‘chirishdan oldin ularni ko‘chiring."
+      },
+      "deleteSuccess": {
+        "title": "Ustun o‘chirildi"
+      },
+      "deleteError": {
+        "title": "Ustunni o‘chirib bo‘lmadi",
+        "description": "Iltimos, birozdan so‘ng yana urinib ko‘ring."
+      }
+    }
+  },
+  "funnelAdd": {
+    "validation": {
+      "name": "Nomini kamida 2 ta belgidan kiriting.",
+      "color": "HEX formatidagi rangni kiriting.",
+      "order": "Ko‘rinish tartibini kiriting.",
+      "orderMin": "Minimal qiymat — 0."
+    },
+    "toasts": {
+      "success": "Ustun yaratildi",
+      "error": {
+        "title": "Ustunni yaratib bo‘lmadi",
+        "description": "Iltimos, birozdan so‘ng yana urinib ko‘ring."
+      }
+    },
+    "buttons": {
+      "back": "Orqaga",
+      "saving": "Saqlanmoqda...",
+      "submit": "Ustun yaratish",
+      "cancel": "Bekor qilish"
+    },
+    "title": "Yangi voronka ustuni",
+    "sectionTitle": "Ustun sozlamalari",
+    "fields": {
+      "name": "Nom",
+      "color": "Rang",
+      "order": "Tartib",
+      "comment": "Izoh"
+    },
+    "placeholders": {
+      "name": "Masalan, Yangi lead",
+      "color": "#5B6FDD",
+      "order": "0",
+      "comment": "Bu ustundan qanday foydalanishni yozing"
+    },
+    "colorPicker": "Rangni tanlash"
+  },
+  "dealPage": {
+    "title": "Bitimlar",
+    "loadErrorTitle": "Bitimlarni yuklab bo‘lmadi",
+    "searchPlaceholder": "Qidirish",
+    "openSettings": "Voronkani sozlash",
+    "newDeal": "Yangi bitim",
+    "addDealButton": "Bitim qo‘shish",
+    "emptyColumnHint": "Bitimlarni ushbu ustunga sudrab keling",
+    "updating": "Yangilanmoqda...",
+    "unassignedFooter": "Bosqichsiz · bitimni voronkadan chiqarish uchun bu yerga sudrab keling",
+    "noFunnelsHint": "Voronkalar topilmadi. Sozlamalar tugmasi orqali birinchisini qo‘shing.",
+    "unassignedColumn": "Bosqichsiz",
+    "columnSummary": "{{dealCount}} · {{total}}$",
+    "dealCount_one": "{{count}} ta bitim",
+    "dealCount_few": "{{count}} ta bitim",
+    "dealCount_many": "{{count}} ta bitim",
+    "dealCount_other": "{{count}} ta bitim",
+    "dealCount": "{{count}} ta bitim",
+    "defaultDealName": "Bitim",
+    "defaultDealLabel": "Bitim #{{number}}",
+    "moveLabel": "Ko‘chirish",
+    "deleteSuccessTitle": "Bitim o‘chirildi",
+    "deleteErrorTitle": "Bitimni o‘chirib bo‘lmadi",
+    "fallbackEmptyHint": "Birinchi bitimni qo‘shing yoki bosqichlarni sozlang",
+    "fallbackLeadFooter": "Bitimni birinchi bosqichga qo‘shing yoki voronka sozlamasini oching",
+    "unassignedEmptyHint": "Bosqichsiz · bitimni voronkadan chiqarish uchun bu yerga sudrab keling",
+    "noTasks": "Vazifalar yo‘q",
+    "funnels": {
+      "newLead": "Yangi lid",
+      "meeting": "Uchrashuv / prezentatsiya",
+      "offer": "KP va himoya",
+      "decision": "Qaror qabul qiladi",
+      "shipping": "Yuklash"
+    },
+    "deleteDialog": {
+      "title": "Bitim o‘chirilsinmi?",
+      "description": "Bu amalni ortga qaytarib bo‘lmaydi.",
+      "confirm": "O‘chirish"
+    },
+    "generatedFunnelName": "Voronka {{number}}"
+  },
+  "clients": {
+    "columns": {
+      "id": "#",
+      "name": "Ism Familiya",
+      "orders": "Buyurtmalar",
+      "totalAmount": "Umumiy xarid summasi",
+      "phone": "Telefon",
+      "email": "Email",
+      "actions": "Harakatlar",
+      "ordersCount_one": "{{count}} ta buyurtma",
+      "ordersCount_few": "{{count}} ta buyurtma",
+      "ordersCount_many": "{{count}} ta buyurtma",
+      "ordersCount_other": "{{count}} ta buyurtma"
+    },
+    "dialog": {
+      "deleteTitle": "Mijozni o‘chirishni tasdiqlaysizmi?",
+      "deleteDesc": "Ushbu amalni qayta tiklab bo‘lmaydi.",
+      "cancel": "Bekor qilish",
+      "confirm": "Ha, o‘chirish"
+    }
+  },
+  "serial": {
+    "columns": {
+      "id": "#",
+      "name": "Nomi",
+      "serial_number": "Seriya raqami",
+      "date_create": "Sotib olingan sana",
+      "date_warranty": "Kafolat tugash sanasi",
+      "price": "Summasi"
+    }
+  },
+  "products": {
+    "currency": "so'm",
+    "columns": {
+      "id": "#",
+      "image": "Rasm",
+      "name": "Nomi",
+      "category": "Kategoriya",
+      "type": "Mahsulot turi",
+      "warranty": "Kafolat",
+      "price": "Narxi",
+      "createdAt": "Yaratilgan",
+      "dateAdded": "Qo‘shilgan sana",
+      "actions": "Harakatlar"
+    },
+    "dialog": {
+      "deleteTitle": "Mahsulotni o'chirish?",
+      "deleteDesc": "Ushbu amalni qayta tiklab bo'lmaydi.",
+      "cancel": "Bekor qilish",
+      "confirm": "Ha, o'chirish"
+    }
+  },
+  "companies": {
+    "columns": {
+      "name": "Nomi",
+      "orders": "Buyurtmalar",
+      "totalAmount": "Umumiy xarid summasi",
+      "phone": "Telefon",
+      "email": "Email",
+      "actions": "Harakatlar",
+      "ordersCount_other": "{{count}} ta buyurtma"
+    },
+    "dialog": {
+      "deleteTitle": "Kompaniyani o‘chirishni tasdiqlaysizmi?",
+      "deleteDesc": "Ushbu amalni qayta tiklab bo‘lmaydi.",
+      "cancel": "Bekor qilish",
+      "confirm": "Ha, o‘chirish"
+    }
+  },
+  "categories": {
+    "columns": {
+      "name": "Nomi",
+      "description": "Tavsif",
+      "actions": "Harakatlar"
+    },
+    "dialog": {
+      "deleteTitle": "Kategoriyani o‘chirish?",
+      "deleteDesc": "Ushbu amalni qayta tiklab bo‘lmaydi.",
+      "cancel": "Bekor qilish",
+      "confirm": "Ha, o‘chirish"
+    }
+  },
+  "table": {
+    "searchPlaceholder": "Qidirish...",
+    "selectColumns": "Ustunlarni tanlash",
+    "pageLabel": "Sahifa",
+    "showingRange": "{{total}} tadan {{start}}-{{end}} ko‘rsatilmoqda",
+    "filteredFrom": "{{total}} tadan filtrlandi",
+    "noData": "Maʼlumot yo‘q",
+    "noDataFound": "Maʼlumot topilmadi",
+    "nothingFound": "Hech narsa topilmadi",
+    "showLabel": "Ko‘rsatish:",
+    "previousPage": "Oldingi sahifa",
+    "nextPage": "Keyingi sahifa",
+    "all": "Barchasi"
+  },
+  "productsPage": {
+    "title": "Mahsulotlar",
+    "searchPlaceholder": "Qidirish...",
+    "allCategories": "Barcha kategoriyalar",
+    "addButton": "Mahsulot qo‘shish",
+    "loadErrorTitle": "Mahsulotlarni yuklab bo‘lmadi",
+    "categoryFallback": "Kategoriya {{index}}"
+  },
+  "counterparties": {
+    "columns": {
+      "name": "Kontragent",
+      "company": "Kompaniya",
+      "phone": "Telefon",
+      "email": "Email",
+      "actions": "Harakatlar"
+    }
+  },
+  "counterpartiesPage": {
+    "title": "Kontragentlar",
+    "addButton": "Kontragent qo‘shish",
+    "loadErrorTitle": "Kontragentlarni yuklab bo‘lmadi",
+    "menu": {
+      "clients": {
+        "title": "Mijozlar",
+        "desc": "Kompaniya mijozlari ro‘yxati"
+      },
+      "companies": {
+        "title": "Kompaniyalar",
+        "desc": "Barcha korporativ mijozlar"
+      },
+      "counterparties": {
+        "title": "Kontragentlar",
+        "desc": "Hamkorlar va yetkazib beruvchilar"
+      }
+    }
+  },
+  "clientDetail": {
+    "loadError": "Mijozni yuklab bo‘lmadi",
+    "notFoundTitle": "Mijoz topilmadi",
+    "notFoundDescription": "{{id}} IDli mijoz topilmadi yoki o‘chirilgan."
+  },
+  "companyDetail": {
+    "loadError": "Kompaniyani yuklab bo‘lmadi",
+    "notFoundTitle": "Kompaniya topilmadi",
+    "notFoundDescription": "{{id}} IDli kompaniya topilmadi yoki o‘chirilgan."
+  },
+  "counterpartyDetail": {
+    "loadError": "Kontragentni yuklab bo‘lmadi",
+    "notFoundTitle": "Kontragent topilmadi",
+    "notFoundDescription": "{{id}} IDli kontragent topilmadi yoki o‘chirilgan."
+  },
+  "productDetail": {
+    "loadError": "Mahsulotni yuklab bo‘lmadi",
+    "notFoundTitle": "Mahsulot topilmadi",
+    "notFoundDescription": "{{id}} IDli mahsulot bazadan topilmadi.",
+    "backToList": "Mahsulotlar ro‘yxatiga qaytish"
+  },
+  "categoryDetail": {
+    "loadError": "Kategoriyani yuklab bo‘lmadi",
+    "notFoundTitle": "Kategoriya topilmadi",
+    "notFoundDescription": "{{id}} IDli kategoriya bazadan topilmadi."
+  },
+  "clientsPage": {
+    "title": "Mijozlar",
+    "addButton": "Mijoz qo‘shish",
+    "loadErrorTitle": "Mijozlarni yuklab bo‘lmadi",
+    "tabs": {
+      "clients": "Mijozlar",
+      "companies": "Kompaniyalar"
+    }
+  },
+  "companiesPage": {
+    "title": "Kompaniyalar",
+    "addButton": "Kompaniya qo‘shish",
+    "loadErrorTitle": "Kompaniyalarni yuklab bo‘lmadi",
+    "tabs": {
+      "clients": "Mijozlar",
+      "companies": "Kompaniyalar"
+    }
+  },
+  "formLanguage": {
+    "title": "Forma tili",
+    "currentEditing": "Hozir tahrirlash:"
+  },
+  "clientForm": {
+    "titles": {
+      "add": "Yangi mijoz",
+      "edit": "Mijozni tahrirlash",
+      "show": "Mijoz ma’lumotlari"
+    },
+    "breadcrumb": "Mijozlar / Yangi mijoz",
+    "actions": {
+      "edit": "Tahrirlash",
+      "delete": "O‘chirish",
+      "cancel": "Bekor qilish",
+      "create": "Yaratish",
+      "save": "Saqlash"
+    },
+    "dialog": {
+      "deleteTitle": "Mijoz o‘chirilsinmi?",
+      "deleteDesc": "Bu amalni ortga qaytarib bo‘lmaydi. Mijoz tarixi bilan birga o‘chiriladi."
+    },
+    "messages": {
+      "created": "Mijoz yaratildi",
+      "updated": "Mijoz yangilandi",
+      "deleted": "Mijoz o‘chirildi",
+      "saveError": "Mijozni saqlab bo‘lmadi",
+      "deleteError": "Mijozni o‘chirib bo‘lmadi"
+    },
+    "fields": {
+      "firstName": "Ism",
+      "lastName": "Familiya",
+      "source": "Qayerdan kelgan",
+      "company": "Kompaniya",
+      "phonePersonal": "Telefon raqami (shaxsiy)",
+      "phoneCompany": "Telefon raqami (kompaniya)",
+      "email": "Elektron pochta",
+      "comment": "Izoh",
+      "invalid": "Noto‘g‘ri qiymat",
+      "emailInvalid": "To‘g‘ri email kiriting",
+      "phoneInvalid": "To‘g‘ri telefon raqamini kiriting",
+      "required": "*"
+    },
+    "placeholders": {
+      "firstName": "Aziz",
+      "company": "Possible Group",
+      "phone": "+998 99 999-99-99",
+      "email": "example@site.com",
+      "lastName": "Familiyani kiriting",
+      "source": "Mijoz bizni qanday topdi",
+      "comment": "Qo‘shimcha ma’lumot"
+    },
+    "history": {
+      "title": "Xaridlar tarixi",
+      "empty": "Hali xaridlar yo‘q. Tarix bitim yaratilgandan keyin paydo bo‘ladi.",
+      "headers": {
+        "index": "#",
+        "name": "Nomi",
+        "serial": "Seriya raqami",
+        "purchaseDate": "Xarid sanasi",
+        "warrantyEnds": "Kafolat tugaydi",
+        "amount": "Summa"
+      }
+    }
+  },
+  "companyForm": {
+    "titles": {
+      "add": "Yangi kompaniya",
+      "edit": "Kompaniyani tahrirlash",
+      "show": "Kompaniya ma’lumotlari"
+    },
+    "breadcrumb": "Kompaniyalar / Yangi kompaniya",
+    "actions": {
+      "edit": "Tahrirlash",
+      "delete": "O‘chirish",
+      "cancel": "Bekor qilish",
+      "create": "Yaratish"
+    },
+    "dialog": {
+      "deleteTitle": "Kompaniya o‘chirilsinmi?",
+      "deleteDesc": "Bu amalni ortga qaytarib bo‘lmaydi. Kompaniya butunlay o‘chiriladi."
+    },
+    "messages": {
+      "created": "Kompaniya yaratildi",
+      "updated": "Kompaniya yangilandi",
+      "deleted": "Kompaniya o‘chirildi",
+      "saveError": "Kompaniyani saqlab bo‘lmadi",
+      "deleteError": "Kompaniyani o‘chirib bo‘lmadi"
+    },
+    "fields": {
+      "name": "Nomi",
+      "email": "Elektron pochta",
+      "inn": "STIR",
+      "phone": "Telefon raqami",
+      "address": "Yuridik manzil",
+      "comment": "Izohlar"
+    },
+    "placeholders": {
+      "name": "OOO Possible Group",
+      "email": "example@site.com",
+      "inn": "515 765 234",
+      "phone": "+998 99 999-99-99",
+      "address": "Yashnobod tumani, Botkin ko‘chasi 5a",
+      "comment": "Majburiy emas"
+    },
+    "meta": {
+      "orders": "Buyurtmalar:",
+      "totalAmount": "Umumiy summa:",
+      "createdAt": "Yaratilgan:",
+      "updatedAt": "Yangilangan:"
+    }
+  },
+  "counterpartyForm": {
+    "titles": {
+      "add": "Yangi kontragent",
+      "edit": "Kontragentni tahrirlash",
+      "show": "Kontragent ma’lumotlari"
+    },
+    "idLabel": "Kontragent ID:",
+    "actions": {
+      "edit": "Tahrirlash",
+      "delete": "O‘chirish",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "create": "Qo‘shish"
+    },
+    "dialog": {
+      "deleteTitle": "Kontragent o‘chirilsinmi?",
+      "deleteDesc": "Bu amalni ortga qaytarib bo‘lmaydi. Kontragent butunlay o‘chiriladi."
+    },
+    "messages": {
+      "created": "Kontragent yaratildi",
+      "updated": "Kontragent yangilandi",
+      "deleted": "Kontragent o‘chirildi",
+      "saveError": "Kontragentni saqlab bo‘lmadi",
+      "deleteError": "Kontragentni o‘chirib bo‘lmadi"
+    },
+    "fields": {
+      "name": "Ism",
+      "position": "Lavozim",
+      "email": "Elektron pochta",
+      "phone": "Telefon raqami (shaxsiy)",
+      "company": "Kompaniya",
+      "companyPhone": "Kompaniya telefoni",
+      "address": "Manzil",
+      "comment": "Izohlar"
+    },
+    "placeholders": {
+      "name": "Aziz",
+      "position": "Agent",
+      "email": "example@site.com",
+      "phone": "+998 99 999-99-99",
+      "company": "Possible Group",
+      "address": "Manzil",
+      "comment": "Izoh qo‘shing"
+    }
+  },
+  "categoryForm": {
+    "titles": {
+      "add": "Yangi kategoriya",
+      "edit": "Kategoriyani tahrirlash",
+      "show": "Kategoriya ma’lumotlari"
+    },
+    "breadcrumb": "Mahsulotlar / Yangi kategoriya",
+    "mainInfo": "Asosiy ma’lumot",
+    "fields": {
+      "title": "Nomi",
+      "description": "Tavsif"
+    },
+    "placeholders": {
+      "title": "Kategoriya nomini kiriting",
+      "description": "Kategoriyaning qisqa tavsifi"
+    },
+    "images": {
+      "title": "Kategoriya rasmi",
+      "info": "Faqat bitta kategoriya rasmini yuklash mumkin."
+    },
+    "meta": {
+      "title": "Metadata",
+      "createdAt": "Yaratilgan:",
+      "updatedAt": "Yangilangan:"
+    },
+    "actions": {
+      "edit": "Tahrirlash",
+      "delete": "O‘chirish",
+      "cancel": "Bekor qilish",
+      "create": "Yaratish",
+      "deleteCategory": "Kategoriyani o‘chirish"
+    },
+    "dialog": {
+      "deleteTitle": "Kategoriyani o‘chirish?",
+      "deleteDesc": "Bu amalni ortga qaytarib bo‘lmaydi. Kategoriya butunlay o‘chiriladi."
+    },
+    "messages": {
+      "imageRequired": "Saqlashdan oldin kategoriya rasmini qo‘shing.",
+      "created": "Kategoriya muvaffaqiyatli yaratildi!",
+      "updated": "Kategoriya muvaffaqiyatli yangilandi!",
+      "deleted": "Kategoriya o‘chirildi",
+      "saveError": "Kategoriyani saqlab bo‘lmadi",
+      "deleteError": "Kategoriyani o‘chirib bo‘lmadi",
+      "titleRequired": "Nomini kiriting",
+      "descriptionTooLong": "Tavsif juda uzun"
+    }
+  },
+  "productForm": {
+    "titles": {
+      "add": "Yangi mahsulot",
+      "edit": "Mahsulotni tahrirlash",
+      "show": "Mahsulot ma’lumotlari"
+    },
+    "breadcrumb": "Mahsulotlar / Yangi mahsulot",
+    "mainInfo": "Asosiy ma’lumot",
+    "actions": {
+      "edit": "Tahrirlash",
+      "delete": "O‘chirish",
+      "cancel": "Bekor qilish"
+    },
+    "dialog": {
+      "deleteTitle": "Ishonchingiz komilmi?",
+      "deleteDesc": "Bu amalni ortga qaytarib bo‘lmaydi. Mahsulot butunlay o‘chiriladi."
+    },
+    "messages": {
+      "loadCategoriesError": "Kategoriyalarni yuklab bo‘lmadi",
+      "imageRequired": "Kamida bitta rasm yuklang",
+      "created": "Mahsulot muvaffaqiyatli qo‘shildi!",
+      "updated": "Mahsulot muvaffaqiyatli yangilandi!",
+      "deleted": "Mahsulot muvaffaqiyatli o‘chirildi!",
+      "saveError": "Mahsulotni saqlashda xato",
+      "deleteError": "Mahsulotni o‘chirishda xato",
+      "imageUploadHint": "Rasm yuklash saqlangandan keyin mavjud bo‘ladi."
+    },
+    "fields": {
+      "name": "Mahsulot nomi",
+      "adsTitle": "Reklama sarlavhasi",
+      "category": "Kategoriya",
+      "topCategory": "Top kategoriya",
+      "warranty": "Yaroqlilik muddati",
+      "priceUsd": "Narx (USD)",
+      "serialNumber": "Seriya raqami",
+      "barcode": "Shtrix-kod",
+      "discount": "Chegirma",
+      "stockCount": "Ombordagi soni",
+      "vat": "QQS",
+      "tax": "Yig‘im/soliq",
+      "techSpecs": "Texnik xususiyatlar",
+      "imagesTitle": "Mahsulot rasmlari",
+      "noImages": "Rasmlar yo‘q"
+    },
+    "placeholders": {
+      "name": "Mahsulot nomini kiriting",
+      "adsTitle": "Reklama sarlavhasini kiriting",
+      "warranty": "Yaroqlilik muddatini kiriting",
+      "selectCategory": "Kategoriyani tanlang",
+      "selectTopCategory": "Top kategoriyani tanlang",
+      "loading": "Yuklanmoqda...",
+      "serialNumber": "Seriya raqamini kiriting",
+      "barcode": "Shtrix-kodni kiriting",
+      "techSpecs": "Mahsulotning texnik xususiyatlarini kiriting...\\nMisol:\\n- Protsessor: Intel Core i7\\n- Xotira: 16GB RAM\\n- Disk: 512GB SSD"
+    },
+    "fallbacks": {
+      "category": "Kategoriya {{index}}",
+      "topCategory": "Top kategoriya {{index}}",
+      "selectedCategory": "Tanlangan kategoriya",
+      "selectedTopCategory": "Tanlangan top kategoriya"
+    }
+  },
+  "warehouse": {
+    "pageTitle": "Ombor",
+    "recentProducts": "Yaqinda qo‘shilgan mahsulotlar",
+    "chooseProduct": "Mahsulotni tanlang",
+    "writeoffCreateTitle": "Hisobdan chiqarish yaratish",
+    "address": "Manzil",
+    "actions": {
+      "create": "YARATISH",
+      "createMovement": "Ko‘chirish yaratish"
+    },
+    "table": {
+      "warehouse": "Ombor",
+      "quantity": "Miqdor",
+      "emptyProducts": "Mahsulotlar topilmadi. Mahsulot qo‘shing yoki kirim yarating."
+    },
+    "names": {
+      "one": "Ombor 1",
+      "two": "Ombor 2",
+      "three": "Ombor 3",
+      "four": "Ombor 4",
+      "five": "Ombor 5"
+    },
+    "links": {
+      "stocks": {
+        "title": "Qoldiqlar",
+        "subtitle": "Mahsulotlarni tez tahrirlash"
+      },
+      "receipt": {
+        "title": "Qabul",
+        "subtitle": "Mahsulot qabulini yaratish"
+      },
+      "writeoff": {
+        "title": "Hisobdan chiqarish",
+        "subtitle": "Mahsulotlarni hisobdan chiqarish"
+      },
+      "list": {
+        "title": "Omborlar",
+        "subtitle": "Omborlarni qo‘shish va tahrirlash"
+      },
+      "movement": {
+        "title": "Ko‘chirish",
+        "subtitle": "Mahsulotlarni ko‘chirish"
+      }
+    },
+    "receipt": {
+      "addPhoto": "FOTOSURAT QO‘SHISH",
+      "defaults": {
+        "quantity": "20 dona",
+        "guarantee": "5 yil"
+      },
+      "fields": {
+        "productName": "Mahsulot nomi",
+        "serialNumber": "Seriya raqami",
+        "serialNumbers": "Seriya raqamlari",
+        "guarantee": "Yaroqlilik muddati",
+        "expirationPeriod": "Yaroqlilik muddati",
+        "expirationUnit": "Birlik"
+      },
+      "placeholders": {
+        "serialNumbers": "Har bir seriya raqamini yangi qatordan kiriting"
+      },
+      "serialHint": "Har bir mahsulot birligi uchun alohida noyob seriya raqami kerak.",
+      "expirationUnits": {
+        "days": "kun",
+        "months": "oy",
+        "years": "yil"
+      },
+      "validationProduct": "Kirim uchun mahsulotni tanlang",
+      "validationRequired": "Barcha majburiy maydonlarni to‘ldiring",
+      "validationQuantity": "Miqdor noldan katta bo‘lishi kerak",
+      "validationSerials": "Noyob seriya raqamlari soni mahsulot miqdoriga teng bo‘lishi kerak",
+      "validationExpiration": "Yaroqlilik muddati va birligini ko‘rsating",
+      "photoInfo": "Mahsulot yoki hujjatlar uchun 4 tagacha fotosurat qo‘shish mumkin.",
+      "saveError": "Kirimni saqlab bo‘lmadi"
+    },
+    "dialogs": {
+      "writeoff": {
+        "title": "Hisobdan chiqarish yaratish",
+        "description": "Hisobdan chiqarish miqdori va sababini kiriting.",
+        "confirm": "Hisobdan chiqarish",
+        "fields": {
+          "product": "Mahsulot",
+          "available": "Mavjud",
+          "quantity": "Hisobdan chiqarish miqdori",
+          "reason": "Hisobdan chiqarish sababi"
+        },
+        "placeholders": {
+          "reason": "Masalan: nuqson, yo‘qotish, shikastlanish"
+        },
+        "errors": {
+          "quantity": "To‘g‘ri miqdor kiriting",
+          "stock": "Omborda mahsulot yetarli emas",
+          "stockDescription": "Mavjud: {{count}}",
+          "reason": "Hisobdan chiqarish sababini kiriting",
+          "save": "Hisobdan chiqarishni saqlab bo‘lmadi"
+        }
+      },
+      "move": {
+        "title": "Mahsulot ko‘chirilsinmi?",
+        "description": "Rostdan ham omborni o‘zgartirmoqchimisiz?",
+        "fields": {
+          "responsible": "Mas’ul shaxs",
+          "productName": "Mahsulot nomi",
+          "warehouse": "Ombor",
+          "quantity": "Miqdor",
+          "comments": "Izohlar"
+        },
+        "defaults": {
+          "responsible": "Admin 1",
+          "all": "Barchasi"
+        },
+        "confirm": "Ko‘chirish",
+        "placeholders": {
+          "product": "Mahsulotni tanlang",
+          "quantity": "Miqdorni kiriting",
+          "comments": "Ko‘chirish izohi"
+        },
+        "errors": {
+          "product": "Ko‘chirish uchun mahsulot tanlang",
+          "warehouse": "Qabul qiluvchi omborni tanlang",
+          "quantity": "Noldan katta miqdor kiriting"
+        }
+      }
+    },
+    "messages": {
+      "backendUnavailable": {
+        "title": "Backend vaqtincha mavjud emas",
+        "homeFallback": "Haqiqiy mahsulotlarni yuklab bo‘lmadi. Backend ulanishini tekshiring.",
+        "inventoryFallback": "Haqiqiy mahsulotlarni yuklab bo‘lmadi. Backend ulanishini tekshiring."
+      },
+      "writeoffSuccess": {
+        "title": "Mahsulot hisobdan chiqarildi",
+        "description": "{{product}} muvaffaqiyatli hisobdan chiqarildi. Miqdor: {{count}}."
+      },
+      "moveSuccess": {
+        "title": "Mahsulot ko‘chirildi",
+        "description": "{{product}} boshqa omborga muvaffaqiyatli yuborildi."
+      },
+      "listUpdated": "Ombor yangilandi",
+      "listCreated": "Ombor yaratildi",
+      "listDeleted": "Ombor o‘chirildi",
+      "receiptSaved": "Qabul saqlandi",
+      "photoLater": "Rasm yuklash keyingi bosqichda mavjud bo‘ladi",
+      "actionCompleted": "Amal bajarildi."
+    },
+    "sampleTypes": {
+      "terminal": "Mobil terminal",
+      "computer": "Mobil kompyuter",
+      "roller": "Rolik tizimi",
+      "printer": "POS printer",
+      "label": "Elektron narx belgisi"
+    }
+  },
+  "barcode": {
+    "title": "Shtrix-kod bo‘yicha mahsulot",
+    "fieldLabel": "Shtrix-kod",
+    "placeholder": "Shtrix-kodni kiriting yoki skanerlang",
+    "searching": "Qidirilmoqda...",
+    "find": "Topish",
+    "foundProducts": "Topilgan mahsulotlar"
+  },
+  "categoriesPage": {
+    "title": "Kategoriyalar",
+    "addButton": "Kategoriya qo‘shish",
+    "loadErrorTitle": "Kategoriyalarni yuklab bo‘lmadi"
+  },
+  "productDescription": {
+    "title": "Mahsulot tavsifi",
+    "activeLanguage": "Faol til:",
+    "newColumn": "Yangi ustun",
+    "addColumn": "Ustun qo‘shish",
+    "addRow": "Qator qo‘shish",
+    "emptyRows": "Qatorlar yo‘q. Xususiyatlarni to‘ldirish uchun birinchi qatorni qo‘shing.",
+    "defaultParameter": "Parametr",
+    "defaultValue": "Qiymat",
+    "addFirstRow": "Birinchi qatorni qo‘shish"
+  },
+  "images": {
+    "title": "Rasmlar",
+    "singleInfo": "Rasmni istalgan standart formatda yuklang. Asl fayl siqilmasdan saqlanadi.",
+    "multipleInfo": "Birinchi rasm asosiy sifatida ishlatiladi.",
+    "onlyOne": "Faqat bitta rasm yuklash mumkin",
+    "maxImages": "Maksimum {{count}} ta rasm",
+    "invalidFormatTitle": "Noto‘g‘ri format: {{file}}",
+    "invalidFormatDescription": "Standart rasm formatlari ruxsat etilgan: JPG, PNG, GIF, WEBP, SVG, AVIF, HEIC, BMP, TIFF va ICO.",
+    "fileTooLargeTitle": "{{file}} fayli juda katta",
+    "fileTooLargeDescription": "Maksimal hajm 50MB.",
+    "uploadCompleteTitle": "Yuklash tugadi",
+    "uploadCompleteDescription": "{{count}} ta rasm qo‘shildi.",
+    "uploadErrorTitle": "Rasmlarni yuklashda xatolik",
+    "uploading": "Yuklanmoqda...",
+    "replaceImage": "Rasmni almashtirish",
+    "addImage": "Rasm qo‘shish",
+    "addPhoto": "Foto qo‘shish",
+    "alt": "Rasm",
+    "primaryLabel": "Asosiy"
+  },
+  "funnelForm": {
+    "titles": {
+      "add": "Voronka qo‘shish",
+      "edit": "Voronkani tahrirlash"
+    },
+    "fields": {
+      "name": "Nomi",
+      "color": "Rang",
+      "comment": "Voronka izohi"
+    },
+    "placeholders": {
+      "name": "Voronka nomi",
+      "comment": "Qo‘shish"
+    },
+    "validation": {
+      "nameRequired": "Nomini kiriting",
+      "colorHex": "To‘g‘ri HEX rang kiriting"
+    },
+    "messages": {
+      "created": "Voronka yaratildi",
+      "updated": "Voronka yangilandi",
+      "saveError": "Voronkani saqlab bo‘lmadi"
+    },
+    "aria": {
+      "pickColor": "Rang tanlash"
+    }
+  },
+  "password": "Parol",
+  "themeToggle": {
+    "switcher": "Mavzu almashtirgich",
+    "enableLight": "Yorug‘ mavzuni yoqish",
+    "enableDark": "Qorong‘i mavzuni yoqish",
+    "light": "Yorug‘",
+    "dark": "Qorong‘i"
+  },
+  "common": {
+    "loading": "Yuklanmoqda…",
+    "checkLoad": "Hisob tekshirilmoqda…",
+    "logout": "Chiqish",
+    "cancel": "Bekor qilish",
+    "save": "Saqlash",
+    "deleting": "O‘chirilmoqda...",
+    "back": "Ortga",
+    "selectedCount": "{{count}} ta tanlandi",
+    "selectOptions": "Variantlarni tanlang...",
+    "printContract": "Shartnomani chop etish",
+    "addDocument": "Hujjat qo‘shish"
+  },
+  "barcodeSearch": {
+    "errors": {
+      "enterBarcode": "Qidirish uchun shtrix-kodni kiriting",
+      "notFound": "Bu shtrix-kod bo‘yicha mahsulot topilmadi",
+      "searchFailed": "Shtrix-kod bo‘yicha qidirib bo‘lmadi"
+    }
+  },
+  "analytics": {
+    "deals": "Bitimlar",
+    "period": "Davr",
+    "showLatestMonth": "Oxirgi oyni ko‘rsatish",
+    "showFirstMonth": "Birinchi oyni ko‘rsatish",
+    "previousMonth": "Oldingi oy",
+    "nextMonth": "Keyingi oy",
+    "peakClients": "Mijozlar cho‘qqisi",
+    "date": "Sana",
+    "clients": "Mijozlar",
+    "products": "Mahsulotlar",
+    "peakDay": "Cho‘qqi kun",
+    "averagePerDay": "Kunlik o‘rtacha",
+    "totalForMonth": "Oy bo‘yicha jami",
+    "activeDays": "Faol kunlar",
+    "clientsUnit": "mijoz",
+    "productsUnit": "mahsulot"
+  },
+  "finance": {
+    "title": "Moliya",
+    "subtitle": "Haqiqiy summalar saqlangan bitimlar va to‘lovlar asosida hisoblanadi.",
+    "createDeal": "Bitim yaratish",
+    "loadError": "Moliyani yuklab bo‘lmadi",
+    "empty": "Hozircha haqiqiy moliyaviy operatsiyalar yo‘q. Hisob-kitoblarni ko‘rish uchun bitim yarating.",
+    "statusPaid": "To‘langan",
+    "statusPartial": "Qisman to‘langan",
+    "statusUnpaid": "To‘lanmagan",
+    "contracts": "bitim",
+    "totalAmount": "Umumiy summa",
+    "paidAmount": "To‘langan",
+    "remainingAmount": "Qolgan summa",
+    "realHistory": "Haqiqiy bitimlar tarixi",
+    "paymentStatus": "To‘lov holati",
+    "status": {
+      "paid": "To‘langan",
+      "partial": "Qisman to‘langan",
+      "unpaid": "To‘lanmagan"
+    }
+  },
+  "settings": {
+    "title": "Sozlamalar",
+    "subtitle": "Profil, kirish huquqlari va ERP tizim parametrlarini boshqarish.",
+    "profile": {
+      "title": "Administrator profili",
+      "desc": "Joriy administrator login va paroli."
+    },
+    "access": {
+      "title": "Kirish huquqlari sozlamalari",
+      "desc": "Demo xodimlarsiz admin-panelning haqiqiy foydalanuvchilari.",
+      "loadError": "Kirish huquqlarini yuklab bo‘lmadi",
+      "realDataHint": "Faqat bazadagi haqiqiy administratorlar ko‘rsatiladi.",
+      "empty": "Administratorlar hali yaratilmagan.",
+      "createdAt": "Yaratilgan",
+      "updatedAt": "Yangilangan",
+      "actions": "Harakatlar",
+      "editCurrent": "O‘zgartirish",
+      "addEmployee": "Xodim qo‘shish",
+      "editEmployee": "Xodimni tahrirlash",
+      "addEmployeeHint": "Yangi ERP xodimi uchun login va parol yarating.",
+      "editEmployeeHint": "Xodim loginini o‘zgartiring yoki yangi parol belgilang.",
+      "createEmployee": "Xodim yaratish",
+      "saveEmployee": "Xodimni saqlash",
+      "employees": "ERP xodimlari",
+      "employeeHint": "Panelga kira oladigan haqiqiy foydalanuvchilarni boshqaring.",
+      "totalEmployees": "Jami xodimlar",
+      "roleAdmin": "Kirish roli",
+      "adminRole": "Administrator",
+      "lastUpdated": "Oxirgi yangilanish",
+      "search": "Xodimni qidirish",
+      "role": "Rol",
+      "current": "Siz",
+      "delete": "O‘chirish",
+      "created": "Xodim yaratildi",
+      "updated": "Xodim yangilandi",
+      "deleted": "Xodim o‘chirildi",
+      "saveError": "Xodimni saqlab bo‘lmadi",
+      "deleteError": "Xodimni o‘chirib bo‘lmadi",
+      "validationTitle": "Maʼlumotlarni tekshiring",
+      "deleteTitle": "Xodim o‘chirilsinmi?",
+      "deleteDescription": "{{name}} xodimi ERP tizimiga kirish huquqini yo‘qotadi. Bu amalni bekor qilib bo‘lmaydi.",
+      "roleTypes": "Rol turlari",
+      "roles": {
+        "admin": "Administrator",
+        "manager": "Menejer",
+        "warehouse": "Ombor",
+        "finance": "Moliya",
+        "viewer": "Kuzatuvchi"
+      }
+    },
+    "open": "Ochish"
+  },
+  "language": {
+    "ru": "Русский",
+    "en": "English",
+    "uz": "O'zbek"
+  }
+}

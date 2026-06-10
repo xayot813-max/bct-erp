@@ -1,0 +1,1791 @@
+info:
+  name: BCT Server API
+  description: Postman collection covering all API endpoints exposed by the Fiber server.
+  schema: https://schema.getpostman.com/json/collection/v2.1.0/collection.json
+variable:
+  - key: baseUrl
+    value: http://localhost:9000
+  - key: adminToken
+    value: ''
+  - key: userToken
+    value: ''
+  - key: companyId
+    value: ''
+  - key: clientId
+    value: ''
+  - key: counterpartyId
+    value: ''
+  - key: contractId
+    value: ''
+  - key: funnelId
+    value: ''
+  - key: topCategoryId
+    value: ''
+  - key: categoryId
+    value: ''
+  - key: productId
+    value: ''
+  - key: orderId
+    value: ''
+  - key: collectionName
+    value: vendors
+  - key: recordId
+    value: ''
+item:
+  - name: Authentication
+    description: Endpoints for admin and user authentication flows.
+    item:
+      - name: Admin Login
+        request:
+          method: POST
+          header:
+            - key: Content-Type
+              value: application/json
+          body:
+            mode: raw
+            raw: |-
+              {
+                "name": "admin",
+                "password": "bct123"
+              }
+          url:
+            raw: "{{baseUrl}}/api/admin/login"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - admin
+              - login
+        response: []
+        event:
+          - listen: test
+            script:
+              type: text/javascript
+              exec:
+                - |-
+                  const json = pm.response.json();
+                  if (json.token) {
+                    pm.environment.set('adminToken', json.token);
+                  }
+      - name: Admin Update
+        request:
+          method: PUT
+          header:
+            - key: Content-Type
+              value: application/json
+          auth:
+            type: bearer
+            bearer:
+              - key: token
+                value: '{{adminToken}}'
+                type: string
+          body:
+            mode: raw
+            raw: |-
+              {
+                "name": "admin",
+                "password": "newPassword123"
+              }
+          url:
+            raw: "{{baseUrl}}/api/admin/update"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - admin
+              - update
+        response: []
+        event:
+          - listen: test
+            script:
+              type: text/javascript
+              exec:
+                - |-
+                  const json = pm.response.json();
+                  if (json.token) {
+                    pm.environment.set('adminToken', json.token);
+                  }
+      - name: Admin Profile
+        request:
+          method: GET
+          header: []
+          auth:
+            type: bearer
+            bearer:
+              - key: token
+                value: '{{adminToken}}'
+                type: string
+          url:
+            raw: "{{baseUrl}}/api/admin/profile"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - admin
+              - profile
+        response: []
+      - name: Admin Debug
+        request:
+          method: GET
+          header: []
+          url:
+            raw: "{{baseUrl}}/api/admin/debug"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - admin
+              - debug
+        response: []
+      - name: User Register
+        request:
+          method: POST
+          header:
+            - key: Content-Type
+              value: application/json
+          body:
+            mode: raw
+            raw: |-
+              {
+                "name": "John Doe",
+                "email": "john@example.com",
+                "phone": "+998901112233",
+                "password": "Secret123"
+              }
+          url:
+            raw: "{{baseUrl}}/api/auth/register"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - auth
+              - register
+        response: []
+      - name: User Login
+        request:
+          method: POST
+          header:
+            - key: Content-Type
+              value: application/json
+          body:
+            mode: raw
+            raw: |-
+              {
+                "phone": "+998901112233",
+                "password": "Secret123"
+              }
+          url:
+            raw: "{{baseUrl}}/api/auth/login"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - auth
+              - login
+        response: []
+        event:
+          - listen: test
+            script:
+              type: text/javascript
+              exec:
+                - |-
+                  const json = pm.response.json();
+                  if (json.token) {
+                    pm.environment.set('userToken', json.token);
+                  }
+      - name: User Profile
+        request:
+          method: GET
+          auth:
+            type: bearer
+            bearer:
+              - key: token
+                value: '{{userToken}}'
+                type: string
+          url:
+            raw: "{{baseUrl}}/api/auth/profile"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - auth
+              - profile
+        response: []
+      - name: Update User Profile
+        request:
+          method: PUT
+          header:
+            - key: Content-Type
+              value: application/json
+          auth:
+            type: bearer
+            bearer:
+              - key: token
+                value: '{{userToken}}'
+                type: string
+          body:
+            mode: raw
+            raw: |-
+              {
+                "name": "John Updated",
+                "email": "john.updated@example.com",
+                "phone": "+998901112299"
+              }
+          url:
+            raw: "{{baseUrl}}/api/auth/profile"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - auth
+              - profile
+        response: []
+  - name: Admin Dashboard
+    description: Analytics and overview endpoints (admin token required).
+    item:
+      - name: Dashboard Stats
+        request:
+          method: GET
+          auth:
+            type: bearer
+            bearer:
+              - key: token
+                value: '{{adminToken}}'
+                type: string
+          url:
+            raw: "{{baseUrl}}/api/admin/dashboard/stats"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - admin
+              - dashboard
+              - stats
+        response: []
+      - name: Recent Activities
+        request:
+          method: GET
+          auth:
+            type: bearer
+            bearer:
+              - key: token
+                value: '{{adminToken}}'
+                type: string
+          url:
+            raw: "{{baseUrl}}/api/admin/dashboard/recent-activities?limit=20"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - admin
+              - dashboard
+              - recent-activities
+            query:
+              - key: limit
+                value: '20'
+        response: []
+      - name: Sales Analytics
+        request:
+          method: GET
+          auth:
+            type: bearer
+            bearer:
+              - key: token
+                value: '{{adminToken}}'
+                type: string
+          url:
+            raw: "{{baseUrl}}/api/admin/dashboard/sales-analytics?period=month"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - admin
+              - dashboard
+              - sales-analytics
+            query:
+              - key: period
+                value: month
+        response: []
+      - name: Top Products
+        request:
+          method: GET
+          auth:
+            type: bearer
+            bearer:
+              - key: token
+                value: '{{adminToken}}'
+                type: string
+          url:
+            raw: "{{baseUrl}}/api/admin/dashboard/top-products?limit=10"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - admin
+              - dashboard
+              - top-products
+            query:
+              - key: limit
+                value: '10'
+        response: []
+      - name: User Growth
+        request:
+          method: GET
+          auth:
+            type: bearer
+            bearer:
+              - key: token
+                value: '{{adminToken}}'
+                type: string
+          url:
+            raw: "{{baseUrl}}/api/admin/dashboard/user-growth?period=month"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - admin
+              - dashboard
+              - user-growth
+            query:
+              - key: period
+                value: month
+        response: []
+      - name: Dashboard Alerts
+        request:
+          method: GET
+          auth:
+            type: bearer
+            bearer:
+              - key: token
+                value: '{{adminToken}}'
+                type: string
+          url:
+            raw: "{{baseUrl}}/api/admin/dashboard/alerts"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - admin
+              - dashboard
+              - alerts
+        response: []
+  - name: File Uploads
+    description: Upload single or multiple files.
+    item:
+      - name: Upload Single File
+        request:
+          method: POST
+          header: []
+          body:
+            mode: formdata
+            formdata:
+              - key: file
+                type: file
+                src: ''
+          url:
+            raw: "{{baseUrl}}/api/files/upload"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - files
+              - upload
+        response: []
+      - name: Upload Multiple Files
+        request:
+          method: POST
+          header: []
+          body:
+            mode: formdata
+            formdata:
+              - key: files
+                type: file
+                src: ''
+          url:
+            raw: "{{baseUrl}}/api/files/upload-multiple"
+            host:
+              - '{{baseUrl}}'
+            path:
+              - api
+              - files
+              - upload-multiple
+        response: []
+  - name: CRM Entities
+    description: Company, client, counterparty, contract, and funnel management.
+    item:
+      - name: Companies
+        item:
+          - name: List Companies
+            request:
+              method: GET
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/companies?page=1&limit=10"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - companies
+                query:
+                  - key: page
+                    value: '1'
+                  - key: limit
+                    value: '10'
+            response: []
+          - name: Create Company
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "name": "ACME",
+                    "email": "info@acme.com",
+                    "inn": "123456789",
+                    "address": "Tashkent, Uzbekistan",
+                    "phone": "+998901234567",
+                    "comment": "Preferred client"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/companies"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - companies
+            response: []
+          - name: Get Company
+            request:
+              method: GET
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/companies/{{companyId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - companies
+                  - '{{companyId}}'
+            response: []
+          - name: Update Company
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "comment": "Updated notes",
+                    "order_count": 5,
+                    "total_amount": 25000000
+                  }
+              url:
+                raw: "{{baseUrl}}/api/companies/{{companyId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - companies
+                  - '{{companyId}}'
+            response: []
+          - name: Delete Company
+            request:
+              method: DELETE
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/companies/{{companyId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - companies
+                  - '{{companyId}}'
+            response: []
+      - name: Clients
+        item:
+          - name: List Clients
+            request:
+              method: GET
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/clients?page=1&limit=10"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - clients
+                query:
+                  - key: page
+                    value: '1'
+                  - key: limit
+                    value: '10'
+            response: []
+          - name: Create Client
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "first_name": "Ali",
+                    "last_name": "Karimov",
+                    "email": "ali@client.com",
+                    "phone": "+998909876543",
+                    "company_phone": "+998901234567",
+                    "company": "ACME",
+                    "address": "Yunusabad",
+                    "comment": "VIP client"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/clients"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - clients
+            response: []
+          - name: Get Client
+            request:
+              method: GET
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/clients/{{clientId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - clients
+                  - '{{clientId}}'
+            response: []
+          - name: Update Client
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "company": "ACME Updated",
+                    "comment": "Frequent shopper"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/clients/{{clientId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - clients
+                  - '{{clientId}}'
+            response: []
+          - name: Delete Client
+            request:
+              method: DELETE
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/clients/{{clientId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - clients
+                  - '{{clientId}}'
+            response: []
+      - name: Counterparties
+        item:
+          - name: List Counterparties
+            request:
+              method: GET
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/counterparties?page=1&limit=10"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - counterparties
+                query:
+                  - key: page
+                    value: '1'
+                  - key: limit
+                    value: '10'
+            response: []
+          - name: Create Counterparty
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "first_name": "Dilshod",
+                    "last_name": "Saidov",
+                    "email": "dilshod@partner.com",
+                    "phone": "+998907001122",
+                    "company_phone": "+998901223344",
+                    "company": "Partner LLC",
+                    "address": "Mirzo Ulugbek district",
+                    "comment": "Key supplier"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/counterparties"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - counterparties
+            response: []
+          - name: Get Counterparty
+            request:
+              method: GET
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/counterparties/{{counterpartyId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - counterparties
+                  - '{{counterpartyId}}'
+            response: []
+          - name: Update Counterparty
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "comment": "Primary point of contact"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/counterparties/{{counterpartyId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - counterparties
+                  - '{{counterpartyId}}'
+            response: []
+          - name: Delete Counterparty
+            request:
+              method: DELETE
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/counterparties/{{counterpartyId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - counterparties
+                  - '{{counterpartyId}}'
+            response: []
+      - name: Contracts
+        item:
+          - name: List Contracts
+            request:
+              method: GET
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/contracts?page=1&limit=10"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - contracts
+                query:
+                  - key: page
+                    value: '1'
+                  - key: limit
+                    value: '10'
+            response: []
+          - name: Create Contract
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "client_id": "{{clientId}}",
+                    "counterparty_id": "{{counterpartyId}}",
+                    "company_id": "{{companyId}}",
+                    "guarantee": "12 months",
+                    "comment": "First deal",
+                    "deal_date": "2024-09-01T00:00:00Z",
+                    "contract_amount": 125000000,
+                    "contract_currency": "UZS",
+                    "pay_card": 75000000,
+                    "pay_cash": 50000000,
+                    "products": [
+                      {
+                        "product_id": "{{productId}}",
+                        "price": 25000000,
+                        "quantity": 2,
+                        "discount": 5000000,
+                        "serial_number": "SN-123",
+                        "shtrix_number": "SH-123"
+                      }
+                    ]
+                  }
+              url:
+                raw: "{{baseUrl}}/api/contracts"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - contracts
+            response: []
+          - name: Get Contract
+            request:
+              method: GET
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/contracts/{{contractId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - contracts
+                  - '{{contractId}}'
+            response: []
+          - name: Update Contract
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "client_id": "{{clientId}}",
+                    "counterparty_id": "{{counterpartyId}}",
+                    "company_id": "{{companyId}}",
+                    "guarantee": "24 months",
+                    "comment": "Updated contract terms",
+                    "deal_date": "2024-09-01T00:00:00Z",
+                    "contract_amount": 150000000,
+                    "contract_currency": "UZS",
+                    "pay_card": 90000000,
+                    "pay_cash": 60000000,
+                    "products": [
+                      {
+                        "product_id": "{{productId}}",
+                        "price": 90000000,
+                        "quantity": 2,
+                        "discount": 4000000,
+                        "serial_number": "SN-123",
+                        "shtrix_number": "SH-123"
+                      }
+                    ]
+                  }
+              url:
+                raw: "{{baseUrl}}/api/contracts/{{contractId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - contracts
+                  - '{{contractId}}'
+            response: []
+          - name: Delete Contract
+            request:
+              method: DELETE
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/contracts/{{contractId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - contracts
+                  - '{{contractId}}'
+            response: []
+      - name: Funnels
+        item:
+          - name: List Funnels
+            request:
+              method: GET
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/funnels"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - funnels
+            response: []
+          - name: Create Funnel Stage
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "name": "Negotiation",
+                    "color": "#FF9500",
+                    "comment": "Pricing stage",
+                    "order": 2
+                  }
+              url:
+                raw: "{{baseUrl}}/api/funnels"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - funnels
+            response: []
+          - name: Get Funnel Stage
+            request:
+              method: GET
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/funnels/{{funnelId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - funnels
+                  - '{{funnelId}}'
+            response: []
+          - name: Update Funnel Stage
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "comment": "Updated funnel notes",
+                    "order": 3
+                  }
+              url:
+                raw: "{{baseUrl}}/api/funnels/{{funnelId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - funnels
+                  - '{{funnelId}}'
+            response: []
+          - name: Delete Funnel Stage
+            request:
+              method: DELETE
+              auth:
+                type: bearer
+                bearer:
+                  - key: token
+                    value: '{{adminToken}}'
+                    type: string
+              url:
+                raw: "{{baseUrl}}/api/funnels/{{funnelId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - funnels
+                  - '{{funnelId}}'
+            response: []
+  - name: Catalog & Orders
+    item:
+      - name: Top Categories
+        item:
+          - name: List Top Categories
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/top-categories?page=1&limit=10"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - top-categories
+                query:
+                  - key: page
+                    value: '1'
+                  - key: limit
+                    value: '10'
+            response: []
+          - name: Create Top Category
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "name": "Equipment",
+                    "image": "/uploads/topcat.png"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/top-categories"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - top-categories
+            response: []
+          - name: Get Top Category
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/top-categories/{{topCategoryId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - top-categories
+                  - '{{topCategoryId}}'
+            response: []
+          - name: Update Top Category
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "name": "Equipment Updated"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/top-categories/{{topCategoryId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - top-categories
+                  - '{{topCategoryId}}'
+            response: []
+          - name: Delete Top Category
+            request:
+              method: DELETE
+              url:
+                raw: "{{baseUrl}}/api/top-categories/{{topCategoryId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - top-categories
+                  - '{{topCategoryId}}'
+            response: []
+      - name: Categories
+        item:
+          - name: List Categories
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/categories?page=1&limit=10"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - categories
+                query:
+                  - key: page
+                    value: '1'
+                  - key: limit
+                    value: '10'
+            response: []
+          - name: Create Category
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "name": "Scanners",
+                    "image": "/uploads/scanners.png",
+                    "top_category_id": "{{topCategoryId}}"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/categories"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - categories
+            response: []
+          - name: Get Category
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/categories/{{categoryId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - categories
+                  - '{{categoryId}}'
+            response: []
+          - name: Update Category
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "name": "Scanners Updated"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/categories/{{categoryId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - categories
+                  - '{{categoryId}}'
+            response: []
+          - name: Delete Category
+            request:
+              method: DELETE
+              url:
+                raw: "{{baseUrl}}/api/categories/{{categoryId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - categories
+                  - '{{categoryId}}'
+            response: []
+      - name: Products
+        item:
+          - name: List Products
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/products?page=1&limit=10"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - products
+                query:
+                  - key: page
+                    value: '1'
+                  - key: limit
+                    value: '10'
+            response: []
+          - name: Create Product
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "name": "Barcode Scanner X1",
+                    "ads_title": "High-speed scanner",
+                    "images": ["/uploads/x1.png"],
+                    "description": "Industrial-grade barcode scanner.",
+                    "guarantee": "24 months",
+                    "serial_number": "SCN-X1-001",
+                    "shtrix_number": "1234567890123",
+                    "price": 1499000,
+                    "discount": 100000,
+                    "category_id": "{{categoryId}}",
+                    "top_category_id": "{{topCategoryId}}",
+                    "count": 100,
+                    "NDC": 200000,
+                    "tax": 150000
+                  }
+              url:
+                raw: "{{baseUrl}}/api/products"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - products
+            response: []
+          - name: Get Product
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/products/{{productId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - products
+                  - '{{productId}}'
+            response: []
+          - name: Update Product
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "discount": 150000,
+                    "count": 120
+                  }
+              url:
+                raw: "{{baseUrl}}/api/products/{{productId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - products
+                  - '{{productId}}'
+            response: []
+          - name: Delete Product
+            request:
+              method: DELETE
+              url:
+                raw: "{{baseUrl}}/api/products/{{productId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - products
+                  - '{{productId}}'
+            response: []
+          - name: Products By Top Category
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/products/by-top-category/{{topCategoryId}}?page=1&limit=10"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - products
+                  - by-top-category
+                  - '{{topCategoryId}}'
+                query:
+                  - key: page
+                    value: '1'
+                  - key: limit
+                    value: '10'
+            response: []
+          - name: Discounted Products
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/products/discounted?page=1&limit=10"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - products
+                  - discounted
+                query:
+                  - key: page
+                    value: '1'
+                  - key: limit
+                    value: '10'
+            response: []
+      - name: Orders
+        item:
+          - name: List Orders
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/orders?page=1&limit=10"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - orders
+                query:
+                  - key: page
+                    value: '1'
+                  - key: limit
+                    value: '10'
+            response: []
+          - name: Create Order
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "phone": "+998901112233",
+                    "pay_type": "card",
+                    "products": [
+                      {
+                        "product_id": "{{productId}}",
+                        "count": 2
+                      }
+                    ],
+                    "client_id": "{{clientId}}"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/orders"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - orders
+            response: []
+          - name: Get Order
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/orders/{{orderId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - orders
+                  - '{{orderId}}'
+            response: []
+          - name: Update Order
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "status": "confirmed"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/orders/{{orderId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - orders
+                  - '{{orderId}}'
+            response: []
+          - name: Delete Order
+            request:
+              method: DELETE
+              url:
+                raw: "{{baseUrl}}/api/orders/{{orderId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - orders
+                  - '{{orderId}}'
+            response: []
+  - name: Content & Media
+    description: Remaining content-driven models using shared CRUD semantics.
+    item:
+      - name: About
+        item:
+          - name: Get About
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/about"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - about
+            response: []
+          - name: Create About
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "creation": "2015",
+                    "clients": "250+",
+                    "partners": "50",
+                    "technologies": "POS, ERP",
+                    "scaners": "15 models",
+                    "scales": "10 models",
+                    "printers": "8 models",
+                    "cashiers": "5 models"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/about"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - about
+            response: []
+          - name: Update About
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "clients": "300+"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/about"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - about
+            response: []
+          - name: Delete About
+            request:
+              method: DELETE
+              url:
+                raw: "{{baseUrl}}/api/about"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - about
+            response: []
+      - name: Links
+        item:
+          - name: Get Links
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/links"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - links
+            response: []
+          - name: Upsert Links
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "facebook": "https://facebook.com/bct",
+                    "instagram": "https://instagram.com/bct",
+                    "linkedin": "https://linkedin.com/company/bct",
+                    "youtube": "https://youtube.com/@bct"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/links"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - links
+            response: []
+          - name: Update Links
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "instagram": "https://instagram.com/bct_updated"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/links"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - links
+            response: []
+          - name: Delete Links
+            request:
+              method: DELETE
+              url:
+                raw: "{{baseUrl}}/api/links"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - links
+            response: []
+      - name: Discount
+        item:
+          - name: Get Discount
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/discount"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - discount
+            response: []
+          - name: Set Discount
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "title": "Seasonal Offer",
+                    "product_id": "{{productId}}"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/discount"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - discount
+            response: []
+          - name: Update Discount
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "title": "New Seasonal Offer"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/discount"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - discount
+            response: []
+          - name: Delete Discount
+            request:
+              method: DELETE
+              url:
+                raw: "{{baseUrl}}/api/discount"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - discount
+            response: []
+      - name: Official Partner
+        item:
+          - name: Get Official Partner
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/official-partner"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - official-partner
+            response: []
+          - name: Create Official Partner
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "name": "Official Partner",
+                    "image": "/uploads/partner.png",
+                    "description": "Strategic partner info"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/official-partner"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - official-partner
+            response: []
+          - name: Update Official Partner
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "description": "Updated partner description"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/official-partner"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - official-partner
+            response: []
+          - name: Delete Official Partner
+            request:
+              method: DELETE
+              url:
+                raw: "{{baseUrl}}/api/official-partner"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - official-partner
+            response: []
+      - name: Generic Collections
+        description: Template requests for CRUD resources backed by the shared generic handlers (vendors, projects, vendors-about, experiments, company-stats, reviews, sertificates, licenses, news, partners, admins, currency, banners, select-reviews, backgrounds, contacts, banner-sorts, top-category-sorts, category-sorts).
+        item:
+          - name: List Records
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/{{collectionName}}?page=1&limit=10"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - '{{collectionName}}'
+                query:
+                  - key: page
+                    value: '1'
+                  - key: limit
+                    value: '10'
+            response: []
+          - name: Create Record
+            request:
+              method: POST
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "name": "Sample Record",
+                    "image": "/uploads/sample.png",
+                    "description": "Adjust payload to match the selected collection."
+                  }
+              url:
+                raw: "{{baseUrl}}/api/{{collectionName}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - '{{collectionName}}'
+            response: []
+          - name: Get Record
+            request:
+              method: GET
+              url:
+                raw: "{{baseUrl}}/api/{{collectionName}}/{{recordId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - '{{collectionName}}'
+                  - '{{recordId}}'
+            response: []
+          - name: Update Record
+            request:
+              method: PUT
+              header:
+                - key: Content-Type
+                  value: application/json
+              body:
+                mode: raw
+                raw: |-
+                  {
+                    "name": "Updated Record"
+                  }
+              url:
+                raw: "{{baseUrl}}/api/{{collectionName}}/{{recordId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - '{{collectionName}}'
+                  - '{{recordId}}'
+            response: []
+          - name: Delete Record
+            request:
+              method: DELETE
+              url:
+                raw: "{{baseUrl}}/api/{{collectionName}}/{{recordId}}"
+                host:
+                  - '{{baseUrl}}'
+                path:
+                  - api
+                  - '{{collectionName}}'
+                  - '{{recordId}}'
+            response: []

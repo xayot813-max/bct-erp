@@ -1,0 +1,1334 @@
+{
+  "header": {
+    "dashboard": {
+      "title": "RU home page",
+      "li1": "Главная страница",
+      "li2": "Клиенты",
+      "liGroup": "Контрагенты",
+      "li3": "Товары",
+      "li4": "Склад",
+      "li5": "Сделки",
+      "li6": "Компании",
+      "li7": "Контрагенты",
+      "li8": "Финансы",
+      "settings": "Настройки",
+      "add-deal": "Создать сделку",
+      "logout": "Выйти"
+    },
+    "menuDialog": {
+      "setting": "Настройки",
+      "settingP": "Настройки профиля",
+      "logout": "Выйти",
+      "notif": "Уведомление",
+      "newOrder": "Новый заказ!",
+      "newOrderSite": "Новый заказ с сайта!",
+      "youSure": "Вы уверены?",
+      "youSureDesc": "Это действие нельзя отменить. Вы будете выведены из системы."
+    }
+  },
+  "dealProduct": {
+    "fields": {
+      "product": "Товар*",
+      "serialNumber": "Серийный номер*",
+      "guarantee": "Гарантия*",
+      "comment": "Комментарии",
+      "quantity": "Количество*"
+    },
+    "placeholders": {
+      "serialNumber": "Введите серийный номер",
+      "guarantee": "Укажите условия гарантии",
+      "comment": "Комментарии"
+    },
+    "actions": {
+      "add": "Добавить",
+      "cancel": "Отменить",
+      "reset": "Сбросить",
+      "scan": "Сканировать"
+    },
+    "messages": {
+      "unavailableTitle": "Не удалось добавить товар",
+      "unavailableDescription": "Товар не удалось определить. Попробуйте ещё раз.",
+      "addedTitle": "Товар добавлен в сделку"
+    },
+    "inStock": "{{count}} шт. на складе",
+    "stockCount": "На складе: {{count}} шт.",
+    "stockUnknown": "Доступность уточняйте у менеджера",
+    "noImage": "Без изображения",
+    "scanHint": "Сканировать штрихкод"
+  },
+  "login": {
+    "title": "Войти",
+    "form": {
+      "label": {
+        "name": "Логин",
+        "phone": "Логин",
+        "password": "Пароль"
+      },
+      "placeholder": {
+        "name": "",
+        "phone": ""
+      },
+      "fogotPassword": {
+        "title": "Забыли пароль?",
+        "submit": "Восстановить"
+      }
+    },
+    "error": {
+      "name": "Введите логин/телефон",
+      "phone": "Введите логин/телефон",
+      "password": "Минимум 6 символов"
+    },
+    "submit": "Войти",
+    "register": "Регистрация",
+    "haveAcc": "Нет аккаунта? ",
+    "loadingTitle": "Вход...",
+    "loadingDescription": "Проверяем учетные данные",
+    "successTitle": "Добро пожаловать!",
+    "successDescription": "Вы успешно вошли в систему.",
+    "errorTitle": "Не удалось войти",
+    "errorDescription": "Проверьте логин и пароль."
+  },
+  "resetPassword": {
+    "title": "Сброс пароля",
+    "phoneStepTitle": "Введите номер телефона",
+    "otpStepTitle": "Введите код подтверждения",
+    "newPassStepTitle": "Введите новый пароль",
+    "form": {
+      "label": {
+        "phone": "Телефон",
+        "otp": "Код подтверждения",
+        "newPassword": "Новый пароль",
+        "confirmPassword": "Подтвердите пароль"
+      },
+      "errors": {
+        "phoneRequired": "Введите номер телефона",
+        "otpRequired": "Введите 6-значный код",
+        "passwordMin": "Минимум 6 символов",
+        "passwordMatch": "Пароли должны совпадать",
+        "server": "Ошибка сервера"
+      },
+      "buttons": {
+        "sendCode": "Отправить код",
+        "verifyCode": "Подтвердить",
+        "resetPassword": "Сбросить пароль",
+        "resendCode": "Отправить код снова",
+        "resendIn": "Отправить снова через"
+      }
+    },
+    "messages": {
+      "codeSentTo": "Код отправлен на",
+      "invalidOtp": "Неверный код подтверждения",
+      "success": "Пароль успешно изменён"
+    }
+  },
+  "adminProfile": {
+    "title": "Профиль администратора",
+    "loginRequiredTitle": "Требуется авторизация",
+    "loginRequiredDescription": "Пожалуйста, авторизуйтесь через окно входа, чтобы управлять данными администратора.",
+    "updatingTitle": "Сохраняем изменения...",
+    "updatingDescription": "Обновляем учетные данные администратора.",
+    "successTitle": "Данные обновлены",
+    "successDescription": "Логин и пароль администратора успешно изменены.",
+    "errorTitle": "Не удалось обновить данные",
+    "errorDescription": "Попробуйте снова или обратитесь к разработчику.",
+    "loadErrorTitle": "Не удалось загрузить профиль",
+    "loadErrorDescription": "Попробуйте обновить страницу.",
+    "authRequiredTitle": "Авторизуйтесь",
+    "authRequiredDescription": "Для изменения данных администратора необходимо войти.",
+    "fields": {
+      "login": "Логин",
+      "password": "Новый пароль",
+      "confirmPassword": "Подтвердите пароль"
+    },
+    "placeholders": {
+      "login": "admin",
+      "password": "Введите новый пароль",
+      "confirmPassword": "Повторите пароль",
+      "passwordOptional": "Оставьте пустым, если пароль менять не нужно",
+      "confirmPasswordOptional": "Повторите новый пароль"
+    },
+    "errors": {
+      "name": "Укажите логин не короче 3 символов",
+      "password": "Пароль должен содержать минимум 6 символов",
+      "passwordMatch": "Пароли должны совпадать"
+    },
+    "actions": {
+      "save": "Сохранить изменения",
+      "reset": "Сбросить"
+    },
+    "currentAdmin": "Текущий администратор: {{name}}"
+  },
+  "homePage": {
+    "page": {
+      "homeTitle": "Главная страница"
+    },
+    "menu": {
+      "newOrder": {
+        "title": "Новый заказ",
+        "desc": "Создать заказ"
+      },
+      "deal": {
+        "title": "Сделки",
+        "desc": "Просмотр, добавление и изменение сделок"
+      },
+      "clients": {
+        "title": "Клиенты",
+        "desc": "База клиентов"
+      },
+      "products": {
+        "title": "Товары",
+        "desc": "Просмотр, добавление и изменение товаров"
+      },
+      "warehouse": {
+        "title": "Склад",
+        "desc": "Остатки, приход и списание"
+      }
+    }
+  },
+  "dealCategories": {
+    "title": "Выберите категорию",
+    "subtitle": "Сначала выберите категорию, чтобы увидеть товары для сделки.",
+    "empty": "Категории не найдены. Добавьте категории в разделе «Товары».",
+    "select": "Выбрать",
+    "noImage": "Без изображения",
+    "fallbackName": "Категория {{index}}"
+  },
+  "dealProducts": {
+    "subtitle": "Выберите товар для добавления в сделку.",
+    "back": "Назад к категориям",
+    "empty": "Товары в этой категории не найдены.",
+    "noImage": "Без изображения",
+    "noDescription": "Описание не указано",
+    "inStock": "На складе: {{count}} шт.",
+    "stockUnknown": "Наличие уточняйте",
+    "searchPlaceholder": "Поиск товаров",
+    "fallbackName": "Товар {{index}}",
+    "fallbackCategory": "Категория"
+  },
+  "deal": {
+    "table": {
+      "barcode": "Штрих-код",
+      "name": "Название",
+      "quantity": "Количество",
+      "accepted": "Принято",
+      "available": "Доступно",
+      "amountWithoutVat": "Сумма без НДС",
+      "amountWithVat": "Сумма с НДС",
+      "discount": "Скидка",
+      "amount": "Сумма",
+      "empty": "Добавьте товар вручную или по штрих-коду",
+      "productsInContract": "Товары в договоре",
+      "quantitySuffix": "шт."
+    }
+  },
+  "dealForm": {
+    "title": "Детали сделки",
+    "fields": {
+      "client": {
+        "label": "Клиент",
+        "placeholder": "Выберите клиента"
+      },
+      "counterparty": {
+        "label": "Контрагент",
+        "placeholder": "Выберите контрагента"
+      },
+      "company": {
+        "label": "Компания",
+        "placeholder": "Выберите компанию"
+      },
+      "contractNumber": {
+        "label": "Номер договора",
+        "placeholder": "№3251"
+      },
+      "plannedShipmentDate": {
+        "label": "Планируемая дата отгрузки"
+      },
+      "dealAmount": {
+        "label": "Сумма сделки",
+        "placeholder": "0.00"
+      },
+      "funnel": {
+        "label": "Колонка воронки",
+        "placeholder": "Выберите колонку"
+      },
+      "currency": {
+        "label": "Валюта",
+        "placeholder": "Выберите валюту"
+      },
+      "payCard": {
+        "label": "Оплата картой",
+        "placeholder": "0.00"
+      },
+      "payCash": {
+        "label": "Оплата наличными",
+        "placeholder": "0.00"
+      },
+      "comments": {
+        "label": "Комментарий",
+        "placeholder": "Введите комментарии..."
+      },
+      "guarantee": {
+        "label": "Гарантия",
+        "placeholder": "Укажите условия гарантии"
+      }
+    },
+    "buttons": {
+      "saving": "Сохранение...",
+      "submit": "Сохранить",
+      "cancel": "Отмена"
+    },
+    "multiPayment": {
+      "title": "Мульти-оплата",
+      "help": "Можно разделить оплату: часть переводом, часть наличными."
+    }
+  },
+  "dealTable": {
+    "headers": {
+      "serial": "Серийный №",
+      "name": "Название",
+      "quantity": "Количество",
+      "price": "Цена",
+      "vat": "НДС",
+      "discount": "Скидка",
+      "total": "Итого"
+    },
+    "empty": "Добавьте товары в сделку с помощью кнопок ниже.",
+    "values": {
+      "percent": "{{value}}%"
+    },
+    "summary": {
+      "items": "Позиций: {{count}}",
+      "subtotal": "Сумма: {{amount}}",
+      "vat": "НДС: {{amount}}",
+      "discount": "Скидка: {{amount}}"
+    }
+  },
+  "dealAdd": {
+    "errors": {
+      "notFound": "Сделка не найдена.",
+      "load": {
+        "title": "Ошибка загрузки сделки",
+        "description": "Не удалось получить данные сделки."
+      }
+    },
+    "title": {
+      "create": "Новая сделка",
+      "edit": "Редактирование сделки"
+    },
+    "description": {
+      "create": "Заполните информацию о сделке и добавьте товары.",
+      "edit": "Измените параметры сделки и сохраните обновления."
+    },
+    "defaults": {
+      "draft": "Черновик"
+    },
+    "status": {
+      "label": "Статус",
+      "inProgress": "В работе",
+      "draft": "Черновик",
+      "creating": "Создается"
+    },
+    "payment": {
+      "label": "Оплата",
+      "partial": "Оплачено частично",
+      "paid": "Оплачено",
+      "unpaid": "Не оплачено"
+    },
+    "buttons": {
+      "create": "Создать",
+      "save": "Сохранить",
+      "saving": "Сохранение...",
+      "cancel": "Отменить",
+      "reset": "Сбросить",
+      "deleting": "Удаление...",
+      "deleteDeal": "Удалить сделку"
+    },
+    "toasts": {
+      "required": {
+        "title": "Заполните обязательные поля",
+        "description": "Выберите клиента, контрагента и компанию."
+      },
+      "noProducts": {
+        "title": "Добавьте товары",
+        "description": "Чтобы сохранить сделку, добавьте хотя бы один товар."
+      },
+      "updateSuccess": {
+        "title": "Сделка обновлена",
+        "description": "Договор {{number}} успешно обновлён."
+      },
+      "createSuccess": {
+        "title": "Сделка создана",
+        "description": "Договор {{number}} успешно создан."
+      },
+      "saveError": {
+        "title": "Не удалось сохранить",
+        "description": "Попробуйте ещё раз или обратитесь к администратору."
+      },
+      "deleteSuccess": {
+        "title": "Сделка удалена"
+      },
+      "deleteError": {
+        "title": "Не удалось удалить",
+        "description": "Попробуйте ещё раз позже."
+      },
+      "reset": {
+        "title": "Форма очищена",
+        "description": "Черновик сделки сброшен."
+      }
+    },
+    "actions": {
+      "printSoon": {
+        "title": "Печать открыта",
+        "description": "Проверьте данные договора перед отправкой на печать."
+      },
+      "documents": {
+        "title": "Документы",
+        "description": "Загрузите документы сделки.",
+        "uploading": "Загрузка документов...",
+        "uploadedTitle": "Документы загружены",
+        "uploadedDescription": "Загружено файлов: {{count}}",
+        "attachedCount": "Прикреплено документов: {{count}}",
+        "errorTitle": "Не удалось загрузить документы"
+      },
+      "tax": {
+        "title": "Налоги учтены",
+        "description": "НДС и сборы рассчитываются по товарам сделки."
+      }
+    },
+    "products": {
+      "heading": "Товары сделки",
+      "add": "Добавить товар",
+      "scan": "Сканировать штрих-код"
+    },
+    "dialog": {
+      "delete": {
+        "title": "Удалить сделку?",
+        "description": "Это действие необратимо."
+      },
+      "cancel": "Отмена",
+      "confirm": "Удалить"
+    }
+  },
+  "funnelPage": {
+    "fallbackName": "Колонка {{index}}",
+    "title": "Воронка продаж",
+    "addButton": "Добавить колонку",
+    "emptyState": "Колонки воронки отсутствуют. Добавьте первую, чтобы организовать сделки.",
+    "tableHeaders": {
+      "order": "Порядок",
+      "name": "Название",
+      "color": "Цвет",
+      "comment": "Комментарий",
+      "number": "№",
+      "actions": "Действия"
+    },
+    "colorPreview": "Цвет колонки",
+    "actions": {
+      "save": "Сохранить",
+      "cancel": "Отменить",
+      "edit": "Редактировать",
+      "delete": "Удалить"
+    },
+    "savingOrder": "Сохраняем новый порядок колонок...",
+    "noComment": "Комментарий отсутствует",
+    "toasts": {
+      "orderError": {
+        "title": "Не удалось сохранить порядок",
+        "description": "Попробуйте перезагрузить страницу и повторить попытку."
+      },
+      "invalidOrder": {
+        "title": "Некорректный номер",
+        "description": "Введите числовое значение больше нуля."
+      },
+      "nameRequired": {
+        "title": "Введите название",
+        "description": "Название колонки не может быть пустым."
+      },
+      "updateSuccess": {
+        "title": "Колонка обновлена"
+      },
+      "updateError": {
+        "title": "Не удалось обновить колонку",
+        "description": "Попробуйте ещё раз позже."
+      },
+      "deleteBlocked": {
+        "title": "Удаление невозможно",
+        "description": "В колонке есть сделки. Перенесите их перед удалением."
+      },
+      "deleteSuccess": {
+        "title": "Колонка удалена"
+      },
+      "deleteError": {
+        "title": "Не удалось удалить колонку",
+        "description": "Попробуйте ещё раз позже."
+      }
+    }
+  },
+  "funnelAdd": {
+    "validation": {
+      "name": "Введите название (минимум 2 символа).",
+      "color": "Введите цвет в формате HEX.",
+      "order": "Укажите порядок.",
+      "orderMin": "Минимальное значение — 0."
+    },
+    "toasts": {
+      "success": "Колонка создана",
+      "error": {
+        "title": "Не удалось создать колонку",
+        "description": "Попробуйте ещё раз позже."
+      }
+    },
+    "buttons": {
+      "back": "Назад",
+      "saving": "Сохранение...",
+      "submit": "Создать колонку",
+      "cancel": "Отмена"
+    },
+    "title": "Новая колонка воронки",
+    "sectionTitle": "Параметры колонки",
+    "fields": {
+      "name": "Название",
+      "color": "Цвет",
+      "order": "Порядок",
+      "comment": "Комментарий"
+    },
+    "placeholders": {
+      "name": "Например, Новая заявка",
+      "color": "#5B6FDD",
+      "order": "0",
+      "comment": "Опишите, для чего эта колонка используется"
+    },
+    "colorPicker": "Выбрать цвет"
+  },
+  "dealPage": {
+    "title": "Сделки",
+    "loadErrorTitle": "Не удалось загрузить сделки",
+    "searchPlaceholder": "Поиск",
+    "openSettings": "Настройка воронки",
+    "newDeal": "Новая сделка",
+    "addDealButton": "Добавить сделку",
+    "emptyColumnHint": "Перетащите сделки в эту колонку",
+    "updating": "Обновление...",
+    "unassignedFooter": "Без стадии · перетащите сделки сюда, чтобы убрать их из воронки",
+    "noFunnelsHint": "Воронки не найдены. Добавьте первую через кнопку настройки.",
+    "unassignedColumn": "Без стадии",
+    "columnSummary": "{{dealCount}} · {{total}}$",
+    "dealCount_one": "{{count}} сделка",
+    "dealCount_few": "{{count}} сделки",
+    "dealCount_many": "{{count}} сделок",
+    "dealCount_other": "{{count}} сделок",
+    "dealCount": "{{count}} сделок",
+    "defaultDealName": "Сделка",
+    "defaultDealLabel": "Сделка #{{number}}",
+    "moveLabel": "Переместить",
+    "deleteSuccessTitle": "Сделка удалена",
+    "deleteErrorTitle": "Не удалось удалить сделку",
+    "fallbackEmptyHint": "Добавьте первую сделку или настройте этапы",
+    "fallbackLeadFooter": "Добавьте сделку в первый этап или откройте настройку воронки",
+    "unassignedEmptyHint": "Без стадии · перетащите сделки сюда, чтобы убрать их из воронки",
+    "noTasks": "Нет задач",
+    "funnels": {
+      "newLead": "Новый лид",
+      "meeting": "Встреча / презентация",
+      "offer": "КП и защита",
+      "decision": "Принимает решения",
+      "shipping": "Отгрузка"
+    },
+    "deleteDialog": {
+      "title": "Удалить сделку?",
+      "description": "Это действие нельзя отменить.",
+      "confirm": "Удалить"
+    },
+    "generatedFunnelName": "Воронка {{number}}"
+  },
+  "clients": {
+    "columns": {
+      "id": "#",
+      "name": "Имя Фамилия",
+      "orders": "Заказы",
+      "totalAmount": "Общая сумма покупок",
+      "phone": "Телефон",
+      "email": "Email",
+      "actions": "Действия",
+      "ordersCount_one": "{{count}} заказ",
+      "ordersCount_few": "{{count}} заказа",
+      "ordersCount_many": "{{count}} заказов",
+      "ordersCount_other": "{{count}} заказов"
+    },
+    "dialog": {
+      "deleteTitle": "Удалить клиента?",
+      "deleteDesc": "Это действие необратимо.",
+      "cancel": "Отмена",
+      "confirm": "Да, удалить"
+    }
+  },
+  "serial": {
+    "columns": {
+      "id": "#",
+      "name": "Название",
+      "serial_number": "Серийный номер",
+      "date_create": "Дата покупки",
+      "date_warranty": "Гарантия истекает",
+      "price": "Сумма"
+    }
+  },
+  "products": {
+    "currency": "сум",
+    "columns": {
+      "id": "#",
+      "image": "Изображение",
+      "name": "Название",
+      "category": "Категория",
+      "type": "Тип товара",
+      "warranty": "Гарантия",
+      "price": "Цена",
+      "createdAt": "Создано",
+      "dateAdded": "Дата добавления",
+      "actions": "Действия"
+    },
+    "dialog": {
+      "deleteTitle": "Удалить товар?",
+      "deleteDesc": "Это действие необратимо.",
+      "cancel": "Отмена",
+      "confirm": "Да, удалить"
+    }
+  },
+  "companies": {
+    "columns": {
+      "name": "Название",
+      "orders": "Заказы",
+      "totalAmount": "Общая сумма покупок",
+      "phone": "Телефон",
+      "email": "Электронная почта",
+      "actions": "Действия",
+      "ordersCount_other": "{{count}} заказов"
+    },
+    "dialog": {
+      "deleteTitle": "Удалить компанию?",
+      "deleteDesc": "Это действие необратимо.",
+      "cancel": "Отмена",
+      "confirm": "Да, удалить"
+    }
+  },
+  "categories": {
+    "columns": {
+      "name": "Название",
+      "description": "Описание",
+      "actions": "Действия"
+    },
+    "dialog": {
+      "deleteTitle": "Удалить категорию?",
+      "deleteDesc": "Это действие необратимо.",
+      "cancel": "Отмена",
+      "confirm": "Да, удалить"
+    }
+  },
+  "table": {
+    "searchPlaceholder": "Поиск...",
+    "selectColumns": "Выбрать столбцы",
+    "pageLabel": "Страница",
+    "showingRange": "Показано {{start}}-{{end}} из {{total}}",
+    "filteredFrom": "отфильтровано из {{total}}",
+    "noData": "Нет данных",
+    "noDataFound": "Данные не найдены",
+    "nothingFound": "Ничего не найдено",
+    "showLabel": "Показать:",
+    "previousPage": "Предыдущая страница",
+    "nextPage": "Следующая страница",
+    "all": "Все"
+  },
+  "productsPage": {
+    "title": "Товары",
+    "searchPlaceholder": "Поиск...",
+    "allCategories": "Все категории",
+    "addButton": "Добавить товар",
+    "loadErrorTitle": "Не удалось загрузить товары",
+    "categoryFallback": "Категория {{index}}"
+  },
+  "counterparties": {
+    "columns": {
+      "name": "Контрагент",
+      "company": "Компания",
+      "phone": "Телефон",
+      "email": "Email",
+      "actions": "Действия"
+    }
+  },
+  "counterpartiesPage": {
+    "title": "Контрагенты",
+    "addButton": "Добавить контрагента",
+    "loadErrorTitle": "Не удалось загрузить контрагентов",
+    "menu": {
+      "clients": {
+        "title": "Клиенты",
+        "desc": "Список клиентов компании"
+      },
+      "companies": {
+        "title": "Компании",
+        "desc": "Все корпоративные клиенты"
+      },
+      "counterparties": {
+        "title": "Контрагенты",
+        "desc": "Партнёры и поставщики"
+      }
+    }
+  },
+  "clientDetail": {
+    "loadError": "Не удалось загрузить клиента",
+    "notFoundTitle": "Клиент не найден",
+    "notFoundDescription": "Клиент с ID {{id}} не найден или был удалён."
+  },
+  "companyDetail": {
+    "loadError": "Не удалось загрузить компанию",
+    "notFoundTitle": "Компания не найдена",
+    "notFoundDescription": "Компания с ID {{id}} не найдена или была удалена."
+  },
+  "counterpartyDetail": {
+    "loadError": "Не удалось загрузить контрагента",
+    "notFoundTitle": "Контрагент не найден",
+    "notFoundDescription": "Контрагент с ID {{id}} не найден или был удалён."
+  },
+  "productDetail": {
+    "loadError": "Не удалось загрузить товар",
+    "notFoundTitle": "Товар не найден",
+    "notFoundDescription": "Товар с ID {{id}} не найден в базе данных.",
+    "backToList": "Вернуться к списку товаров"
+  },
+  "categoryDetail": {
+    "loadError": "Не удалось загрузить категорию",
+    "notFoundTitle": "Категория не найдена",
+    "notFoundDescription": "Категория с ID {{id}} не найдена в базе данных."
+  },
+  "clientsPage": {
+    "title": "Клиенты",
+    "addButton": "Добавить клиента",
+    "loadErrorTitle": "Не удалось загрузить клиентов",
+    "tabs": {
+      "clients": "Клиенты",
+      "companies": "Компании"
+    }
+  },
+  "companiesPage": {
+    "title": "Компании",
+    "addButton": "Добавить компанию",
+    "loadErrorTitle": "Не удалось загрузить компании",
+    "tabs": {
+      "clients": "Клиенты",
+      "companies": "Компании"
+    }
+  },
+  "formLanguage": {
+    "title": "Язык формы",
+    "currentEditing": "Сейчас редактируется:"
+  },
+  "clientForm": {
+    "titles": {
+      "add": "Новый клиент",
+      "edit": "Редактирование клиента",
+      "show": "Информация о клиенте"
+    },
+    "breadcrumb": "Клиенты / Новый клиент",
+    "actions": {
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "cancel": "Отмена",
+      "create": "Создать",
+      "save": "Сохранить"
+    },
+    "dialog": {
+      "deleteTitle": "Удалить клиента?",
+      "deleteDesc": "Это действие нельзя отменить. Клиент будет удалён вместе с историей."
+    },
+    "messages": {
+      "created": "Клиент создан",
+      "updated": "Клиент обновлён",
+      "deleted": "Клиент удалён",
+      "saveError": "Не удалось сохранить клиента",
+      "deleteError": "Не удалось удалить клиента"
+    },
+    "fields": {
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "source": "Откуда пришли",
+      "company": "Компания",
+      "phonePersonal": "Номер телефона (личный)",
+      "phoneCompany": "Номер телефона (номер компании)",
+      "email": "Электронная почта",
+      "comment": "Комментарий",
+      "invalid": "Некорректное значение",
+      "emailInvalid": "Введите корректную почту",
+      "phoneInvalid": "Введите корректный номер телефона",
+      "required": "*"
+    },
+    "placeholders": {
+      "firstName": "Азиз",
+      "company": "Possible Group",
+      "phone": "+998 99 999-99-99",
+      "email": "example@site.com",
+      "lastName": "Введите фамилию",
+      "source": "Как клиент нашёл нас",
+      "comment": "Дополнительная информация"
+    },
+    "history": {
+      "title": "История покупок",
+      "empty": "Покупок пока нет. История появится после создания сделки.",
+      "headers": {
+        "index": "#",
+        "name": "Название",
+        "serial": "Серийный номер",
+        "purchaseDate": "Дата покупки",
+        "warrantyEnds": "Гарантия истекает",
+        "amount": "Сумма"
+      }
+    }
+  },
+  "companyForm": {
+    "titles": {
+      "add": "Новая компания",
+      "edit": "Редактирование компании",
+      "show": "Информация о компании"
+    },
+    "breadcrumb": "Компании / Новая компания",
+    "actions": {
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "cancel": "Отмена",
+      "create": "Создать"
+    },
+    "dialog": {
+      "deleteTitle": "Удалить компанию?",
+      "deleteDesc": "Это действие нельзя отменить. Компания будет удалена безвозвратно."
+    },
+    "messages": {
+      "created": "Компания создана",
+      "updated": "Компания обновлена",
+      "deleted": "Компания удалена",
+      "saveError": "Не удалось сохранить компанию",
+      "deleteError": "Не удалось удалить компанию"
+    },
+    "fields": {
+      "name": "Название",
+      "email": "Электронная почта",
+      "inn": "СТИР",
+      "phone": "Номер телефона",
+      "address": "Юр. адрес",
+      "comment": "Комментарии"
+    },
+    "placeholders": {
+      "name": "ООО Possible Group",
+      "email": "example@site.com",
+      "inn": "515 765 234",
+      "phone": "+998 99 999-99-99",
+      "address": "Яшнабадский район, улица Боткина 5а",
+      "comment": "Не обязательно"
+    },
+    "meta": {
+      "orders": "Заказов:",
+      "totalAmount": "Общая сумма:",
+      "createdAt": "Создано:",
+      "updatedAt": "Обновлено:"
+    }
+  },
+  "counterpartyForm": {
+    "titles": {
+      "add": "Новый контрагент",
+      "edit": "Редактирование контрагента",
+      "show": "Информация о контрагенте"
+    },
+    "idLabel": "ID контрагента:",
+    "actions": {
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "create": "Добавить"
+    },
+    "dialog": {
+      "deleteTitle": "Удалить контрагента?",
+      "deleteDesc": "Это действие нельзя отменить. Контрагент будет удалён безвозвратно."
+    },
+    "messages": {
+      "created": "Контрагент создан",
+      "updated": "Контрагент обновлён",
+      "deleted": "Контрагент удалён",
+      "saveError": "Не удалось сохранить контрагента",
+      "deleteError": "Не удалось удалить контрагента"
+    },
+    "fields": {
+      "name": "Имя",
+      "position": "Должность",
+      "email": "Электронная почта",
+      "phone": "Номер телефона (личный)",
+      "company": "Компания",
+      "companyPhone": "Телефон компании",
+      "address": "Адрес",
+      "comment": "Комментарии"
+    },
+    "placeholders": {
+      "name": "Азиз",
+      "position": "Агент",
+      "email": "example@site.com",
+      "phone": "+998 99 999-99-99",
+      "company": "Possible Group",
+      "address": "Адрес",
+      "comment": "Добавить комментарии"
+    }
+  },
+  "categoryForm": {
+    "titles": {
+      "add": "Новая категория",
+      "edit": "Редактировать категорию",
+      "show": "Информация о категории"
+    },
+    "breadcrumb": "Товары / Новая категория",
+    "mainInfo": "Основная информация",
+    "fields": {
+      "title": "Название",
+      "description": "Описание"
+    },
+    "placeholders": {
+      "title": "Введите название категории",
+      "description": "Краткое описание категории"
+    },
+    "images": {
+      "title": "Изображение категории",
+      "info": "Можно загрузить только одно изображение категории."
+    },
+    "meta": {
+      "title": "Метаданные",
+      "createdAt": "Создано:",
+      "updatedAt": "Обновлено:"
+    },
+    "actions": {
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "cancel": "Отмена",
+      "create": "Создать",
+      "deleteCategory": "Удалить категорию"
+    },
+    "dialog": {
+      "deleteTitle": "Удалить категорию?",
+      "deleteDesc": "Это действие нельзя отменить. Категория будет удалена безвозвратно."
+    },
+    "messages": {
+      "imageRequired": "Добавьте изображение категории перед сохранением.",
+      "created": "Категория успешно создана!",
+      "updated": "Категория успешно обновлена!",
+      "deleted": "Категория удалена",
+      "saveError": "Не удалось сохранить категорию",
+      "deleteError": "Не удалось удалить категорию",
+      "titleRequired": "Введите название",
+      "descriptionTooLong": "Описание слишком длинное"
+    }
+  },
+  "productForm": {
+    "titles": {
+      "add": "Новый товар",
+      "edit": "Редактировать товар",
+      "show": "Информация о товаре"
+    },
+    "breadcrumb": "Товары / Новый товар",
+    "mainInfo": "Основная информация",
+    "actions": {
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "cancel": "Отмена"
+    },
+    "dialog": {
+      "deleteTitle": "Вы уверены?",
+      "deleteDesc": "Это действие нельзя отменить. Товар будет удален безвозвратно."
+    },
+    "messages": {
+      "loadCategoriesError": "Не удалось загрузить категории",
+      "imageRequired": "Загрузите хотя бы одно изображение",
+      "created": "Товар успешно добавлен!",
+      "updated": "Товар успешно обновлен!",
+      "deleted": "Товар успешно удален!",
+      "saveError": "Ошибка при сохранении товара",
+      "deleteError": "Ошибка при удалении товара",
+      "imageUploadHint": "Загрузка изображений будет доступна после сохранения."
+    },
+    "fields": {
+      "name": "Название товара",
+      "adsTitle": "Рекламный заголовок",
+      "category": "Категория",
+      "topCategory": "Топ категория",
+      "warranty": "Срок годности",
+      "priceUsd": "Стоимость (USD)",
+      "serialNumber": "Серийный номер",
+      "barcode": "Штрих-код",
+      "discount": "Скидка",
+      "stockCount": "Количество на складе",
+      "vat": "НДС",
+      "tax": "Сборы/налог",
+      "techSpecs": "Технические характеристики",
+      "imagesTitle": "Изображения товара",
+      "noImages": "Нет изображений"
+    },
+    "placeholders": {
+      "name": "Введите название товара",
+      "adsTitle": "Введите рекламный заголовок",
+      "warranty": "Введите срок годности",
+      "selectCategory": "Выберите категорию",
+      "selectTopCategory": "Выберите топ-категорию",
+      "loading": "Загрузка...",
+      "serialNumber": "Введите серийный номер",
+      "barcode": "Введите штрих-код",
+      "techSpecs": "Введите технические характеристики товара...\\nПример:\\n- Процессор: Intel Core i7\\n- Память: 16GB RAM\\n- Диск: 512GB SSD"
+    },
+    "fallbacks": {
+      "category": "Категория {{index}}",
+      "topCategory": "Топ категория {{index}}",
+      "selectedCategory": "Выбранная категория",
+      "selectedTopCategory": "Выбранная топ-категория"
+    }
+  },
+  "warehouse": {
+    "pageTitle": "Склад",
+    "recentProducts": "Недавно добавленные товары",
+    "chooseProduct": "Выберите товар",
+    "writeoffCreateTitle": "Создать списание",
+    "address": "Адрес",
+    "actions": {
+      "create": "СОЗДАТЬ",
+      "createMovement": "Создать перемещение"
+    },
+    "table": {
+      "warehouse": "Склад",
+      "quantity": "Количество",
+      "emptyProducts": "Товары не найдены. Добавьте товар или оформите приход."
+    },
+    "names": {
+      "one": "Склад 1",
+      "two": "Склад 2",
+      "three": "Склад 3",
+      "four": "Склад 4",
+      "five": "Склад 5"
+    },
+    "links": {
+      "stocks": {
+        "title": "Остатки",
+        "subtitle": "Ускоренный редактор товаров"
+      },
+      "receipt": {
+        "title": "Приход",
+        "subtitle": "Создать приход товара"
+      },
+      "writeoff": {
+        "title": "Списание",
+        "subtitle": "Списание товаров"
+      },
+      "list": {
+        "title": "Склады",
+        "subtitle": "Добавить, редактировать склады"
+      },
+      "movement": {
+        "title": "Перемещения",
+        "subtitle": "Перемещение товаров"
+      }
+    },
+    "receipt": {
+      "addPhoto": "ДОБАВИТЬ ФОТОГРАФИЮ",
+      "defaults": {
+        "quantity": "20 шт.",
+        "guarantee": "5 лет"
+      },
+      "fields": {
+        "productName": "Название товара",
+        "serialNumber": "Серийный номер",
+        "serialNumbers": "Серийные номера",
+        "guarantee": "Срок годности",
+        "expirationPeriod": "Срок годности",
+        "expirationUnit": "Единица"
+      },
+      "placeholders": {
+        "serialNumbers": "Введите каждый серийный номер с новой строки"
+      },
+      "serialHint": "Для каждой единицы товара нужен отдельный уникальный серийный номер.",
+      "expirationUnits": {
+        "days": "дней",
+        "months": "месяцев",
+        "years": "лет"
+      },
+      "validationProduct": "Выберите товар для прихода",
+      "validationRequired": "Заполните все обязательные поля",
+      "validationQuantity": "Количество должно быть больше нуля",
+      "validationSerials": "Количество уникальных серийных номеров должно совпадать с количеством товара",
+      "validationExpiration": "Укажите срок годности и единицу измерения",
+      "photoInfo": "Можно добавить до 4 фотографий товара или документов.",
+      "saveError": "Не удалось сохранить приход"
+    },
+    "dialogs": {
+      "writeoff": {
+        "title": "Создать списание",
+        "description": "Укажите количество и причину списания.",
+        "confirm": "Списать",
+        "fields": {
+          "product": "Товар",
+          "available": "Доступно",
+          "quantity": "Количество списания",
+          "reason": "Причина списания"
+        },
+        "placeholders": {
+          "reason": "Например: брак, утеря, повреждение"
+        },
+        "errors": {
+          "quantity": "Укажите корректное количество",
+          "stock": "Недостаточно товара на складе",
+          "stockDescription": "Доступно: {{count}}",
+          "reason": "Укажите причину списания",
+          "save": "Не удалось сохранить списание"
+        }
+      },
+      "move": {
+        "title": "Переместить товар?",
+        "description": "Вы уверены, что хотите сменить склад?",
+        "fields": {
+          "responsible": "Ответственный",
+          "productName": "Название товара",
+          "warehouse": "Склад",
+          "quantity": "Количество",
+          "comments": "Комментарии"
+        },
+        "defaults": {
+          "responsible": "Админ 1",
+          "all": "Все"
+        },
+        "confirm": "Переместить",
+        "placeholders": {
+          "product": "Выберите товар",
+          "quantity": "Введите количество",
+          "comments": "Комментарий к перемещению"
+        },
+        "errors": {
+          "product": "Выберите товар для перемещения",
+          "warehouse": "Выберите склад назначения",
+          "quantity": "Введите количество больше нуля"
+        }
+      }
+    },
+    "messages": {
+      "backendUnavailable": {
+        "title": "Backend временно недоступен",
+        "homeFallback": "Не удалось загрузить реальные товары. Проверьте подключение к backend.",
+        "inventoryFallback": "Не удалось загрузить реальные товары. Проверьте подключение к backend."
+      },
+      "writeoffSuccess": {
+        "title": "Товар списан",
+        "description": "{{product}} успешно списан. Количество: {{count}}."
+      },
+      "moveSuccess": {
+        "title": "Товар перемещён",
+        "description": "{{product}} успешно отправлен на другой склад."
+      },
+      "listUpdated": "Склад обновлён",
+      "listCreated": "Склад создан",
+      "listDeleted": "Склад удалён",
+      "receiptSaved": "Приход сохранён",
+      "photoLater": "Загрузка фото будет доступна на следующем этапе",
+      "actionCompleted": "Действие выполнено."
+    },
+    "sampleTypes": {
+      "terminal": "Мобильный терминал",
+      "computer": "Мобильный компьютер",
+      "roller": "Роллерная система",
+      "printer": "POS принтер",
+      "label": "Электронный ценник"
+    }
+  },
+  "barcode": {
+    "title": "Товар по штрих-коду",
+    "fieldLabel": "Штрих-код",
+    "placeholder": "Введите или отсканируйте штрих-код",
+    "searching": "Поиск...",
+    "find": "Найти",
+    "foundProducts": "Найденные товары"
+  },
+  "categoriesPage": {
+    "title": "Категории",
+    "addButton": "Добавить категорию",
+    "loadErrorTitle": "Не удалось загрузить категории"
+  },
+  "productDescription": {
+    "title": "Описание товара",
+    "activeLanguage": "Активный язык:",
+    "newColumn": "Новая колонка",
+    "addColumn": "Добавить столбец",
+    "addRow": "Добавить строку",
+    "emptyRows": "Нет строк. Добавьте первую, чтобы начать заполнять характеристики.",
+    "defaultParameter": "Параметр",
+    "defaultValue": "Значение",
+    "addFirstRow": "Добавить первую строку"
+  },
+  "images": {
+    "title": "Изображения",
+    "singleInfo": "Загрузите изображение в любом стандартном формате. Оригинальный файл сохраняется без сжатия.",
+    "multipleInfo": "Первое изображение будет использоваться как основное.",
+    "onlyOne": "Можно загрузить только одно изображение",
+    "maxImages": "Максимум {{count}} изображений",
+    "invalidFormatTitle": "Неверный формат: {{file}}",
+    "invalidFormatDescription": "Разрешены стандартные форматы изображений: JPG, PNG, GIF, WEBP, SVG, AVIF, HEIC, BMP, TIFF и ICO.",
+    "fileTooLargeTitle": "Файл {{file}} слишком большой",
+    "fileTooLargeDescription": "Максимальный размер файла 50MB.",
+    "uploadCompleteTitle": "Загрузка завершена",
+    "uploadCompleteDescription": "Добавлено изображений: {{count}}.",
+    "uploadErrorTitle": "Ошибка загрузки изображений",
+    "uploading": "Загрузка...",
+    "replaceImage": "Заменить изображение",
+    "addImage": "Добавить изображение",
+    "addPhoto": "Добавить фото",
+    "alt": "Изображение",
+    "primaryLabel": "Основное"
+  },
+  "funnelForm": {
+    "titles": {
+      "add": "Добавить воронку",
+      "edit": "Редактировать воронку"
+    },
+    "fields": {
+      "name": "Название",
+      "color": "Цвет",
+      "comment": "Комментарий к воронке"
+    },
+    "placeholders": {
+      "name": "Название воронки",
+      "comment": "Добавить"
+    },
+    "validation": {
+      "nameRequired": "Введите название",
+      "colorHex": "Введите корректный HEX-цвет"
+    },
+    "messages": {
+      "created": "Воронка создана",
+      "updated": "Воронка обновлена",
+      "saveError": "Не удалось сохранить воронку"
+    },
+    "aria": {
+      "pickColor": "Выбрать цвет"
+    }
+  },
+  "password": "Пароль",
+  "themeToggle": {
+    "switcher": "Переключатель темы",
+    "enableLight": "Включить светлую тему",
+    "enableDark": "Включить тёмную тему",
+    "light": "Светлая",
+    "dark": "Тёмная"
+  },
+  "common": {
+    "loading": "Загрузка…",
+    "checkLoad": "Проверка учетной записи…",
+    "logout": "Выйти",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "deleting": "Удаление...",
+    "back": "Назад",
+    "selectedCount": "{{count}} выбрано",
+    "selectOptions": "Выберите варианты...",
+    "printContract": "Распечатать договор",
+    "addDocument": "Добавить документ"
+  },
+  "barcodeSearch": {
+    "errors": {
+      "enterBarcode": "Введите штрих-код для поиска",
+      "notFound": "Товары с таким штрих-кодом не найдены",
+      "searchFailed": "Не удалось выполнить поиск по штрих-коду"
+    }
+  },
+  "analytics": {
+    "deals": "Сделки",
+    "period": "Период",
+    "showLatestMonth": "Показать последний месяц",
+    "showFirstMonth": "Показать первый месяц",
+    "previousMonth": "Предыдущий месяц",
+    "nextMonth": "Следующий месяц",
+    "peakClients": "Пик клиентов",
+    "date": "Дата",
+    "clients": "Клиенты",
+    "products": "Товары",
+    "peakDay": "Пиковый день",
+    "averagePerDay": "Среднее за день",
+    "totalForMonth": "Всего за месяц",
+    "activeDays": "Активных дней",
+    "clientsUnit": "клиентов",
+    "productsUnit": "товаров"
+  },
+  "finance": {
+    "title": "Финансы",
+    "subtitle": "Реальные суммы рассчитаны по сохранённым сделкам и оплатам.",
+    "createDeal": "Создать сделку",
+    "loadError": "Не удалось загрузить финансы",
+    "empty": "Пока нет реальных финансовых операций. Создайте сделку, чтобы увидеть расчёты.",
+    "statusPaid": "Оплачено",
+    "statusPartial": "Оплачено частично",
+    "statusUnpaid": "Не оплачено",
+    "contracts": "сделок",
+    "totalAmount": "Общая сумма",
+    "paidAmount": "Оплачено",
+    "remainingAmount": "Осталось",
+    "realHistory": "Реальная история сделок",
+    "paymentStatus": "Статус оплаты",
+    "status": {
+      "paid": "Оплачено",
+      "partial": "Оплачено частично",
+      "unpaid": "Не оплачено"
+    }
+  },
+  "settings": {
+    "title": "Настройки",
+    "subtitle": "Управление профилем, доступом и системными параметрами ERP.",
+    "profile": {
+      "title": "Профиль администратора",
+      "desc": "Логин и пароль текущего администратора."
+    },
+    "access": {
+      "title": "Настройки доступа",
+      "desc": "Реальные пользователи админ-панели без демо-сотрудников.",
+      "loadError": "Не удалось загрузить доступы",
+      "realDataHint": "Показаны только реальные администраторы из базы данных.",
+      "empty": "Нет созданных администраторов.",
+      "createdAt": "Создан",
+      "updatedAt": "Обновлён",
+      "actions": "Действия",
+      "editCurrent": "Изменить",
+      "addEmployee": "Добавить сотрудника",
+      "editEmployee": "Редактировать сотрудника",
+      "addEmployeeHint": "Создайте логин и пароль для нового сотрудника ERP.",
+      "editEmployeeHint": "Измените логин или задайте новый пароль сотруднику.",
+      "createEmployee": "Создать сотрудника",
+      "saveEmployee": "Сохранить сотрудника",
+      "employees": "Сотрудники ERP",
+      "employeeHint": "Управляйте реальными пользователями, которые имеют доступ к панели.",
+      "totalEmployees": "Всего сотрудников",
+      "roleAdmin": "Роль доступа",
+      "adminRole": "Администратор",
+      "lastUpdated": "Последнее обновление",
+      "search": "Поиск сотрудника",
+      "role": "Роль",
+      "current": "Вы",
+      "delete": "Удалить",
+      "created": "Сотрудник создан",
+      "updated": "Сотрудник обновлён",
+      "deleted": "Сотрудник удалён",
+      "saveError": "Не удалось сохранить сотрудника",
+      "deleteError": "Не удалось удалить сотрудника",
+      "validationTitle": "Проверьте данные",
+      "deleteTitle": "Удалить сотрудника?",
+      "deleteDescription": "Сотрудник {{name}} потеряет доступ к ERP. Это действие нельзя отменить.",
+      "roleTypes": "Типов ролей",
+      "roles": {
+        "admin": "Администратор",
+        "manager": "Менеджер",
+        "warehouse": "Склад",
+        "finance": "Финансы",
+        "viewer": "Наблюдатель"
+      }
+    },
+    "open": "Открыть"
+  },
+  "language": {
+    "ru": "Русский",
+    "en": "English",
+    "uz": "O'zbek"
+  }
+}

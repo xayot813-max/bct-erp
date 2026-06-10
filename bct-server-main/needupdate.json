@@ -1,0 +1,268 @@
+{
+  "company": {
+    "fields": {
+      "id": "string",
+      "name": "string",
+      "order_count": "number",
+      "total_amount": "number",
+      "email": "string",
+      "inn": "string",
+      "address": "string",
+      "phone": "string",
+      "comment": "string",
+      "created_at": "ISODate",
+      "updated_at": "ISODate",
+      "order_history": [
+        {
+          "id": "string",
+          "order_number": "string",
+          "price": "number",
+          "status": "string",
+          "created_at": "ISODate",
+          "updated_at": "ISODate",
+          "products": [
+            {
+              "id": "string",
+              "name": "string",
+              "price": "number",
+              "quantity": "number",
+              "serial_number": "string",
+              "created_at": "ISODate",
+              "updated_at": "ISODate"
+            }
+          ]
+        }
+      ]
+    },
+    "endpoints": {
+      "GET /companies": "List companies",
+      "GET /companies/{id}": "Get single company",
+      "POST /companies": {
+        "body": {
+          "name": "string",
+          "email": "string",
+          "inn": "string",
+          "address": "string",
+          "phone": "string",
+          "comment": "string (optional)"
+        }
+      },
+      "DELETE /companies/{id}": "Delete company"
+    }
+  },
+  "client": {
+    "fields": {
+      "id": "string",
+      "first_name": "string",
+      "last_name": "string",
+      "email": "string",
+      "phone": "string",
+      "company_phone": "string",
+      "company": "string",
+      "address": "string",
+      "comment": "string",
+      "created_at": "ISODate",
+      "updated_at": "ISODate",
+      "order_history": [
+        {
+          "id": "string",
+          "order_number": "string",
+          "price": "number",
+          "status": "string",
+          "created_at": "ISODate",
+          "updated_at": "ISODate",
+          "products": [
+            {
+              "id": "string",
+              "name": "string",
+              "price": "number",
+              "quantity": "number",
+              "serial_number": "string",
+              "created_at": "ISODate",
+              "updated_at": "ISODate"
+            }
+          ]
+        }
+      ]
+    },
+    "endpoints": {
+      "GET /clients": "List clients",
+      "GET /clients/{id}": "Get single client",
+      "POST /clients": {
+        "body": {
+          "first_name": "string",
+          "last_name": "string",
+          "email": "string",
+          "phone": "string",
+          "company_phone": "string",
+          "company": "string",
+          "address": "string",
+          "comment": "string (optional)"
+        }
+      },
+      "DELETE /clients/{id}": "Delete client"
+    }
+  },
+  "counterparty": {
+    "fields": {
+      "id": "string",
+      "first_name": "string",
+      "last_name": "string",
+      "email": "string",
+      "phone": "string",
+      "company_phone": "string",
+      "company": "string",
+      "address": "string",
+      "comment": "string",
+      "created_at": "ISODate",
+      "updated_at": "ISODate",
+      "order_history": "same structure as client order_history"
+    },
+    "endpoints": {
+      "GET /counterparties": "List counterparties",
+      "GET /counterparties/{id}": "Get single counterparty",
+      "POST /counterparties": {
+        "body": {
+          "first_name": "string",
+          "last_name": "string",
+          "email": "string",
+          "phone": "string",
+          "company_phone": "string",
+          "company": "string",
+          "address": "string",
+          "comment": "string (optional)"
+        }
+      },
+      "DELETE /counterparties/{id}": "Delete counterparty"
+    }
+  },
+  "product": {
+    "fields": {
+      "id": "ObjectId",
+      "name": "string",
+      "ads_title": "string",
+      "images": [
+        "string"
+      ],
+      "description": "string",
+      "guarantee": "string",
+      "serial_number": "string",
+      "shtrix_number": "string",
+      "price": "number",
+      "discount": "number|null",
+      "category_id": "ObjectId",
+      "top_category_id": "ObjectId",
+      "category_name": "string|null",
+      "top_category_name": "string|null",
+      "count": "number",
+      "NDC": "number|null",
+      "tax": "number",
+      "created_at": "ISODate",
+      "updated_at": "ISODate"
+    },
+    "endpoints": {
+      "GET /products": "List products",
+      "GET /products/{id}": "Get single product",
+      "POST /products": {
+        "body": {
+          "name": "string",
+          "ads_title": "string",
+          "images": [
+            "string"
+          ],
+          "description": "string",
+          "guarantee": "string",
+          "serial_number": "string",
+          "shtrix_number": "string",
+          "price": "number",
+          "NDC": "number|null",
+          "discount": "number|null",
+          "category_id": "ObjectId",
+          "top_category_id": "ObjectId",
+          "count": "number",
+          "tax": "number"
+        }
+      },
+      "DELETE /products/{id}": "Delete product"
+    }
+  },
+  "contract": {
+    "fields": {
+      "id": "string",
+      "client_id": "string",
+      "counterparty_id": "string",
+      "company_id": "string",
+      "guarantee": "string",
+      "comment": "string",
+      "deal_date": "ISODate",
+      "contract_amount": "number",
+      "contract_currency": "enum('UZS','USD','EUR')",
+      "pay_card": "number",
+      "pay_cash": "number",
+      "created_at": "ISODate",
+      "updated_at": "ISODate",
+      "products": [
+        {
+          "product_id": "string",
+          "price": "number",
+          "quantity": "number",
+          "discount": "number|null",
+          "serial_number": "string",
+          "shtrix_number": "string"
+        }
+      ]
+    },
+    "endpoints": {
+      "GET /contracts": "List contracts",
+      "GET /contracts/{id}": "Get single contract",
+      "POST /contracts": {
+        "body": {
+          "client_id": "string",
+          "counterparty_id": "string",
+          "company_id": "string",
+          "guarantee": "string",
+          "comment": "string",
+          "deal_date": "ISODate",
+          "contract_amount": "number",
+          "contract_currency": "enum('UZS','USD','EUR')",
+          "pay_card": "number",
+          "pay_cash": "number",
+          "products": [
+            {
+              "product_id": "string",
+              "price": "number",
+              "quantity": "number",
+              "discount": "number|null",
+              "serial_number": "string"
+            }
+          ]
+        }
+      },
+      "DELETE /contracts/{id}": "Delete contract"
+    }
+  },
+  "funnel": {
+    "fields": {
+      "id": "string",
+      "name": "string",
+      "color": "string (HEX)",
+      "comment": "string",
+      "order": "number",
+      "created_at": "ISODate",
+      "updated_at": "ISODate"
+    },
+    "endpoints": {
+      "GET /funnels": "List funnel stages",
+      "GET /funnels/{id}": "Get single stage",
+      "POST /funnels": {
+        "body": {
+          "name": "string",
+          "color": "string (HEX)",
+          "comment": "string",
+          "order": "number"
+        }
+      },
+      "DELETE /funnels/{id}": "Delete stage"
+    }
+  }
+}

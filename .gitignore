@@ -1,0 +1,29 @@
+.DS_Store
+.local-runtime/
+Docker.app/
+
+# Logs and local runtime
+*.log
+*.pid
+*.zip
+tmp/
+temp/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+
+# Go
+bin/
+*.test
+coverage.out
+
+# Upload/runtime data
+uploads/
