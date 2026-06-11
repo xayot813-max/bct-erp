@@ -38,6 +38,17 @@ const chunkRecoveryScript = `
     } catch (_) {}
   }
 
+  function cleanRecoveryUrl() {
+    var url = new URL(window.location.href);
+    if (url.searchParams.has("__bct_reload")) {
+      url.searchParams.delete("__bct_reload");
+      try {
+        window.history.replaceState(window.history.state, "", url.toString());
+      } catch (_) {}
+    }
+    return url;
+  }
+
   function getMessage(event) {
     if (!event) return "";
     var target = event.target || {};
@@ -83,10 +94,11 @@ const chunkRecoveryScript = `
     writeState({ at: current, attempts: attempts + 1 });
     clearBrowserCaches();
 
-    var url = new URL(window.location.href);
-    url.searchParams.set("__bct_reload", String(current));
+    var url = cleanRecoveryUrl();
     window.location.replace(url.toString());
   }
+
+  cleanRecoveryUrl();
 
   window.addEventListener("error", function (event) {
     if (PATTERN.test(getMessage(event))) recover();

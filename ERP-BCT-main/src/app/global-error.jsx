@@ -74,15 +74,23 @@ function clearBrowserCaches() {
   } catch {}
 }
 
+function cleanCurrentUrl() {
+  const url = new URL(window.location.href)
+  url.searchParams.delete("__bct_reload")
+  return url
+}
+
 function reloadPage({ force = false } = {}) {
   clearBrowserCaches()
-  const url = new URL(window.location.href)
-  url.searchParams.set("__bct_reload", String(Date.now()))
+  const url = cleanCurrentUrl()
   if (force) {
     try {
       sessionStorage.removeItem(RECOVERY_KEY)
     } catch {}
   }
+  try {
+    window.history.replaceState(window.history.state, "", url.toString())
+  } catch {}
   window.location.replace(url.toString())
 }
 

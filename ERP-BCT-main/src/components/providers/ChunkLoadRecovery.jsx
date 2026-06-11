@@ -54,11 +54,17 @@ function shouldReloadOnce() {
   }
 }
 
+function cleanCurrentUrl() {
+  const url = new URL(window.location.href)
+  url.searchParams.delete("__bct_reload")
+  return url.toString()
+}
+
 export default function ChunkLoadRecovery() {
   useEffect(() => {
     const recover = (event) => {
       if (!isChunkLoadError(event) || !shouldReloadOnce()) return
-      window.location.reload()
+      window.location.replace(cleanCurrentUrl())
     }
 
     window.addEventListener("error", recover, true)
