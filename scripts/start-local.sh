@@ -105,17 +105,11 @@ start_frontend() {
     return
   fi
 
-  echo "Собираю frontend..."
-  (
-    cd "$FRONT_DIR"
-    npm run build >/dev/null
-  )
-
-  echo "Запускаю frontend на :3000..."
+  echo "Запускаю frontend dev-сервер на :3000..."
   if screen -ls | grep -q "[.]$FRONT_SCREEN_SESSION"; then
     screen -S "$FRONT_SCREEN_SESSION" -X quit >/dev/null 2>&1 || true
   fi
-  screen -dmS "$FRONT_SCREEN_SESSION" bash -lc "cd '$FRONT_DIR' && exec ./node_modules/.bin/next start -p 3000 >'$RUNTIME_DIR/frontend.log' 2>&1"
+  screen -dmS "$FRONT_SCREEN_SESSION" bash -lc "cd '$FRONT_DIR' && exec npm run dev -- -p 3000 >'$RUNTIME_DIR/frontend.log' 2>&1"
   echo "$FRONT_SCREEN_SESSION" >"$RUNTIME_DIR/frontend.screen"
 }
 

@@ -136,6 +136,11 @@ export default function GlobalError({ error, reset }) {
 
   return (
     <html lang="ru">
+      {isRecoverableUpdateError && (
+        <head>
+          <meta httpEquiv="refresh" content="1" />
+        </head>
+      )}
       <body>
         {isRecoverableUpdateError && <script dangerouslySetInnerHTML={{ __html: updateRecoveryScript }} />}
         <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 24 }}>
