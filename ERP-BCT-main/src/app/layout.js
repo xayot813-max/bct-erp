@@ -1,4 +1,3 @@
-import { Poppins } from "next/font/google";
 import "./globals.css";
 import LanguageProvider from "@/providers/LanguageProvider";
 import NextTopLoader from "nextjs-toploader";
@@ -8,12 +7,6 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import ChunkLoadRecovery from "@/components/providers/ChunkLoadRecovery";
 import { cookies } from "next/headers";
 import { normalizeLanguage } from "@/lib/i18n-utils";
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  variable: "--font-poppins",
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"], // barcha qalinliklar
-});
 
 export const metadata = {
   title: "BCT ERP — Бизнес Контрол ва Трекинг",
@@ -114,7 +107,7 @@ export default async function RootLayout({ children }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: chunkRecoveryScript }} />
       </head>
-      <body className={`${poppins.variable} antialiased font-poppins`}>
+      <body className="antialiased">
         <ThemeProvider>
           <LanguageProvider initialLanguage={initialLanguage}>
             <NextTopLoader

@@ -17,7 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { PageShell, PageTitle } from "@/components/shared/PageShell"
-import { getUserPermissions, isSuperAdmin } from "@/lib/access-control"
+import { getPermissionLabel, getRoleLabel, getUserPermissions, isSuperAdmin } from "@/lib/access-control"
 
 const cookieOptions = {
   expires: 7,
@@ -194,7 +194,7 @@ export default function AdminProfilePage() {
                 </div>
                 <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4">
                   <p className="text-[12px] text-[var(--text-secondary)]">{t("adminProfile.role")}</p>
-                  <p className="mt-2 text-[15px] font-medium text-[var(--text-primary)]">{user?.role || "-"}</p>
+                  <p className="mt-2 text-[15px] font-medium text-[var(--text-primary)]">{getRoleLabel(t, user?.role)}</p>
                 </div>
               </div>
               <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4">
@@ -202,7 +202,7 @@ export default function AdminProfilePage() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   {visiblePermissions.map((permission) => (
                     <span key={permission} className="rounded-[8px] border border-[var(--border-default)] px-2.5 py-1 text-[12px] text-[var(--text-primary)]">
-                      {permission}
+                      {getPermissionLabel(t, permission)}
                     </span>
                   ))}
                 </div>

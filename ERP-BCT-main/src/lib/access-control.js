@@ -49,6 +49,17 @@ export const hasPermission = (user, permissionId) => {
   return getUserPermissions(user).includes(permissionId)
 }
 
+export const getPermissionLabel = (t, permissionId) => {
+  const permission = ACCESS_PERMISSIONS.find((item) => item.id === permissionId)
+  if (!permission) return permissionId
+  return t(permission.labelKey, { defaultValue: permission.fallback })
+}
+
+export const getRoleLabel = (t, role) => {
+  const normalizedRole = String(role || "manager").toLowerCase()
+  return t(`settings.access.roles.${normalizedRole}`, { defaultValue: role || "manager" })
+}
+
 export const getPermissionForPath = (pathname) => {
   if (!pathname || pathname === "/dashboard") return "dashboard"
   if (pathname === "/dashboard/setting/profile") return null
