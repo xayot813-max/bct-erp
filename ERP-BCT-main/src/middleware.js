@@ -3,6 +3,14 @@ import { NextResponse } from "next/server";
 export function middleware(req) {
   const { pathname } = req.nextUrl;
 
+  const noStoreResponse = () => {
+    const response = NextResponse.next();
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+    return response;
+  };
+
   // Skip middleware for static files and API routes
   if (
     pathname.startsWith("/_next") ||
@@ -17,7 +25,7 @@ export function middleware(req) {
 
   // Allow access to dashboard routes - AuthGate will handle authentication UI
   if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
-    return NextResponse.next();
+    return noStoreResponse();
   }
 
   // Redirect root to dashboard

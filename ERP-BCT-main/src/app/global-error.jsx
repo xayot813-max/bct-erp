@@ -2,8 +2,9 @@
 
 import { useEffect } from "react"
 
-const RECOVERY_KEY = "bct:global-chunk-recovery"
-const RECOVERY_WINDOW_MS = 30000
+const RECOVERY_KEY = "bct:global-chunk-recovery:v2"
+const RECOVERY_WINDOW_MS = 15000
+const MAX_RECOVERY_ATTEMPTS = 3
 const CHUNK_LOAD_ERROR_PATTERN = new RegExp(
   [
     "ChunkLoadError",
@@ -38,20 +39,51 @@ function isChunkLoadError(error) {
 
 function canReload() {
   try {
-    const lastReloadAt = Number(sessionStorage.getItem(RECOVERY_KEY) || 0)
+    const state = JSON.parse(sessionStorage.getItem(RECOVERY_KEY) || "{}")
+    const lastReloadAt = Number(state.at || 0)
+    const attempts = Number(state.attempts || 0)
     const now = Date.now()
     if (lastReloadAt && now - lastReloadAt < RECOVERY_WINDOW_MS) {
       return false
     }
-    sessionStorage.setItem(RECOVERY_KEY, String(now))
+    if (attempts >= MAX_RECOVERY_ATTEMPTS) {
+      return false
+    }
+    sessionStorage.setItem(RECOVERY_KEY, JSON.stringify({ at: now, attempts: attempts + 1 }))
     return true
   } catch {
     return true
   }
 }
 
-function reloadPage() {
-  window.location.reload()
+function clearBrowserCaches() {
+  try {
+    if ("caches" in window) {
+      caches.keys().then((keys) => {
+        keys.forEach((key) => caches.delete(key))
+      })
+    }
+  } catch {}
+
+  try {
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => registration.unregister())
+      })
+    }
+  } catch {}
+}
+
+function reloadPage({ force = false } = {}) {
+  clearBrowserCaches()
+  const url = new URL(window.location.href)
+  url.searchParams.set("__bct_reload", String(Date.now()))
+  if (force) {
+    try {
+      sessionStorage.removeItem(RECOVERY_KEY)
+    } catch {}
+  }
+  window.location.replace(url.toString())
 }
 
 export default function GlobalError({ error, reset }) {
@@ -72,7 +104,7 @@ export default function GlobalError({ error, reset }) {
             </p>
             <button
               type="button"
-              onClick={reloadPage}
+              onClick={() => reloadPage({ force: true })}
               style={{ border: "1px solid #d0d7e2", borderRadius: 10, padding: "10px 16px", background: "#ffffff" }}
             >
               Обновить страницу
