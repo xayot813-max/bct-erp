@@ -140,7 +140,7 @@ export default function WerehousePage() {
         </h1>
       </div>
 
-      <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {warehouseLinks.map((item) => (
           <Link
             key={item.href}

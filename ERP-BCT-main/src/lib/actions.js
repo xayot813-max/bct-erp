@@ -117,6 +117,15 @@ export async function adjustProductStock(id, stockData) {
   }
 }
 
+export async function getInventoryTransactions(params = {}) {
+  try {
+    return await productService.getStockOperations(params)
+  } catch (error) {
+    console.error('Error fetching inventory transactions:', error)
+    throw error
+  }
+}
+
 export async function applyProductStockBulk(payload) {
   try {
     return await productService.applyStockBulk(payload)

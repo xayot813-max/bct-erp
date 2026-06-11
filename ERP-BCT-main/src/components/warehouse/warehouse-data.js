@@ -24,6 +24,16 @@ export const warehouseLinks = [
     titleKey: "warehouse.links.movement.title",
     subtitleKey: "warehouse.links.movement.subtitle",
   },
+  {
+    href: "/dashboard/werehouses/transactions",
+    titleKey: "warehouse.links.transactions.title",
+    subtitleKey: "warehouse.links.transactions.subtitle",
+  },
+  {
+    href: "/dashboard/werehouses/audit",
+    titleKey: "warehouse.links.audit.title",
+    subtitleKey: "warehouse.links.audit.subtitle",
+  },
 ]
 
 export const warehouseOptions = [

@@ -1039,6 +1039,14 @@
       "movement": {
         "title": "Ko‘chirish",
         "subtitle": "Mahsulotlarni ko‘chirish"
+      },
+      "transactions": {
+        "title": "Tranzaksiyalar",
+        "subtitle": "Ombor operatsiyalari jurnali"
+      },
+      "audit": {
+        "title": "Inventarizatsiya",
+        "subtitle": "Haqiqiy va tizim qoldig‘ini solishtirish"
       }
     },
     "receipt": {
@@ -1160,6 +1168,48 @@
       "roller": "Rolik tizimi",
       "printer": "POS printer",
       "label": "Elektron narx belgisi"
+    },
+    "transactions": {
+      "title": "Ombor tranzaksiyalari",
+      "subtitle": "Kirim, hisobdan chiqarish, ko‘chirish, sotuv va inventarizatsiya uchun yagona jurnal.",
+      "loadError": "Tranzaksiyalarni yuklab bo‘lmadi",
+      "empty": "Hozircha tranzaksiyalar yo‘q.",
+      "columns": {
+        "type": "Tur",
+        "product": "Mahsulot",
+        "from": "Qayerdan",
+        "to": "Qayerga",
+        "quantity": "Miqdor",
+        "beforeAfter": "Oldin / keyin",
+        "date": "Sana"
+      },
+      "types": {
+        "receipt": "Kirim",
+        "writeoff": "Hisobdan chiqarish",
+        "movement": "Ko‘chirish",
+        "adjustment": "Inventarizatsiya",
+        "sale": "Sotuv",
+        "unknown": "Operatsiya"
+      }
+    },
+    "audit": {
+      "title": "Inventarizatsiya",
+      "subtitle": "Haqiqiy qoldiqni kiriting. Tizim faqat farqlarni ombor tranzaksiyasi orqali saqlaydi.",
+      "save": "Solishtirishni saqlash",
+      "loadError": "Inventarizatsiya uchun mahsulotlarni yuklab bo‘lmadi",
+      "saveError": "Inventarizatsiyani saqlab bo‘lmadi",
+      "saved": "Inventarizatsiya saqlandi",
+      "savedDescription": "Yangilangan pozitsiyalar: {{count}}",
+      "noChanges": "Saqlash uchun farq yo‘q",
+      "defaultReason": "Ombor inventarizatsiyasi",
+      "empty": "Inventarizatsiya uchun mahsulot yo‘q.",
+      "columns": {
+        "product": "Mahsulot",
+        "warehouse": "Ombor",
+        "system": "Tizim bo‘yicha",
+        "real": "Haqiqiy",
+        "diff": "Farq"
+      }
     }
   },
   "barcode": {

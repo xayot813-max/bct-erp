@@ -553,6 +553,49 @@ func ProductRoutes(app fiber.Router, db *mongo.Client) {
 		return c.JSON(fiber.Map{"data": updated, "operations": operationDocs, "total": len(updated), "transaction": "stock_operations"})
 	})
 
+	products.Get("/stock/operations", func(c *fiber.Ctx) error {
+		page := 1
+		if p, err := strconv.Atoi(c.Query("page")); err == nil && p > 0 {
+			page = p
+		}
+		limit := 20
+		if l, err := strconv.Atoi(c.Query("limit")); err == nil && l > 0 {
+			limit = l
+		}
+		skip := (page - 1) * limit
+
+		filter := bson.M{}
+		if operationType := c.Query("type"); operationType != "" {
+			filter["type"] = normalizeInventoryType(operationType)
+		}
+		if productID := c.Query("product_id"); productID != "" {
+			if id, err := primitive.ObjectIDFromHex(productID); err == nil {
+				filter["product_id"] = id
+			}
+		}
+
+		operations := config.GetCollection(db, "stock_operations")
+		opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit)).SetSort(bson.D{{Key: "created_at", Value: -1}})
+		cursor, err := operations.Find(context.TODO(), filter, opts)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch stock operations"})
+		}
+		defer cursor.Close(context.TODO())
+
+		var rows []bson.M
+		if err := cursor.All(context.TODO(), &rows); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to decode stock operations"})
+		}
+		total, _ := operations.CountDocuments(context.TODO(), filter)
+
+		return c.JSON(fiber.Map{
+			"data":  rows,
+			"total": total,
+			"page":  page,
+			"limit": limit,
+		})
+	})
+
 	// Get all products with category names populated
 	products.Get("/", func(c *fiber.Ctx) error {
 		collection := config.GetCollection(db, "products")

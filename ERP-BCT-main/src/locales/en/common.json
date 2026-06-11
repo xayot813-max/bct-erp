@@ -1039,6 +1039,14 @@
       "movement": {
         "title": "Transfers",
         "subtitle": "Move products between warehouses"
+      },
+      "transactions": {
+        "title": "Transactions",
+        "subtitle": "Inventory operation journal"
+      },
+      "audit": {
+        "title": "Stock Audit",
+        "subtitle": "Compare real and system stock"
       }
     },
     "receipt": {
@@ -1160,6 +1168,48 @@
       "roller": "Roller system",
       "printer": "POS printer",
       "label": "Electronic shelf label"
+    },
+    "transactions": {
+      "title": "Inventory Transactions",
+      "subtitle": "Unified journal for receipts, write-offs, transfers, sales, and audits.",
+      "loadError": "Failed to load transactions",
+      "empty": "No transactions yet.",
+      "columns": {
+        "type": "Type",
+        "product": "Product",
+        "from": "From",
+        "to": "To",
+        "quantity": "Quantity",
+        "beforeAfter": "Before / after",
+        "date": "Date"
+      },
+      "types": {
+        "receipt": "Receipt",
+        "writeoff": "Write-off",
+        "movement": "Transfer",
+        "adjustment": "Stock audit",
+        "sale": "Sale",
+        "unknown": "Operation"
+      }
+    },
+    "audit": {
+      "title": "Stock Audit",
+      "subtitle": "Enter the real stock. Only differences are saved through inventory transactions.",
+      "save": "Save audit",
+      "loadError": "Failed to load products for stock audit",
+      "saveError": "Failed to save stock audit",
+      "saved": "Stock audit saved",
+      "savedDescription": "Updated items: {{count}}",
+      "noChanges": "There are no differences to save",
+      "defaultReason": "Warehouse stock audit",
+      "empty": "No products to audit.",
+      "columns": {
+        "product": "Product",
+        "warehouse": "Warehouse",
+        "system": "System",
+        "real": "Real",
+        "diff": "Difference"
+      }
     }
   },
   "barcode": {

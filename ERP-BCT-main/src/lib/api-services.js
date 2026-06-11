@@ -68,6 +68,10 @@ export const productService = {
     return apiClient.patch(`/products/${id}/stock`, stockData)
   },
 
+  async getStockOperations(params = {}) {
+    return apiClient.get(`/products/stock/operations${buildQueryString(params)}`)
+  },
+
   async applyStockBulk(payload) {
     return apiClient.post('/products/stock/bulk', payload)
   },
