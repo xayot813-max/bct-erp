@@ -86,6 +86,8 @@ function reloadPage({ force = false } = {}) {
   if (force) {
     try {
       sessionStorage.removeItem(RECOVERY_KEY)
+      sessionStorage.removeItem("bct:next-static-recovery:v2")
+      sessionStorage.removeItem("bct:chunk-load-recovery")
     } catch {}
   }
   try {
@@ -95,20 +97,26 @@ function reloadPage({ force = false } = {}) {
 }
 
 export default function GlobalError({ error, reset }) {
+  const isRecoverableUpdateError = isChunkLoadError(error)
+
   useEffect(() => {
-    if ((isChunkLoadError(error) || process.env.NODE_ENV === "production") && canReload()) {
+    if (isRecoverableUpdateError && canReload()) {
       reloadPage()
     }
-  }, [error])
+  }, [isRecoverableUpdateError])
 
   return (
     <html lang="ru">
       <body>
         <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 24 }}>
           <div style={{ maxWidth: 420, textAlign: "center", fontFamily: "sans-serif" }}>
-            <h1 style={{ fontSize: 24, marginBottom: 12 }}>Не удалось загрузить страницу</h1>
+            <h1 style={{ fontSize: 24, marginBottom: 12 }}>
+              {isRecoverableUpdateError ? "Приложение обновилось" : "Не удалось загрузить страницу"}
+            </h1>
             <p style={{ marginBottom: 20, color: "#5f6673" }}>
-              Приложение обновилось. Обновите страницу, чтобы загрузить актуальную версию.
+              {isRecoverableUpdateError
+                ? "Обновите страницу, чтобы загрузить актуальную версию без старого кеша."
+                : "Произошла ошибка на странице. Попробуйте обновить страницу или вернуться на главную."}
             </p>
             <button
               type="button"
@@ -117,6 +125,21 @@ export default function GlobalError({ error, reset }) {
             >
               Обновить страницу
             </button>
+            {!isRecoverableUpdateError && (
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    reset()
+                  } catch {
+                    window.location.replace("/dashboard")
+                  }
+                }}
+                style={{ marginLeft: 8, border: "1px solid #d0d7e2", borderRadius: 10, padding: "10px 16px", background: "#ffffff" }}
+              >
+                Повторить
+              </button>
+            )}
           </div>
         </main>
       </body>
