@@ -190,7 +190,6 @@ export function ChartAreaInteractive() {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <h2 className="text-[24px] font-normal text-[var(--text-primary)]">{t("analytics.deals", { defaultValue: "Deals" })}</h2>
-            <span className="text-[20px] leading-none text-[var(--text-muted)]">〈</span>
           </div>
           <div className="flex items-center gap-3 text-[14px] text-[var(--text-secondary)]">
             <span>{t("analytics.period", { defaultValue: "Period" })}</span>
