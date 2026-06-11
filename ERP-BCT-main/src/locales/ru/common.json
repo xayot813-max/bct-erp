@@ -156,7 +156,14 @@
       "save": "Сохранить изменения",
       "reset": "Сбросить"
     },
-    "currentAdmin": "Текущий администратор: {{name}}"
+    "currentAdmin": "Текущий администратор: {{name}}",
+    "employeeTitle": "Профиль сотрудника",
+    "currentUser": "Текущий сотрудник: {{name}}",
+    "employeeDescription": "Вы вошли как сотрудник ERP. Изменять логин, пароль и доступы может только администратор.",
+    "restrictedTitle": "Недостаточно прав",
+    "restrictedDescription": "Изменять логин и пароль может только администратор.",
+    "role": "Роль",
+    "permissions": "Доступные страницы"
   },
   "homePage": {
     "page": {
@@ -539,7 +546,8 @@
       "description": "Это действие нельзя отменить.",
       "confirm": "Удалить"
     },
-    "generatedFunnelName": "Воронка {{number}}"
+    "generatedFunnelName": "Воронка {{number}}",
+    "addDealToColumn": "Добавить сделку"
   },
   "clients": {
     "columns": {
@@ -991,7 +999,12 @@
     "address": "Адрес",
     "actions": {
       "create": "СОЗДАТЬ",
-      "createMovement": "Создать перемещение"
+      "createMovement": "Создать перемещение",
+      "new": "Новый",
+      "edit": "Изменить",
+      "delete": "Удалить",
+      "save": "Сохранить",
+      "createWriteoff": "Создать списание"
     },
     "table": {
       "warehouse": "Склад",
@@ -1082,13 +1095,15 @@
       },
       "move": {
         "title": "Переместить товар?",
-        "description": "Вы уверены, что хотите сменить склад?",
+        "description": "Выберите товар, исходный склад и склад назначения для перемещения.",
         "fields": {
           "responsible": "Ответственный",
           "productName": "Название товара",
           "warehouse": "Склад",
           "quantity": "Количество",
-          "comments": "Комментарии"
+          "comments": "Комментарии",
+          "fromWarehouse": "Со склада",
+          "toWarehouse": "На склад"
         },
         "defaults": {
           "responsible": "Админ 1",
@@ -1098,13 +1113,20 @@
         "placeholders": {
           "product": "Выберите товар",
           "quantity": "Введите количество",
-          "comments": "Комментарий к перемещению"
+          "comments": "Комментарий к перемещению",
+          "sourceWarehouse": "Выберите товар, чтобы увидеть склад",
+          "destinationWarehouse": "Выберите склад назначения"
         },
         "errors": {
           "product": "Выберите товар для перемещения",
           "warehouse": "Выберите склад назначения",
-          "quantity": "Введите количество больше нуля"
-        }
+          "quantity": "Введите количество больше нуля",
+          "save": "Не удалось сохранить перемещение",
+          "sameWarehouse": "Склад назначения должен отличаться от исходного склада"
+        },
+        "available": "Доступно: {{count}} шт.",
+        "summaryTitle": "Маршрут перемещения",
+        "quantitySummary": "Количество: {{count}}"
       }
     },
     "messages": {
@@ -1126,7 +1148,10 @@
       "listDeleted": "Склад удалён",
       "receiptSaved": "Приход сохранён",
       "photoLater": "Загрузка фото будет доступна на следующем этапе",
-      "actionCompleted": "Действие выполнено."
+      "actionCompleted": "Действие выполнено.",
+      "createError": "Не удалось создать склад",
+      "updateError": "Не удалось обновить склад",
+      "deleteError": "Не удалось удалить склад"
     },
     "sampleTypes": {
       "terminal": "Мобильный терминал",
@@ -1226,7 +1251,8 @@
     "selectedCount": "{{count}} выбрано",
     "selectOptions": "Выберите варианты...",
     "printContract": "Распечатать договор",
-    "addDocument": "Добавить документ"
+    "addDocument": "Добавить документ",
+    "comment": "Комментарий"
   },
   "barcodeSearch": {
     "errors": {
@@ -1251,7 +1277,9 @@
     "totalForMonth": "Всего за месяц",
     "activeDays": "Активных дней",
     "clientsUnit": "клиентов",
-    "productsUnit": "товаров"
+    "productsUnit": "товаров",
+    "loadError": "Не удалось загрузить аналитику",
+    "empty": "Нет реальных данных для аналитики"
   },
   "finance": {
     "title": "Финансы",
@@ -1278,8 +1306,8 @@
     "title": "Настройки",
     "subtitle": "Управление профилем, доступом и системными параметрами ERP.",
     "profile": {
-      "title": "Профиль администратора",
-      "desc": "Логин и пароль текущего администратора."
+      "title": "Профиль",
+      "desc": "Данные текущего пользователя и выход из аккаунта."
     },
     "access": {
       "title": "Настройки доступа",
@@ -1316,6 +1344,13 @@
       "deleteTitle": "Удалить сотрудника?",
       "deleteDescription": "Сотрудник {{name}} потеряет доступ к ERP. Это действие нельзя отменить.",
       "roleTypes": "Типов ролей",
+      "active": "Активен",
+      "fullAccess": "Полный доступ",
+      "permissionCount": "{{count}} страниц",
+      "pagePermissions": "Доступ к страницам",
+      "pagePermissionsHint": "Выберите разделы ERP, которые сотрудник сможет открывать.",
+      "deniedTitle": "Нет доступа",
+      "deniedDescription": "Администратор не выдал доступ к этой странице.",
       "roles": {
         "admin": "Администратор",
         "manager": "Менеджер",

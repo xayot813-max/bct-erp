@@ -43,6 +43,7 @@ type OrderHistoryProduct struct {
 	ID           string      `json:"id" bson:"id"`
 	Name         string      `json:"name" bson:"name"`
 	Price        FlexFloat64 `json:"price" bson:"price"`
+	Currency     string      `json:"currency,omitempty" bson:"currency,omitempty"`
 	Quantity     int         `json:"quantity" bson:"quantity"`
 	SerialNumber string      `json:"serial_number" bson:"serial_number"`
 	ShtrixNumber string      `json:"shtrix_number,omitempty" bson:"shtrix_number,omitempty"`
@@ -56,6 +57,7 @@ type OrderHistoryEntry struct {
 	ID          string                `json:"id" bson:"id"`
 	OrderNumber string                `json:"order_number" bson:"order_number"`
 	Price       FlexFloat64           `json:"price" bson:"price"`
+	Currency    string                `json:"currency,omitempty" bson:"currency,omitempty"`
 	Status      string                `json:"status" bson:"status"`
 	CreatedAt   time.Time             `json:"created_at" bson:"created_at"`
 	UpdatedAt   time.Time             `json:"updated_at" bson:"updated_at"`
@@ -313,12 +315,13 @@ type Partner struct {
 
 // Admin model
 type Admin struct {
-	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Name      string             `json:"name" bson:"name"`
-	Role      string             `json:"role" bson:"role"`
-	Password  string             `json:"password" bson:"password"`
-	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
-	UpdatedAt time.Time          `json:"updated_at" bson:"updated_at"`
+	ID          primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name        string             `json:"name" bson:"name"`
+	Role        string             `json:"role" bson:"role"`
+	Permissions []string           `json:"permissions" bson:"permissions"`
+	Password    string             `json:"password" bson:"password"`
+	CreatedAt   time.Time          `json:"created_at" bson:"created_at"`
+	UpdatedAt   time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
 // Currency model

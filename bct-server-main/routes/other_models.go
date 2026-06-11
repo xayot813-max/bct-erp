@@ -27,6 +27,36 @@ func normalizeAdminRole(value string) string {
 	}
 }
 
+func requireAdminRole(db *mongo.Client) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		if role, ok := c.Locals("admin_role").(string); ok && normalizeAdminRole(role) == "admin" {
+			return c.Next()
+		}
+
+		adminID, ok := c.Locals("admin_id").(string)
+		if !ok || adminID == "" {
+			return c.Status(401).JSON(fiber.Map{"error": "Invalid or missing admin token"})
+		}
+
+		objectID, err := primitive.ObjectIDFromHex(adminID)
+		if err != nil {
+			return c.Status(401).JSON(fiber.Map{"error": "Invalid admin token"})
+		}
+
+		collection := config.GetCollection(db, "admins")
+		var admin models.Admin
+		if err := collection.FindOne(context.TODO(), bson.M{"_id": objectID}).Decode(&admin); err != nil {
+			return c.Status(401).JSON(fiber.Map{"error": "Admin not found"})
+		}
+
+		if normalizeAdminRole(admin.Role) != "admin" {
+			return c.Status(403).JSON(fiber.Map{"error": "Administrator role required"})
+		}
+
+		return c.Next()
+	}
+}
+
 // Generic CRUD helper function
 func genericCRUD(app fiber.Router, db *mongo.Client, routeName, collectionName string, model interface{}) {
 	route := app.Group("/" + routeName)
@@ -176,6 +206,7 @@ func PartnerRoutes(app fiber.Router, db *mongo.Client) {
 func AdminRoutes(app fiber.Router, db *mongo.Client) {
 	admins := app.Group("/admins")
 	admins.Use(middleware.AdminJWTMiddleware())
+	admins.Use(requireAdminRole(db))
 
 	// Get all admins
 	admins.Get("/", func(c *fiber.Ctx) error {
@@ -204,6 +235,7 @@ func AdminRoutes(app fiber.Router, db *mongo.Client) {
 			if admins[i].Role == "" {
 				admins[i].Role = "admin"
 			}
+			admins[i].Permissions = normalizeAdminPermissions(admins[i].Role, admins[i].Permissions)
 		}
 
 		total, _ := collection.CountDocuments(context.TODO(), bson.M{})
@@ -234,6 +266,7 @@ func AdminRoutes(app fiber.Router, db *mongo.Client) {
 		if admin.Role == "" {
 			admin.Role = "admin"
 		}
+		admin.Permissions = normalizeAdminPermissions(admin.Role, admin.Permissions)
 		return c.JSON(admin)
 	})
 
@@ -247,6 +280,7 @@ func AdminRoutes(app fiber.Router, db *mongo.Client) {
 			return c.Status(400).JSON(fiber.Map{"error": "Name and password are required"})
 		}
 		admin.Role = normalizeAdminRole(admin.Role)
+		admin.Permissions = normalizeAdminPermissions(admin.Role, admin.Permissions)
 
 		collection := config.GetCollection(db, "admins")
 		existing, err := collection.CountDocuments(context.TODO(), bson.M{"name": admin.Name})
@@ -324,6 +358,17 @@ func AdminRoutes(app fiber.Router, db *mongo.Client) {
 			}
 			updateData["role"] = normalizeAdminRole(roleValue)
 		}
+		roleValue, _ := updateData["role"].(string)
+		if roleValue == "" {
+			var existingAdmin models.Admin
+			collection := config.GetCollection(db, "admins")
+			if err := collection.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&existingAdmin); err == nil {
+				roleValue = normalizeAdminRole(existingAdmin.Role)
+			}
+		}
+		if permissions, exists := updateData["permissions"]; exists {
+			updateData["permissions"] = normalizePermissionsFromInput(roleValue, permissions)
+		}
 
 		delete(updateData, "_id")
 		updateData["updated_at"] = time.Now()
@@ -346,6 +391,7 @@ func AdminRoutes(app fiber.Router, db *mongo.Client) {
 		if admin.Role == "" {
 			admin.Role = "admin"
 		}
+		admin.Permissions = normalizeAdminPermissions(admin.Role, admin.Permissions)
 		return c.JSON(admin)
 	})
 

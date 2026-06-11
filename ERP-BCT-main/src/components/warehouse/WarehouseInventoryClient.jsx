@@ -27,6 +27,7 @@ import { extractArrayFromResponse } from "@/lib/utils/api-helpers"
 import { warehouseOptions } from "@/components/warehouse/warehouse-data"
 import { toastError, toastSuccess } from "@/lib/toast"
 import BackLinkButton from "@/components/shared/BackLinkButton"
+import { formatMoney, normalizeCurrencyCode, resolveLocale } from "@/lib/utils/currency"
 
 const actionButtonClass =
   "h-[40px] w-[30px] rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-0 text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
@@ -56,11 +57,9 @@ const normalizeProduct = (item, index, warehouses, productTypes) => {
     count: Number(item?.count ?? [0, 25, 20, 10, 15][index % 5] ?? 0),
     date: item?.created_at ? new Date(item.created_at).toLocaleDateString("ru-RU") : "—",
     price: Number(item?.price ?? 1500000),
+    currency: normalizeCurrencyCode(item?.currency || item?.price_currency || "UZS"),
   }
 }
-
-const money = (value, locale = "en-US", currencyLabel = "sum") =>
-  `${Number(value).toLocaleString(locale)} ${currencyLabel}`
 
 export default function WarehouseInventoryClient({
   titleKey = "warehouse.links.stocks.title",
@@ -104,6 +103,18 @@ export default function WarehouseInventoryClient({
       }, {}),
     [t, warehouseChoices],
   )
+  const selectedMoveProduct = useMemo(
+    () => products.find((item) => item.id === moveProductId) || activeProduct,
+    [activeProduct, moveProductId, products],
+  )
+  const destinationWarehouseChoices = useMemo(
+    () => warehouseChoices.filter((item) => item.id !== selectedMoveProduct?.warehouseId),
+    [selectedMoveProduct?.warehouseId, warehouseChoices],
+  )
+  const selectedDestinationWarehouse = useMemo(
+    () => warehouseChoices.find((item) => item.id === moveWarehouseId) || null,
+    [moveWarehouseId, warehouseChoices],
+  )
   const translatedProductTypes = useMemo(
     () =>
       ["terminal", "computer", "roller", "printer", "label"].map((key) =>
@@ -112,12 +123,8 @@ export default function WarehouseInventoryClient({
     [t],
   )
   const locale = useMemo(() => {
-    const language = (i18n.resolvedLanguage || i18n.language || "ru").toLowerCase()
-    if (language.startsWith("en")) return "en-US"
-    if (language.startsWith("uz")) return "uz-UZ"
-    return "ru-RU"
+    return resolveLocale(i18n.resolvedLanguage || i18n.language)
   }, [i18n.language, i18n.resolvedLanguage])
-  const currencyLabel = useMemo(() => t("products.currency", { defaultValue: "sum" }), [t])
   useEffect(() => {
     const load = async () => {
       try {
@@ -194,9 +201,10 @@ export default function WarehouseInventoryClient({
   }, [totalPages])
 
   const openMove = (product = null) => {
+    const fallbackDestination = warehouseChoices.find((item) => item.id !== product?.warehouseId)
     setActiveProduct(product || null)
     setMoveProductId(product?.id || "")
-    setMoveWarehouseId("warehouse-5")
+    setMoveWarehouseId(fallbackDestination?.id || "")
     setMoveQuantity(product?.count ? String(product.count) : "")
     setMoveComment("")
     setMoveOpen(true)
@@ -294,9 +302,11 @@ export default function WarehouseInventoryClient({
 
   const handleMoveProductChange = (productId) => {
     const product = products.find((item) => item.id === productId) || null
+    const fallbackDestination = warehouseChoices.find((item) => item.id !== product?.warehouseId)
     setMoveProductId(productId)
     setActiveProduct(product)
     setMoveQuantity(product?.count ? String(product.count) : "")
+    setMoveWarehouseId(fallbackDestination?.id || "")
   }
 
   const confirmMove = () => {
@@ -310,6 +320,11 @@ export default function WarehouseInventoryClient({
 
     if (!moveWarehouseId) {
       toastError({ title: t("warehouse.dialogs.move.errors.warehouse") })
+      return
+    }
+
+    if (moveWarehouseId === selectedProduct.warehouseId) {
+      toastError({ title: t("warehouse.dialogs.move.errors.sameWarehouse") })
       return
     }
 
@@ -467,7 +482,7 @@ export default function WarehouseInventoryClient({
                     <td className="border-r border-[var(--border-subtle)] px-4 py-4">{product.warehouse}</td>
                     <td className="border-r border-[var(--border-subtle)] px-4 py-4">{product.count}</td>
                     <td className="border-r border-[var(--border-subtle)] px-4 py-4">{product.date}</td>
-                    <td className="border-r border-[var(--border-subtle)] px-4 py-4">{money(product.price, locale, currencyLabel)}</td>
+                    <td className="border-r border-[var(--border-subtle)] px-4 py-4">{formatMoney(product.price, product.currency, locale)}</td>
                     <td className="px-4 py-4">
                       <div className="flex justify-end gap-2">
                         <Button
@@ -645,20 +660,36 @@ export default function WarehouseInventoryClient({
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <label className="mb-1 block text-[11px] font-medium text-[var(--text-secondary)]">{t("warehouse.dialogs.move.fields.warehouse")}<span className="text-[var(--danger)]">*</span></label>
+              <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr] md:items-end">
+                <div>
+                  <label className="mb-1 block text-[11px] font-medium text-[var(--text-secondary)]">{t("warehouse.dialogs.move.fields.fromWarehouse")}</label>
+                  <div className="min-h-[44px] rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-2">
+                    <p className="text-[12px] font-medium text-[var(--text-primary)]">
+                      {selectedMoveProduct?.warehouse || t("warehouse.dialogs.move.placeholders.sourceWarehouse")}
+                    </p>
+                    <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                      {t("warehouse.dialogs.move.available", { count: selectedMoveProduct?.count ?? 0 })}
+                    </p>
+                  </div>
+                </div>
+                <div className="hidden h-[44px] items-center justify-center text-[var(--text-secondary)] md:flex">
+                  <ArrowRight className="h-5 w-5" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[11px] font-medium text-[var(--text-secondary)]">{t("warehouse.dialogs.move.fields.toWarehouse")}<span className="text-[var(--danger)]">*</span></label>
                 <Select value={moveWarehouseId} onValueChange={setMoveWarehouseId}>
                   <SelectTrigger className="h-[36px] rounded-[8px] border-[#e5e8ee] text-[12px]">
-                    <SelectValue />
+                    <SelectValue placeholder={t("warehouse.dialogs.move.placeholders.destinationWarehouse")} />
                   </SelectTrigger>
                   <SelectContent>
-                    {warehouseChoices.map((item) => (
+                    {destinationWarehouseChoices.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
                         {item.name || item.id}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                </div>
               </div>
               <div>
                 <label className="mb-1 block text-[11px] font-medium text-[var(--text-secondary)]">{t("warehouse.dialogs.move.fields.quantity")}<span className="text-[var(--danger)]">*</span></label>
@@ -681,6 +712,17 @@ export default function WarehouseInventoryClient({
                   className="min-h-[92px] rounded-[8px] border-[#e5e8ee] text-[12px]"
                 />
               </div>
+              {selectedMoveProduct && selectedDestinationWarehouse && (
+                <div className="rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4">
+                  <p className="text-[11px] uppercase text-[var(--text-secondary)]">{t("warehouse.dialogs.move.summaryTitle")}</p>
+                  <p className="mt-2 text-[14px] font-medium text-[var(--text-primary)]">
+                    {selectedMoveProduct.warehouse} → {selectedDestinationWarehouse.name || selectedDestinationWarehouse.id}
+                  </p>
+                  <p className="mt-1 text-[12px] text-[var(--text-secondary)]">
+                    {selectedMoveProduct.name} · {t("warehouse.dialogs.move.quantitySummary", { count: moveQuantity || 0 })}
+                  </p>
+                </div>
+              )}
             </div>
             <div className="mt-7 flex items-center justify-end gap-4">
               <Button variant="outline" className="h-10 px-6 text-[12px]" onClick={() => setMoveOpen(false)}>

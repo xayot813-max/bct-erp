@@ -5,16 +5,35 @@ import { useEffect } from "react"
 const RECOVERY_KEY = "bct:global-chunk-recovery"
 const RECOVERY_WINDOW_MS = 30000
 const CHUNK_LOAD_ERROR_PATTERN = new RegExp(
-  "ChunkLoadError|Loading chunk|_next/static/chunks|dynamically imported module|module script failed",
+  [
+    "ChunkLoadError",
+    "Loading chunk",
+    "_next/static/chunks",
+    "dynamically imported module",
+    "module script failed",
+    "failed to fetch dynamically imported module",
+    "importing a module script failed",
+    "application update",
+    "application updated",
+  ].join("|"),
   "i",
 )
 
-function isChunkLoadError(error) {
-  const message = [error?.name, error?.message, error?.digest]
+function getErrorMessage(error) {
+  return [
+    error?.name,
+    error?.message,
+    error?.digest,
+    error?.stack,
+    error?.cause?.name,
+    error?.cause?.message,
+  ]
     .filter(Boolean)
     .join(" ")
+}
 
-  return CHUNK_LOAD_ERROR_PATTERN.test(message)
+function isChunkLoadError(error) {
+  return CHUNK_LOAD_ERROR_PATTERN.test(getErrorMessage(error))
 }
 
 function canReload() {
@@ -31,10 +50,14 @@ function canReload() {
   }
 }
 
+function reloadPage() {
+  window.location.reload()
+}
+
 export default function GlobalError({ error, reset }) {
   useEffect(() => {
-    if (isChunkLoadError(error) && canReload()) {
-      window.location.reload()
+    if ((isChunkLoadError(error) || process.env.NODE_ENV === "production") && canReload()) {
+      reloadPage()
     }
   }, [error])
 
@@ -49,10 +72,10 @@ export default function GlobalError({ error, reset }) {
             </p>
             <button
               type="button"
-              onClick={() => reset()}
+              onClick={reloadPage}
               style={{ border: "1px solid #d0d7e2", borderRadius: 10, padding: "10px 16px", background: "#ffffff" }}
             >
-              Повторить
+              Обновить страницу
             </button>
           </div>
         </main>

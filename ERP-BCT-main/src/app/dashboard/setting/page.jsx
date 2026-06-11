@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { ArrowRight, ShieldCheck, UserCog } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { useAuth } from "@/components/providers/AuthProvider"
+import { hasPermission } from "@/lib/access-control"
 
 const cards = [
   {
@@ -12,6 +14,7 @@ const cards = [
     descKey: "settings.profile.desc",
     title: "Профиль администратора",
     desc: "Логин и пароль текущего администратора.",
+    permission: "settings",
   },
   {
     href: "/dashboard/setting/access",
@@ -20,11 +23,13 @@ const cards = [
     descKey: "settings.access.desc",
     title: "Настройки доступа",
     desc: "Реальные пользователи админ-панели без демо-сотрудников.",
+    permission: "access",
   },
 ]
 
 export default function SettingsPage() {
   const { t } = useTranslation("common")
+  const { user } = useAuth()
 
   return (
     <div className="mx-auto w-[95%] max-w-[1240px] py-5">
@@ -36,7 +41,7 @@ export default function SettingsPage() {
       </p>
 
       <div className="mt-8 grid gap-4 md:grid-cols-2">
-        {cards.map((card) => {
+        {cards.filter((card) => hasPermission(user, card.permission)).map((card) => {
           const Icon = card.icon
           return (
             <Link

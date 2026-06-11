@@ -60,7 +60,8 @@ func AdminJWTMiddleware() fiber.Handler {
 			// Store admin info in context
 			c.Locals("admin_id", claims["admin_id"])
 			c.Locals("admin_name", claims["admin_name"])
-			
+			c.Locals("admin_role", claims["admin_role"])
+
 			return c.Next()
 		}
 

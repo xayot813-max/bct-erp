@@ -25,7 +25,7 @@ const STRIP_RESPONSE_HEADERS = new Set([
 async function forward(request: NextRequest, segments: string[]) {
   const search = request.nextUrl.search || ""
   const path = segments.filter(Boolean).join("/")
-  const adminPath = path ? `admin/${path}` : "admin"
+  const adminPath = path.startsWith("admins") ? path : path ? `admin/${path}` : "admin"
   const targetUrl = new URL(`${adminPath}${search}`, `${ADMIN_BASE_URL}/`)
 
   const headers = new Headers()
@@ -35,6 +35,13 @@ async function forward(request: NextRequest, segments: string[]) {
     if (lowerKey === "connection") return
     headers.set(key, value)
   })
+
+  if (!headers.has("authorization")) {
+    const accessToken = request.cookies.get("accessToken")?.value
+    if (accessToken) {
+      headers.set("authorization", `Bearer ${accessToken}`)
+    }
+  }
 
   const pathnameForReferer = `/${adminPath}`
   headers.set("origin", ADMIN_BASE_ORIGIN)

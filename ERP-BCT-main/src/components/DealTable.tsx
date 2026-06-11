@@ -4,11 +4,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDealStore, type DealProduct } from "@/store/dealStore"
-
-const money = (value: number, locale = "en-US", currencyLabel = "sum") =>
-  new Intl.NumberFormat(locale, {
-    maximumFractionDigits: 0,
-  }).format(Number.isFinite(value) ? value : 0) + ` ${currencyLabel}`
+import { formatMoney, resolveLocale } from "@/lib/utils/currency"
 
 const calculateTotals = (product: DealProduct) => {
   const subtotal = product.price * product.quantity
@@ -22,13 +18,10 @@ const calculateTotals = (product: DealProduct) => {
 export default function DealTable() {
   const { t, i18n } = useTranslation("common")
   const products = useDealStore((state) => state.dealProducts)
+  const currency = useDealStore((state) => state.formData.currency)
   const locale = useMemo(() => {
-    const language = (i18n.resolvedLanguage || i18n.language || "en").toLowerCase()
-    if (language.startsWith("ru")) return "ru-RU"
-    if (language.startsWith("uz")) return "uz-UZ"
-    return "en-US"
+    return resolveLocale(i18n.resolvedLanguage || i18n.language)
   }, [i18n.language, i18n.resolvedLanguage])
-  const currencyLabel = t("products.currency", { defaultValue: "sum" })
 
   const summary = useMemo(() => {
     return products.reduce(
@@ -76,10 +69,10 @@ export default function DealTable() {
                     <td className="px-3 py-3">{product.quantity}{t("deal.table.quantitySuffix", { defaultValue: " pcs" })}</td>
                     <td className="px-3 py-3">0</td>
                     <td className="px-3 py-3">120</td>
-                    <td className="px-3 py-3">{money(subtotal, locale, currencyLabel)}</td>
-                    <td className="px-3 py-3">{money(subtotal + vatAmount, locale, currencyLabel)}</td>
-                    <td className="px-3 py-3">{money(discountAmount, locale, currencyLabel)} / {product.discount}%</td>
-                    <td className="rounded-r-md px-3 py-3 font-semibold">{money(total, locale, currencyLabel)}</td>
+                    <td className="px-3 py-3">{formatMoney(subtotal, currency, locale)}</td>
+                    <td className="px-3 py-3">{formatMoney(subtotal + vatAmount, currency, locale)}</td>
+                    <td className="px-3 py-3">{formatMoney(discountAmount, currency, locale)} / {product.discount}%</td>
+                    <td className="rounded-r-md px-3 py-3 font-semibold">{formatMoney(total, currency, locale)}</td>
                   </tr>
                 )
               })
@@ -91,7 +84,7 @@ export default function DealTable() {
       {products.length > 0 && (
         <div className="flex items-center justify-between border-t border-[var(--border-subtle)] px-5 py-3 text-[11px] text-[var(--text-secondary)]">
           <span>{summary.quantity} {t("deal.table.productsInContract", { defaultValue: "products in contract" })}</span>
-          <strong className="text-[var(--text-primary)]">{money(summary.total, locale, currencyLabel)}</strong>
+          <strong className="text-[var(--text-primary)]">{formatMoney(summary.total, currency, locale)}</strong>
         </div>
       )}
     </div>

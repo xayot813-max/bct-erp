@@ -21,6 +21,7 @@ import (
 // Admin authentication models
 type AdminLoginRequest struct {
 	Name     string `json:"name"`
+	Login    string `json:"login"`
 	Password string `json:"password"`
 }
 
@@ -43,6 +44,10 @@ func AdminAuthRoutes(app fiber.Router, db *mongo.Client) {
 		if err := c.BodyParser(&req); err != nil {
 			log.Printf("Error parsing request body: %v", err)
 			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
+		}
+
+		if req.Name == "" {
+			req.Name = req.Login
 		}
 
 		log.Printf("Login attempt for admin: %s", req.Name)
@@ -73,9 +78,13 @@ func AdminAuthRoutes(app fiber.Router, db *mongo.Client) {
 		log.Printf("Password verification successful for admin: %s", admin.Name)
 
 		admin.Password = "" // Don't return password
+		if admin.Role == "" {
+			admin.Role = "admin"
+		}
+		admin.Permissions = normalizeAdminPermissions(admin.Role, admin.Permissions)
 
 		// Generate JWT token
-		token, err := generateAdminJWT(admin.ID.Hex(), admin.Name)
+		token, err := generateAdminJWT(admin.ID.Hex(), admin.Name, admin.Role)
 		if err != nil {
 			log.Printf("Failed to generate JWT token: %v", err)
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to generate token"})
@@ -96,8 +105,8 @@ func AdminAuthRoutes(app fiber.Router, db *mongo.Client) {
 			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
 		}
 
-		if req.Name == "" || req.Password == "" {
-			return c.Status(400).JSON(fiber.Map{"error": "Name and password are required"})
+		if req.Name == "" {
+			return c.Status(400).JSON(fiber.Map{"error": "Name is required"})
 		}
 
 		collection := config.GetCollection(db, "admins")
@@ -111,6 +120,10 @@ func AdminAuthRoutes(app fiber.Router, db *mongo.Client) {
 		err = collection.FindOne(context.TODO(), bson.M{"_id": adminID}).Decode(&admin)
 		if err != nil {
 			return c.Status(404).JSON(fiber.Map{"error": "Admin not found"})
+		}
+
+		if normalizeAdminRole(admin.Role) != "admin" {
+			return c.Status(403).JSON(fiber.Map{"error": "Only administrators can update credentials"})
 		}
 
 		updateData := bson.M{
@@ -137,9 +150,13 @@ func AdminAuthRoutes(app fiber.Router, db *mongo.Client) {
 		}
 
 		admin.Password = "" // Don't return password
+		if admin.Role == "" {
+			admin.Role = "admin"
+		}
+		admin.Permissions = normalizeAdminPermissions(admin.Role, admin.Permissions)
 
 		// Generate new JWT token with updated info
-		token, err := generateAdminJWT(admin.ID.Hex(), admin.Name)
+		token, err := generateAdminJWT(admin.ID.Hex(), admin.Name, admin.Role)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to generate token"})
 		}
@@ -166,6 +183,10 @@ func AdminAuthRoutes(app fiber.Router, db *mongo.Client) {
 		}
 
 		admin.Password = "" // Don't return password
+		if admin.Role == "" {
+			admin.Role = "admin"
+		}
+		admin.Permissions = normalizeAdminPermissions(admin.Role, admin.Permissions)
 		return c.JSON(admin)
 	})
 
@@ -208,7 +229,7 @@ func adminIDFromRequest(c *fiber.Ctx) (primitive.ObjectID, error) {
 	return primitive.ObjectIDFromHex(adminID)
 }
 
-func generateAdminJWT(adminID, adminName string) (string, error) {
+func generateAdminJWT(adminID, adminName, adminRole string) (string, error) {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		jwtSecret = "your-super-secret-jwt-key-here"
@@ -217,6 +238,7 @@ func generateAdminJWT(adminID, adminName string) (string, error) {
 	claims := jwt.MapClaims{
 		"admin_id":   adminID,
 		"admin_name": adminName,
+		"admin_role": normalizeAdminRole(adminRole),
 		"type":       "admin",
 		"exp":        time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 days
 	}

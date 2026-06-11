@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { PageShell, PageTitle } from "@/components/shared/PageShell"
+import { getUserPermissions, isSuperAdmin } from "@/lib/access-control"
 
 const cookieOptions = {
   expires: 7,
@@ -31,6 +32,8 @@ export default function AdminProfilePage() {
   const { user, tokens, isAuthenticated, refreshFromCookies, clearAuth } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [initialValues, setInitialValues] = useState({ name: "" })
+  const canManageCredentials = isSuperAdmin(user)
+  const visiblePermissions = getUserPermissions(user)
 
   const ProfileSchema = useMemo(() => z.object({
     name: z.string().min(3, t("adminProfile.errors.name")),
@@ -101,6 +104,14 @@ export default function AdminProfilePage() {
     })
 
     try {
+      if (!canManageCredentials) {
+        toastError({
+          title: t("adminProfile.restrictedTitle"),
+          description: t("adminProfile.restrictedDescription"),
+        })
+        return
+      }
+
       const result = await adminService.update(
         {
           name: values.name.trim(),
@@ -156,9 +167,9 @@ export default function AdminProfilePage() {
     <PageShell className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <PageTitle>{t("adminProfile.title")}</PageTitle>
+          <PageTitle>{t(canManageCredentials ? "adminProfile.title" : "adminProfile.employeeTitle")}</PageTitle>
           <p className="mt-2 text-[13px] text-[var(--text-secondary)]">
-            {t("adminProfile.currentAdmin", { name: user?.name || initialValues.name || "admin", defaultValue: "Текущий администратор: {{name}}" })}
+            {t(canManageCredentials ? "adminProfile.currentAdmin" : "adminProfile.currentUser", { name: user?.name || initialValues.name || "admin", defaultValue: "Текущий пользователь: {{name}}" })}
           </p>
         </div>
         <Button type="button" variant="outline" onClick={clearAuth}>
@@ -168,9 +179,37 @@ export default function AdminProfilePage() {
       </div>
       <Card className="max-w-3xl border-[var(--border-default)] bg-[var(--surface)] shadow-[var(--surface-shadow)]">
         <CardHeader>
-          <CardTitle>{t("adminProfile.title")}</CardTitle>
+          <CardTitle>{t(canManageCredentials ? "adminProfile.title" : "adminProfile.employeeTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
+          {!canManageCredentials && (
+            <div className="space-y-5">
+              <p className="text-sm leading-6 text-[var(--text-secondary)]">
+                {t("adminProfile.employeeDescription")}
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4">
+                  <p className="text-[12px] text-[var(--text-secondary)]">{t("adminProfile.fields.login")}</p>
+                  <p className="mt-2 text-[15px] font-medium text-[var(--text-primary)]">{user?.name || initialValues.name || "-"}</p>
+                </div>
+                <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4">
+                  <p className="text-[12px] text-[var(--text-secondary)]">{t("adminProfile.role")}</p>
+                  <p className="mt-2 text-[15px] font-medium text-[var(--text-primary)]">{user?.role || "-"}</p>
+                </div>
+              </div>
+              <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4">
+                <p className="text-[12px] text-[var(--text-secondary)]">{t("adminProfile.permissions")}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {visiblePermissions.map((permission) => (
+                    <span key={permission} className="rounded-[8px] border border-[var(--border-default)] px-2.5 py-1 text-[12px] text-[var(--text-primary)]">
+                      {permission}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          {canManageCredentials && (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
               <FormField
@@ -242,6 +281,7 @@ export default function AdminProfilePage() {
               </div>
             </form>
           </Form>
+          )}
         </CardContent>
       </Card>
     </PageShell>

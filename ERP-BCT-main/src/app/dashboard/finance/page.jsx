@@ -7,19 +7,11 @@ import { useTranslation } from "react-i18next"
 
 import { getContracts } from "@/lib/actions"
 import { extractArrayFromResponse } from "@/lib/utils/api-helpers"
-import { currencyReferenceOptions } from "@/lib/reference-data"
+import { formatMoney, normalizeCurrencyCode, resolveLocale } from "@/lib/utils/currency"
 
 const toNumber = (value) => {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
-}
-
-const resolveCurrency = (currency) =>
-  currencyReferenceOptions.find((item) => item.id === currency) || currencyReferenceOptions[0]
-
-const formatMoney = (value, currency, locale) => {
-  const option = resolveCurrency(currency)
-  return `${toNumber(value).toLocaleString(locale, { maximumFractionDigits: 2 })} ${option.symbol || option.label}`
 }
 
 const paymentState = (contract) => {
@@ -37,10 +29,7 @@ export default function FinancePage() {
   const [error, setError] = useState("")
 
   const locale = useMemo(() => {
-    const language = (i18n.resolvedLanguage || i18n.language || "ru").toLowerCase()
-    if (language.startsWith("en")) return "en-US"
-    if (language.startsWith("uz")) return "uz-UZ"
-    return "ru-RU"
+    return resolveLocale(i18n.resolvedLanguage || i18n.language)
   }, [i18n.language, i18n.resolvedLanguage])
 
   useEffect(() => {
@@ -66,7 +55,7 @@ export default function FinancePage() {
   const summaries = useMemo(() => {
     const byCurrency = new Map()
     contracts.forEach((contract) => {
-      const currency = contract?.contract_currency || "UZS"
+      const currency = normalizeCurrencyCode(contract?.contract_currency || contract?.currency)
       const current = byCurrency.get(currency) || { currency, total: 0, paid: 0, remaining: 0, contracts: 0 }
       const total = toNumber(contract?.contract_amount)
       const paid = toNumber(contract?.pay_card) + toNumber(contract?.pay_cash)
@@ -168,7 +157,7 @@ export default function FinancePage() {
                     const total = toNumber(contract?.contract_amount)
                     const paid = toNumber(contract?.pay_card) + toNumber(contract?.pay_cash)
                     const remaining = Math.max(0, total - paid)
-                    const currency = contract?.contract_currency || "UZS"
+                    const currency = normalizeCurrencyCode(contract?.contract_currency || contract?.currency)
                     return (
                       <tr key={contract?.id || contract?._id} className="border-t border-[var(--border-subtle)]">
                         <td className="px-5 py-4">{contract?.contract_number || "—"}</td>

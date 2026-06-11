@@ -20,7 +20,7 @@ import Link from "next/link";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { formatUzPhone } from "./utils";
 import { getLocalizedValue } from "@/lib/multilingual";
-import { formatUSD } from "@/lib/utils/currency";
+import { formatMoney, normalizeCurrencyCode, resolveLocale } from "@/lib/utils/currency";
 import {
   deleteCategory,
   deleteClient,
@@ -75,8 +75,8 @@ const translate = (t, key, fallback) => {
   return fallback ?? key;
 };
 
-const formatMoney = (value, locale = "ru-RU", suffix = "sum") =>
-  `${Number(value ?? 0).toLocaleString(locale)} ${suffix}`;
+const formatDefaultMoney = (value, currency = "UZS", locale = "ru-RU") =>
+  formatMoney(value, currency, locale);
 
 const resolveOrderHistory = (record) =>
   Array.isArray(record?.order_history)
@@ -91,12 +91,21 @@ const resolveRealOrderCount = (record) => {
   return Number(record?.order_count ?? record?.orders_count ?? 0);
 };
 
-const resolveRealTotalAmount = (record) => {
+const resolveRealTotalMoney = (record) => {
   const history = resolveOrderHistory(record);
-  if (history.length > 0) {
-    return history.reduce((sum, entry) => sum + Number(entry?.price ?? entry?.total ?? 0), 0);
+  if (history.length === 0) {
+    return formatDefaultMoney(record?.total_amount ?? 0, record?.currency || "UZS");
   }
-  return Number(record?.total_amount ?? 0);
+
+  const totals = history.reduce((acc, entry) => {
+    const currency = normalizeCurrencyCode(entry?.currency || entry?.contract_currency || "UZS");
+    acc[currency] = (acc[currency] || 0) + Number(entry?.price ?? entry?.total ?? 0);
+    return acc;
+  }, {});
+
+  return Object.entries(totals)
+    .map(([currency, total]) => formatDefaultMoney(total, currency))
+    .join(" / ");
 };
 
 const resolveEntityId = (record) =>
@@ -207,7 +216,7 @@ export const getClientsColumns = (t) => [
   {
     accessorKey: "total_amount",
     header: translate(t, "clients.columns.totalAmount", "Общая сумма покупок"),
-    cell: ({ row }) => formatMoney(resolveRealTotalAmount(row.original)),
+    cell: ({ row }) => resolveRealTotalMoney(row.original),
   },
   {
     accessorKey: "phone",
@@ -283,7 +292,7 @@ export const getCompaniesColumns = (t) => [
   {
     accessorKey: "total_amount",
     header: translate(t, "companies.columns.totalAmount", "Общая сумма покупок"),
-    cell: ({ row }) => formatMoney(resolveRealTotalAmount(row.original)),
+    cell: ({ row }) => resolveRealTotalMoney(row.original),
   },
   {
     accessorKey: "phone",
@@ -389,10 +398,7 @@ export const getSerialColumns = (t) => [
   { accessorKey: "date_warranty", header: t("serial.columns.date_warranty") },
   {
     accessorKey: "price", header: t("serial.columns.price"), cell: ({ row }) => {
-      const price = row.original.price || 0;
-      return (
-        <h1>{price?.toLocaleString()}</h1>
-      );
+      return <h1>{formatDefaultMoney(row.original.price || 0)}</h1>;
     },
   },
 ];
@@ -436,11 +442,9 @@ export const getProductsColumns = (t, language = "ru") => [
     header: translate(t, "products.columns.price", "Цена"),
     cell: ({ row }) => {
       const price = row.original.price || 0;
-      const locale = language === "en" ? "en-US" : language === "uz" ? "uz-UZ" : "ru-RU"
-      const suffix = translate(t, "products.currency", language === "uz" ? "so'm" : language === "en" ? "sum" : "сум")
-      return (
-        <span>{formatMoney(price, locale, suffix)}</span>
-      );
+      const locale = resolveLocale(language)
+      const currency = normalizeCurrencyCode(row.original.currency || row.original.price_currency || "UZS")
+      return <span>{formatMoney(price, currency, locale)}</span>;
     },
   },
   {
@@ -575,7 +579,8 @@ export const getContractsColumns = (t) => [
     header: translate(t, "contracts.columns.amount", "Сумма"),
     cell: ({ row }) => {
       const amount = Number(row.original.contract_amount ?? row.original.amount ?? 0)
-      return amount ? amount.toLocaleString() : "0"
+      const currency = normalizeCurrencyCode(row.original.contract_currency || row.original.currency)
+      return formatMoney(amount, currency)
     },
   },
   {

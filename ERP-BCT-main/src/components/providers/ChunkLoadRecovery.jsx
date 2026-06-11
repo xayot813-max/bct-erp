@@ -5,7 +5,17 @@ import { useEffect } from "react"
 const RECOVERY_KEY = "bct:chunk-load-recovery"
 const RECOVERY_WINDOW_MS = 30000
 const CHUNK_LOAD_ERROR_PATTERN = new RegExp(
-  "ChunkLoadError|Loading chunk|_next/static/chunks|dynamically imported module|module script failed",
+  [
+    "ChunkLoadError",
+    "Loading chunk",
+    "_next/static/chunks",
+    "dynamically imported module",
+    "module script failed",
+    "failed to fetch dynamically imported module",
+    "importing a module script failed",
+    "application update",
+    "application updated",
+  ].join("|"),
   "i",
 )
 

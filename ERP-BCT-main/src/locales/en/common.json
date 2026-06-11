@@ -122,7 +122,7 @@
     }
   },
   "adminProfile": {
-    "title": "Admin Profile",
+    "title": "Administrator Profile",
     "loginRequiredTitle": "Authentication Required",
     "loginRequiredDescription": "Please sign in using the login dialog to manage the administrator credentials.",
     "updatingTitle": "Saving changes...",
@@ -156,7 +156,14 @@
       "save": "Save changes",
       "reset": "Reset"
     },
-    "currentAdmin": "Current administrator: {{name}}"
+    "currentAdmin": "Current administrator: {{name}}",
+    "employeeTitle": "Employee Profile",
+    "currentUser": "Current employee: {{name}}",
+    "employeeDescription": "You are signed in as an ERP employee. Only an administrator can change logins, passwords, and access rights.",
+    "restrictedTitle": "Insufficient permissions",
+    "restrictedDescription": "Only an administrator can change the login and password.",
+    "role": "Role",
+    "permissions": "Available pages"
   },
   "homePage": {
     "page": {
@@ -539,7 +546,8 @@
       "description": "This action cannot be undone.",
       "confirm": "Delete"
     },
-    "generatedFunnelName": "Pipeline {{number}}"
+    "generatedFunnelName": "Pipeline {{number}}",
+    "addDealToColumn": "Add deal"
   },
   "clients": {
     "columns": {
@@ -991,7 +999,12 @@
     "address": "Address",
     "actions": {
       "create": "CREATE",
-      "createMovement": "Create transfer"
+      "createMovement": "Create transfer",
+      "new": "New",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "createWriteoff": "Create write-off"
     },
     "table": {
       "warehouse": "Warehouse",
@@ -1082,13 +1095,15 @@
       },
       "move": {
         "title": "Move product?",
-        "description": "Are you sure you want to change the warehouse?",
+        "description": "Select the product, source warehouse, and destination warehouse for this transfer.",
         "fields": {
           "responsible": "Responsible person",
           "productName": "Product name",
           "warehouse": "Warehouse",
           "quantity": "Quantity",
-          "comments": "Comments"
+          "comments": "Comments",
+          "fromWarehouse": "From warehouse",
+          "toWarehouse": "To warehouse"
         },
         "defaults": {
           "responsible": "Admin 1",
@@ -1098,13 +1113,20 @@
         "placeholders": {
           "product": "Select product",
           "quantity": "Enter quantity",
-          "comments": "Transfer comment"
+          "comments": "Transfer comment",
+          "sourceWarehouse": "Select a product to see the warehouse",
+          "destinationWarehouse": "Select destination warehouse"
         },
         "errors": {
           "product": "Select a product to move",
           "warehouse": "Select destination warehouse",
-          "quantity": "Enter a quantity greater than zero"
-        }
+          "quantity": "Enter a quantity greater than zero",
+          "save": "Failed to save transfer",
+          "sameWarehouse": "Destination warehouse must be different from the source warehouse"
+        },
+        "available": "Available: {{count}} pcs",
+        "summaryTitle": "Transfer route",
+        "quantitySummary": "Quantity: {{count}}"
       }
     },
     "messages": {
@@ -1126,7 +1148,10 @@
       "listDeleted": "Warehouse deleted",
       "receiptSaved": "Receipt saved",
       "photoLater": "Photo upload will be available in the next step",
-      "actionCompleted": "Action completed."
+      "actionCompleted": "Action completed.",
+      "createError": "Failed to create warehouse",
+      "updateError": "Failed to update warehouse",
+      "deleteError": "Failed to delete warehouse"
     },
     "sampleTypes": {
       "terminal": "Mobile terminal",
@@ -1226,7 +1251,8 @@
     "selectedCount": "{{count}} selected",
     "selectOptions": "Select options...",
     "printContract": "Print contract",
-    "addDocument": "Add document"
+    "addDocument": "Add document",
+    "comment": "Comment"
   },
   "barcodeSearch": {
     "errors": {
@@ -1251,7 +1277,9 @@
     "totalForMonth": "Total for month",
     "activeDays": "Active days",
     "clientsUnit": "clients",
-    "productsUnit": "products"
+    "productsUnit": "products",
+    "loadError": "Failed to load analytics",
+    "empty": "No real analytics data yet"
   },
   "finance": {
     "title": "Finance",
@@ -1278,8 +1306,8 @@
     "title": "Settings",
     "subtitle": "Manage profile, access, and ERP system parameters.",
     "profile": {
-      "title": "Admin Profile",
-      "desc": "Login and password of the current administrator."
+      "title": "Profile",
+      "desc": "Current user details and account logout."
     },
     "access": {
       "title": "Access Settings",
@@ -1316,6 +1344,13 @@
       "deleteTitle": "Delete employee?",
       "deleteDescription": "Employee {{name}} will lose access to the ERP. This action cannot be undone.",
       "roleTypes": "Role types",
+      "active": "Active",
+      "fullAccess": "Full access",
+      "permissionCount": "{{count}} pages",
+      "pagePermissions": "Page access",
+      "pagePermissionsHint": "Select the ERP sections this employee can open.",
+      "deniedTitle": "No access",
+      "deniedDescription": "The administrator has not granted access to this page.",
       "roles": {
         "admin": "Administrator",
         "manager": "Manager",

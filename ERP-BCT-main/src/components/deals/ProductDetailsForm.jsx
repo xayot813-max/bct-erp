@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { toastError, toastSuccess } from "@/lib/toast"
-import { formatUSD } from "@/lib/utils/currency"
+import { formatMoney } from "@/lib/utils/currency"
 
 const clampQuantity = (value, min = 1, max = Number.POSITIVE_INFINITY) => {
   if (Number.isNaN(value)) return min
@@ -28,6 +28,7 @@ export default function ProductDetailsForm({
   const { t } = useTranslation()
   const router = useRouter()
   const addProductToDeal = useDealStore((state) => state.addProductToDeal)
+  const currency = useDealStore((state) => state.formData.currency)
 
   const [quantity, setQuantity] = useState(1)
   const [serialNumber, setSerialNumber] = useState(product.serialNumber || "")
@@ -155,7 +156,7 @@ export default function ProductDetailsForm({
         <div className="rounded-[12px] border border-[var(--border-default)] bg-[var(--surface)] p-5 shadow-[var(--surface-shadow)]">
           <div className="mb-3 flex items-center justify-between text-[13px] text-[var(--text-primary)]">
             <span className="font-medium">{product.name}</span>
-            <span>{formatUSD(product.price)}</span>
+            <span>{formatMoney(product.price, currency)}</span>
           </div>
           <div className="grid h-10 grid-cols-3 overflow-hidden rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-elevated)] text-[var(--text-primary)]">
             <button type="button" onClick={() => setQuantity((prev) => clampQuantity(prev - 1, 1, maxAvailable ?? Number.POSITIVE_INFINITY))} className="flex items-center justify-center transition hover:bg-[var(--surface-hover)]">

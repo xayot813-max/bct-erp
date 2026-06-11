@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import DashboardHeader from "./_components/DashboardHeader";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import AuthGate from "@/components/providers/AuthGate";
+import ScrollRestorationReset from "@/components/shared/ScrollRestorationReset";
+import PermissionGate from "@/components/providers/PermissionGate";
 
 export default async function DashboardLayout({ children }) {
   const cookieStore = await cookies();
@@ -11,10 +13,11 @@ export default async function DashboardLayout({ children }) {
   return (
     <div className="dashboard-shell">
       <AuthProvider initialUserData={initialUserData}>
+        <ScrollRestorationReset />
         <DashboardHeader />
-        <div className="min-h-screen bg-[var(--app-bg)] pt-16">
+        <div data-route-scroll-container className="min-h-screen bg-[var(--app-bg)] pt-16">
           <AuthGate>
-            {children}
+            <PermissionGate>{children}</PermissionGate>
           </AuthGate>
         </div>
       </AuthProvider>

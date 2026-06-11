@@ -23,6 +23,7 @@ import {
 import { useDealStore } from "@/store/dealStore"
 import { deleteContract, getContracts, updateContractFunnel, updateFunnel } from "@/lib/actions"
 import { extractArrayFromResponse } from "@/lib/utils/api-helpers"
+import { formatMoney, normalizeCurrencyCode } from "@/lib/utils/currency"
 import { toastError, toastSuccess } from "@/lib/toast"
 import BackLinkButton from "@/components/shared/BackLinkButton"
 
@@ -188,8 +189,7 @@ const contractDate = (contract) => {
 
 const contractAmount = (contract) => {
   const value = Number(contract.contract_amount ?? contract.amount ?? 0)
-  if (!value) return "0"
-  return value.toLocaleString()
+  return formatMoney(value, normalizeCurrencyCode(contract.contract_currency || contract.currency))
 }
 
 const resolveContractId = (contract) => {
@@ -615,9 +615,14 @@ export default function DealsPage() {
           {columns.map((column) => {
             const columnColor = column.color || "#5B6FDD"
             const cardColor = column.isUnassigned ? "var(--surface-elevated)" : mixWithWhite(columnColor, 0.78)
-            const columnTotal = column.deals
-              .reduce((acc, deal) => acc + Number(deal.contract_amount ?? deal.amount ?? 0), 0)
-              .toLocaleString()
+            const totalsByCurrency = column.deals.reduce((acc, deal) => {
+              const currency = normalizeCurrencyCode(deal.contract_currency || deal.currency)
+              acc[currency] = (acc[currency] || 0) + Number(deal.contract_amount ?? deal.amount ?? 0)
+              return acc
+            }, {})
+            const columnTotal = Object.entries(totalsByCurrency)
+              .map(([currency, total]) => formatMoney(total, currency))
+              .join(" / ") || formatMoney(0, "UZS")
             const dealCountLabel = t("dealPage.dealCount", { count: column.deals.length })
             const summaryLabel = t("dealPage.columnSummary", {
               dealCount: dealCountLabel,
@@ -760,7 +765,7 @@ export default function DealsPage() {
                             <span>{t("dealPage.noTasks")}</span>
                           </div>
                           <div className="mt-1 flex items-center justify-between text-[11px] text-[var(--text-secondary)]">
-                            <span>{contractAmount(deal)}$</span>
+                            <span>{contractAmount(deal)}</span>
                             <div className="opacity-0 transition group-hover:opacity-100">
                               <span className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
                                 {t("dealPage.moveLabel")}

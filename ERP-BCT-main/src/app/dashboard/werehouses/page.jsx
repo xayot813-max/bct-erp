@@ -10,9 +10,7 @@ import { extractArrayFromResponse } from "@/lib/utils/api-helpers"
 import { warehouseLinks, warehouseOptions } from "@/components/warehouse/warehouse-data"
 import { toastError } from "@/lib/toast"
 import BackLinkButton from "@/components/shared/BackLinkButton"
-
-const money = (value, locale = "en-US", currencyLabel = "sum") =>
-  `${Number(value || 0).toLocaleString(locale)} ${currencyLabel}`
+import { formatMoney, normalizeCurrencyCode, resolveLocale } from "@/lib/utils/currency"
 
 const formatDate = (value, locale) => {
   if (!value) return ""
@@ -61,6 +59,7 @@ const normalizeProduct = (item, index, warehouseLabels, productTypes, locale) =>
     count: Number(item?.count ?? Object.values(stockByWarehouse).reduce((sum, value) => sum + value, 0)),
     date: formatDate(item?.created_at || item?.createdAt || item?.date || item?.updated_at || item?.updatedAt, locale),
     price: Number(item?.price ?? 0),
+    currency: normalizeCurrencyCode(item?.currency || item?.price_currency || "UZS"),
   }
 }
 
@@ -77,12 +76,8 @@ export default function WerehousePage() {
     [t],
   )
   const locale = useMemo(() => {
-    const language = (i18n.resolvedLanguage || i18n.language || "ru").toLowerCase()
-    if (language.startsWith("en")) return "en-US"
-    if (language.startsWith("uz")) return "uz-UZ"
-    return "ru-RU"
+    return resolveLocale(i18n.resolvedLanguage || i18n.language)
   }, [i18n.language, i18n.resolvedLanguage])
-  const currencyLabel = useMemo(() => t("products.currency", { defaultValue: "sum" }), [t])
   useEffect(() => {
     const load = async () => {
       try {
@@ -185,7 +180,7 @@ export default function WerehousePage() {
                   <td className="border-r border-[var(--border-subtle)] px-4 py-4">{product.warehouse}</td>
                   <td className="border-r border-[var(--border-subtle)] px-4 py-4">{product.count}</td>
                   <td className="border-r border-[var(--border-subtle)] px-4 py-4">{product.date}</td>
-                  <td className="border-r border-[var(--border-subtle)] px-4 py-4">{money(product.price, locale, currencyLabel)}</td>
+                  <td className="border-r border-[var(--border-subtle)] px-4 py-4">{formatMoney(product.price, product.currency, locale)}</td>
                   <td className="px-4 py-4">
                     <div className="flex justify-end gap-2">
                       <Link href={`/dashboard/products/${product.id}?type=show`} className="flex h-[40px] w-[32px] items-center justify-center rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] text-[var(--text-primary)] shadow-sm hover:bg-[var(--surface-hover)]">

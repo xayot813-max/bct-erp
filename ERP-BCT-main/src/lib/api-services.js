@@ -333,7 +333,7 @@ const resolveAdminPath = (path = "") => {
   const normalized = typeof path === "string" ? path.trim() : ""
   if (!normalized) return "admin"
   const withoutLeadingSlash = normalized.startsWith("/") ? normalized.slice(1) : normalized
-  return withoutLeadingSlash.startsWith("admin")
+  return withoutLeadingSlash === "admin" || withoutLeadingSlash.startsWith("admin/")
     ? withoutLeadingSlash
     : `admin/${withoutLeadingSlash}`
 }
@@ -362,13 +362,21 @@ const adminFetch = async (path, { token, method = "GET", body } = {}) => {
   const payload = contentType.includes("application/json")
     ? await response.json()
     : await response.text()
+  const isHtmlPayload =
+    typeof payload === "string" && /<!doctype html|<html[\s>]/i.test(payload.trim().slice(0, 120))
 
   if (!response.ok) {
     const message =
-      typeof payload === "string"
-        ? payload || "Admin request failed"
+      isHtmlPayload
+        ? "Не удалось получить JSON от API администраторов. Проверьте маршрут backend и авторизацию."
+        : typeof payload === "string"
+          ? payload || "Admin request failed"
         : payload?.message || payload?.error || "Admin request failed"
     throw new Error(message)
+  }
+
+  if (isHtmlPayload) {
+    throw new Error("API администраторов вернул HTML вместо JSON.")
   }
 
   return payload

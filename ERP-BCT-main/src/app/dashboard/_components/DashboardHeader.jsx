@@ -11,10 +11,11 @@ import { useTranslation } from 'react-i18next'
 import NotificationDialog from './NotificationDialog'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { LogOut } from 'lucide-react'
+import { hasPermission } from '@/lib/access-control'
 
 export default function DashboardHeader() {
   const { t } = useTranslation("common")
-  const { isAuthenticated, clearAuth } = useAuth()
+  const { user, isAuthenticated, clearAuth } = useAuth()
   const pathname = usePathname();
 
   const navLinks = [
@@ -22,36 +23,43 @@ export default function DashboardHeader() {
       name: t("header.dashboard.li1"),
       icon: "/headIcons/home.svg",
       link: "/dashboard"
+      , permission: "dashboard"
     },
     {
       name: t("header.dashboard.li2"),
       icon: "/headIcons/user.svg",
       link: "/dashboard/clients",
+      permission: "clients",
     },
     {
       name: t("header.dashboard.li3"),
       icon: "/headIcons/product.svg",
       link: "/dashboard/products"
+      , permission: "products"
     },
     {
       name: t("header.dashboard.li4"),
       icon: "/headIcons/store.svg",
       link: "/dashboard/werehouses"
+      , permission: "warehouse"
     },
     {
       name: t("header.dashboard.li5"),
       icon: "/headIcons/deal.svg",
       link: "/dashboard/deals"
+      , permission: "deals"
     },
     {
       name: t("header.dashboard.li8"),
       icon: "/headIcons/cache.svg",
       link: "/dashboard/finance",
+      permission: "finance",
     },
     {
       name: t("header.dashboard.settings"),
       icon: "/headIcons/store.svg",
       link: "/dashboard/setting",
+      permission: "settings",
     },
   ]
 
@@ -71,7 +79,7 @@ export default function DashboardHeader() {
         <Image className='h-8 w-auto shrink-0' width={76} height={34} src="/logo.png" alt="logo" loading='eager' />
 
         <nav className='hidden h-full min-w-0 flex-1 items-center gap-1 lg:flex'>
-          {navLinks?.map((nv, idx) => {
+          {navLinks?.filter((nv) => hasPermission(user, nv.permission)).map((nv, idx) => {
             return (
               <Link
                 key={idx}
@@ -92,6 +100,7 @@ export default function DashboardHeader() {
       </div>
 
       <div className='flex shrink-0 items-center gap-2'>
+        {hasPermission(user, "deals") && (
         <Link
           href="/dashboard/deals/add"
           className="flex h-9 items-center gap-2 rounded-[10px] border border-[var(--primary)] bg-[var(--primary)] px-3 text-[12px] font-medium text-[var(--primary-foreground)] shadow-sm transition hover:border-[var(--primary-hover)] hover:bg-[var(--primary-hover)] sm:px-4"
@@ -99,6 +108,7 @@ export default function DashboardHeader() {
           <Image src="/headIcons/createDeal.svg" alt="" width={14} height={14} />
           <span className="hidden sm:inline">{t("header.dashboard.add-deal")}</span>
         </Link>
+        )}
         <NotificationDialog />
         <ThemeToggle />
         <LanguageSwitcher />

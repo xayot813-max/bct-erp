@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { formatMoney } from "@/lib/utils/currency"
 
 type DealFormProps = {
   onSubmit?: (values: DealFormData) => Promise<void> | void
@@ -109,8 +110,7 @@ export default function DealForm({
         : paid > 0
           ? t("dealAdd.payment.partial")
           : t("dealAdd.payment.unpaid")
-    const formatter = (value: number) =>
-      `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${formData.currency || "UZS"}`
+    const formatter = (value: number) => formatMoney(value, formData.currency)
     return { total, paid, remaining, status, formatter }
   }, [formData.currency, formData.dealAmount, formData.payCard, formData.payCash, t])
 

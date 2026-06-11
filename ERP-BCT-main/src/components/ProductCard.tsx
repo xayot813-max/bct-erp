@@ -7,7 +7,7 @@ import { Plus } from "lucide-react"
 import { useDealStore } from "@/store/dealStore"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { formatUSD } from "@/lib/utils/currency"
+import { formatMoney } from "@/lib/utils/currency"
 
 type ProductCardProps = {
   product: {
@@ -26,6 +26,7 @@ type ProductCardProps = {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const addProductToDeal = useDealStore((state) => state.addProductToDeal)
+  const currency = useDealStore((state) => state.formData.currency)
 
   const handleAddProduct = () => {
     addProductToDeal({
@@ -57,7 +58,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           {product.name}
         </CardTitle>
         <p className="mt-2 text-sm text-gray-500">{product.description || product.category}</p>
-        <p className="mt-4 text-base font-semibold text-gray-900">{formatUSD(product.price)}</p>
+        <p className="mt-4 text-base font-semibold text-gray-900">{formatMoney(product.price, currency)}</p>
       </CardContent>
       <CardFooter className="mt-auto flex justify-between px-6 pb-6">
         <span className="text-sm font-medium text-gray-600">{product.category}</span>

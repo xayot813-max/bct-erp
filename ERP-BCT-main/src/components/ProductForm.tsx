@@ -9,7 +9,7 @@ import { useDealStore } from "@/store/dealStore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { formatUSD } from "@/lib/utils/currency"
+import { formatMoney } from "@/lib/utils/currency"
 
 type ProductFormProps = {
   product: {
@@ -28,6 +28,7 @@ type ProductFormProps = {
 export default function ProductForm({ product, onAdd, onCancel }: ProductFormProps) {
   const router = useRouter()
   const addProductToDeal = useDealStore((state) => state.addProductToDeal)
+  const currency = useDealStore((state) => state.formData.currency)
 
   const [serialNumber, setSerialNumber] = useState(product.serial || "")
   const [guarantee, setGuarantee] = useState(product.guarantee || "")
@@ -111,7 +112,7 @@ export default function ProductForm({ product, onAdd, onCancel }: ProductFormPro
         <CardContent className="flex h-full flex-col justify-between px-6 py-6">
           <div className="space-y-6">
             <div className="space-y-2">
-              <span className="text-sm font-medium text-gray-700">Product Price (USD)</span>
+              <span className="text-sm font-medium text-gray-700">Product Price</span>
               <Input
                 type="number"
                 min={0}
@@ -146,7 +147,7 @@ export default function ProductForm({ product, onAdd, onCancel }: ProductFormPro
             <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
               <p className="text-sm text-gray-500">Total</p>
               <p className="mt-2 text-2xl font-semibold text-gray-900">
-                {formatUSD(quantity * price)}
+                {formatMoney(quantity * price, currency)}
               </p>
             </div>
           </div>

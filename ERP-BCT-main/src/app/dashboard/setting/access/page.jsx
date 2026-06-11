@@ -9,6 +9,13 @@ import { useAuth } from "@/components/providers/AuthProvider"
 import { adminService } from "@/lib/api-services"
 import { extractArrayFromResponse } from "@/lib/utils/api-helpers"
 import { toastError, toastSuccess } from "@/lib/toast"
+import {
+  ACCESS_PERMISSIONS,
+  defaultPermissionsForRole,
+  getUserPermissions,
+  isSuperAdmin,
+  normalizePermissions,
+} from "@/lib/access-control"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -38,7 +45,7 @@ import {
 } from "@/components/ui/select"
 
 const roleIds = ["admin", "manager", "warehouse", "finance", "viewer"]
-const emptyForm = { name: "", role: "manager", password: "", confirmPassword: "" }
+const emptyForm = { name: "", role: "manager", password: "", confirmPassword: "", permissions: [] }
 
 const resolveId = (admin) => String(admin?.id || admin?._id || "")
 const resolveRole = (admin) => admin?.role || "admin"
@@ -48,6 +55,13 @@ const formatDate = (value) => {
   if (!value) return "—"
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString()
+}
+
+const cleanErrorMessage = (value, fallback) => {
+  const message = typeof value === "string" ? value.trim() : ""
+  if (!message) return fallback
+  if (/<!doctype html|<html[\s>]/i.test(message.slice(0, 120))) return fallback
+  return message.length > 220 ? `${message.slice(0, 220)}...` : message
 }
 
 export default function AccessSettingsPage() {
@@ -64,19 +78,13 @@ export default function AccessSettingsPage() {
   const [deleteTarget, setDeleteTarget] = useState(null)
 
   const loadAdmins = async () => {
-    if (!tokens.accessToken) {
-      setAdmins([])
-      setError(t("adminProfile.authRequiredDescription"))
-      setIsLoading(false)
-      return
-    }
     setIsLoading(true)
     setError("")
     try {
       const response = await adminService.list(tokens.accessToken)
       setAdmins(extractArrayFromResponse(response, ["admins"]))
     } catch (loadError) {
-      const message = loadError?.message || t("settings.access.loadError")
+      const message = cleanErrorMessage(loadError?.message, t("settings.access.loadError"))
       setError(message)
       toastError({ title: t("settings.access.loadError"), description: message })
     } finally {
@@ -107,13 +115,19 @@ export default function AccessSettingsPage() {
 
   const openCreate = () => {
     setEditingAdmin(null)
-    setForm(emptyForm)
+    setForm({ ...emptyForm, permissions: defaultPermissionsForRole(emptyForm.role) })
     setDialogOpen(true)
   }
 
   const openEdit = (admin) => {
     setEditingAdmin(admin)
-    setForm({ name: admin?.name || "", role: resolveRole(admin), password: "", confirmPassword: "" })
+    setForm({
+      name: admin?.name || "",
+      role: resolveRole(admin),
+      password: "",
+      confirmPassword: "",
+      permissions: getUserPermissions(admin),
+    })
     setDialogOpen(true)
   }
 
@@ -147,6 +161,7 @@ export default function AccessSettingsPage() {
       const payload = {
         name: form.name.trim(),
         role: form.role,
+        permissions: form.role === "admin" ? ACCESS_PERMISSIONS.map((item) => item.id) : normalizePermissions(form.permissions),
         ...(form.password ? { password: form.password } : {}),
       }
       if (editingAdmin) {
@@ -270,7 +285,19 @@ export default function AccessSettingsPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-5 py-4">{roleLabel(t, resolveRole(admin))}</td>
+                      <td className="px-5 py-4">
+                        <div className="flex flex-col gap-1">
+                          <span>{roleLabel(t, resolveRole(admin))}</span>
+                          <span className="text-[11px] text-[var(--text-secondary)]">
+                            {isSuperAdmin(admin)
+                              ? t("settings.access.fullAccess", { defaultValue: "Полный доступ" })
+                              : t("settings.access.permissionCount", {
+                                  count: getUserPermissions(admin).length,
+                                  defaultValue: `${getUserPermissions(admin).length} страниц`,
+                                })}
+                          </span>
+                        </div>
+                      </td>
                       <td className="px-5 py-4">{formatDate(admin?.created_at)}</td>
                       <td className="px-5 py-4">{formatDate(admin?.updated_at)}</td>
                       <td className="px-5 py-4">
@@ -347,7 +374,7 @@ function AdminDialog({ open, onOpenChange, editingAdmin, form, setForm, onSubmit
   const isEdit = Boolean(editingAdmin)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent mark="true" className="w-[480px] max-w-[calc(100vw-32px)]">
+      <DialogContent mark="true" className="max-h-[calc(100vh-48px)] w-[760px] max-w-[calc(100vw-32px)] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? t("settings.access.editEmployee") : t("settings.access.addEmployee")}
@@ -370,7 +397,16 @@ function AdminDialog({ open, onOpenChange, editingAdmin, form, setForm, onSubmit
             <label className="text-[13px] font-medium text-[var(--text-primary)]">{t("settings.access.role")}</label>
             <Select
               value={form.role}
-              onValueChange={(value) => setForm((current) => ({ ...current, role: value }))}
+              onValueChange={(value) =>
+                setForm((current) => ({
+                  ...current,
+                  role: value,
+                  permissions:
+                    value === "admin"
+                      ? ACCESS_PERMISSIONS.map((item) => item.id)
+                      : defaultPermissionsForRole(value),
+                }))
+              }
               disabled={isSaving}
             >
               <SelectTrigger className="w-full">
@@ -384,6 +420,57 @@ function AdminDialog({ open, onOpenChange, editingAdmin, form, setForm, onSubmit
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-3 rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4">
+            <div>
+              <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">
+                {t("settings.access.pagePermissions", { defaultValue: "Доступ к страницам" })}
+              </h3>
+              <p className="mt-1 text-[12px] text-[var(--text-secondary)]">
+                {t("settings.access.pagePermissionsHint", {
+                  defaultValue: "Выберите разделы ERP, которые сотрудник сможет открывать.",
+                })}
+              </p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {ACCESS_PERMISSIONS.map((permission) => {
+                const checked = form.role === "admin" || form.permissions.includes(permission.id)
+                const disabled = isSaving || form.role === "admin"
+                return (
+                  <label
+                    key={permission.id}
+                    className={`flex min-h-11 items-center gap-3 rounded-[10px] border px-3 py-2 text-[13px] ${
+                      checked
+                        ? "border-[var(--accent)] bg-[var(--surface)] text-[var(--text-primary)]"
+                        : "border-[var(--border-default)] bg-[var(--surface)] text-[var(--text-secondary)]"
+                    } ${disabled ? "opacity-70" : "cursor-pointer"}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={disabled}
+                      onChange={(event) => {
+                        const isChecked = event.target.checked
+                        setForm((current) => {
+                          const currentPermissions = new Set(current.permissions)
+                          if (isChecked) {
+                            currentPermissions.add(permission.id)
+                          } else {
+                            currentPermissions.delete(permission.id)
+                          }
+                          return {
+                            ...current,
+                            permissions: Array.from(currentPermissions),
+                          }
+                        })
+                      }}
+                      className="h-4 w-4 accent-[var(--accent)]"
+                    />
+                    <span>{t(permission.labelKey, { defaultValue: permission.fallback })}</span>
+                  </label>
+                )
+              })}
+            </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2">
