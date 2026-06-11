@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Plus, Trash2 } from "lucide-react"
+import { useSearchParams } from "next/navigation"
 import { useTranslation } from "react-i18next"
 
 import BackLinkButton from "@/components/shared/BackLinkButton"
@@ -17,6 +18,7 @@ import { warehouseOptions } from "@/components/warehouse/warehouse-data"
 
 const operationTypes = ["receipt", "writeoff", "movement", "adjustment"]
 const fallbackId = () => `line-${Date.now()}-${Math.random().toString(16).slice(2)}`
+const normalizeRequestedType = (value) => (operationTypes.includes(value) ? value : "movement")
 
 const emptyLine = () => ({
   lineId: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : fallbackId(),
@@ -52,13 +54,15 @@ const getProductStock = (product, warehouseId) => {
 
 export default function WarehouseTransactionsPage() {
   const { t, i18n } = useTranslation("common")
+  const searchParams = useSearchParams()
   const [rows, setRows] = useState([])
   const [products, setProducts] = useState([])
   const [warehouses, setWarehouses] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const requestedType = normalizeRequestedType(searchParams.get("type") || "movement")
   const [form, setForm] = useState({
-    type: "movement",
+    type: requestedType,
     reason: "",
     comment: "",
   })
@@ -98,6 +102,17 @@ export default function WarehouseTransactionsPage() {
     const response = await getProducts({ page: 1, limit: 500 })
     setProducts(extractArrayFromResponse(response, ["products"]))
   }, [])
+
+  useEffect(() => {
+    setForm((current) => (current.type === requestedType ? current : { ...current, type: requestedType }))
+    setLines((current) =>
+      current.map((line) => ({
+        ...line,
+        sourceWarehouseId: requestedType === "receipt" || requestedType === "adjustment" ? "" : line.sourceWarehouseId,
+        targetWarehouseId: requestedType === "writeoff" ? "" : line.targetWarehouseId,
+      })),
+    )
+  }, [requestedType])
 
   useEffect(() => {
     let cancelled = false

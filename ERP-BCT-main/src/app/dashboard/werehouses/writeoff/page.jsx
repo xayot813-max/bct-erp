@@ -1,13 +1,5 @@
-import WarehouseInventoryClient from "@/components/warehouse/WarehouseInventoryClient"
+import { redirect } from "next/navigation"
 
 export default function WarehouseWriteoffPage() {
-  return (
-    <WarehouseInventoryClient
-      titleKey="warehouse.writeoffCreateTitle"
-      headingKey="warehouse.chooseProduct"
-      showMoveAction={false}
-      showWriteoffAction={true}
-      primaryAction="writeoff"
-    />
-  )
+  redirect("/dashboard/werehouses/transactions?type=writeoff")
 }
