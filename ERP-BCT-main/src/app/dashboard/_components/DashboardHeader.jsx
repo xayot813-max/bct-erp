@@ -10,7 +10,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import NotificationDialog from './NotificationDialog'
 import { useAuth } from '@/components/providers/AuthProvider'
-import { LogOut } from 'lucide-react'
+import { LogOut, UserCircle } from 'lucide-react'
 import { hasPermission } from '@/lib/access-control'
 
 export default function DashboardHeader() {
@@ -112,6 +112,18 @@ export default function DashboardHeader() {
         <NotificationDialog />
         <ThemeToggle />
         <LanguageSwitcher />
+        {isAuthenticated && (
+          <Link
+            href="/dashboard/setting/profile"
+            className={cn(
+              "flex h-9 items-center gap-2 rounded-[10px] border border-[var(--header-border)] bg-[var(--header-surface)] px-3 text-[12px] font-medium text-[var(--header-text)] transition hover:bg-[var(--header-surface-hover)]",
+              pathname === "/dashboard/setting/profile" && "bg-[var(--header-surface-hover)]"
+            )}
+          >
+            <UserCircle className="h-4 w-4" />
+            <span className="hidden xl:inline">{t("header.dashboard.profile", { defaultValue: "Профиль" })}</span>
+          </Link>
+        )}
         {isAuthenticated && (
           <button
             type="button"

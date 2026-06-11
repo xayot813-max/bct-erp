@@ -13,7 +13,8 @@
       "li8": "Finance",
       "settings": "Settings",
       "add-deal": "Create Deal",
-      "logout": "Logout"
+      "logout": "Logout",
+      "profile": "Profile"
     },
     "menuDialog": {
       "setting": "Settings",
