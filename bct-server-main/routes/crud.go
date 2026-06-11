@@ -3,7 +3,6 @@ package routes
 import (
 	"context"
 	"strconv"
-	"strings"
 	"time"
 
 	"fiber-ecommerce/config"
@@ -424,211 +423,134 @@ func CategoryRoutes(app fiber.Router, db *mongo.Client) {
 func ProductRoutes(app fiber.Router, db *mongo.Client) {
 	products := app.Group("/products")
 
-	type stockOperationPayload struct {
-		Type              string   `json:"type"`
-		Quantity          int      `json:"quantity"`
-		WarehouseID       string   `json:"warehouse_id"`
-		Warehouse         string   `json:"warehouse"`
-		SourceWarehouseID string   `json:"source_warehouse_id"`
-		SourceWarehouse   string   `json:"source_warehouse"`
-		Reason            string   `json:"reason"`
-		Comment           string   `json:"comment"`
-		Files             []string `json:"files"`
-		SerialNumbers     []string `json:"serial_numbers"`
-		ExpirationValue   int      `json:"expiration_value"`
-		ExpirationUnit    string   `json:"expiration_unit"`
-	}
-
-	resolveWarehouseKey := func(id, name string) string {
-		if id != "" {
-			return id
-		}
-		if name != "" {
-			return name
-		}
-		return "warehouse-1"
-	}
-
-	resolveWarehouseLabel := func(id, name string) string {
-		if name != "" {
-			return name
-		}
-		return id
-	}
-
-	pickWarehouseWithStock := func(stock map[string]int, preferred string, quantity int) string {
-		if preferred != "" && stock[preferred] >= quantity {
-			return preferred
-		}
-		for key, count := range stock {
-			if count >= quantity {
-				return key
-			}
-		}
-		if preferred != "" {
-			return preferred
-		}
-		for key := range stock {
-			return key
-		}
-		return "warehouse-1"
-	}
-
 	products.Patch("/:id/stock", func(c *fiber.Ctx) error {
 		id, err := primitive.ObjectIDFromHex(c.Params("id"))
 		if err != nil {
 			return c.Status(400).JSON(fiber.Map{"error": "Invalid ID"})
 		}
 
-		var payload stockOperationPayload
+		var payload InventoryTransactionPayload
+		if err := c.BodyParser(&payload); err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
+		}
+		payload.ProductID = id.Hex()
+
+		updated, _, err := ApplyInventoryTransactions(context.TODO(), db, []InventoryTransactionPayload{payload})
+		if err != nil {
+			return inventoryErrorResponse(c, err)
+		}
+
+		return c.JSON(updated[0])
+	})
+
+	products.Post("/stock/bulk", func(c *fiber.Ctx) error {
+		var payload InventoryBulkPayload
 		if err := c.BodyParser(&payload); err != nil {
 			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
 		}
 
-		if payload.Quantity <= 0 {
-			return c.Status(400).JSON(fiber.Map{"error": "quantity must be greater than zero"})
+		operations := payload.Operations
+		if len(operations) == 0 {
+			operations = payload.Items
 		}
-
-		operationType := payload.Type
-		if operationType == "receive" {
-			operationType = "receipt"
-		}
-		if operationType != "receipt" && operationType != "writeoff" && operationType != "movement" {
-			return c.Status(400).JSON(fiber.Map{"error": "type must be receipt, writeoff, or movement"})
-		}
-
-		if operationType == "receipt" {
-			seenSerials := map[string]bool{}
-			for _, serial := range payload.SerialNumbers {
-				normalized := strings.TrimSpace(serial)
-				if normalized == "" {
-					continue
-				}
-				if seenSerials[normalized] {
-					return c.Status(400).JSON(fiber.Map{"error": "serial numbers must be unique"})
-				}
-				seenSerials[normalized] = true
+		for index := range operations {
+			if operations[index].Type == "" {
+				operations[index].Type = payload.Type
 			}
-			if len(seenSerials) > 0 && len(seenSerials) != payload.Quantity {
-				return c.Status(400).JSON(fiber.Map{"error": "serial numbers count must match quantity"})
+			if operations[index].Reason == "" {
+				operations[index].Reason = payload.Reason
+			}
+			if operations[index].Comment == "" {
+				operations[index].Comment = payload.Comment
 			}
 		}
 
-		collection := config.GetCollection(db, "products")
-		var product models.Product
-		if err := collection.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&product); err != nil {
-			return c.Status(404).JSON(fiber.Map{"error": "Product not found"})
+		updated, operationDocs, err := ApplyInventoryTransactions(context.TODO(), db, operations)
+		if err != nil {
+			return inventoryErrorResponse(c, err)
 		}
 
-		stockByWarehouse := map[string]int{}
-		for key, count := range product.StockByWarehouse {
-			if key != "" && count > 0 {
-				stockByWarehouse[key] = count
-			}
-		}
-
-		currentWarehouseKey := resolveWarehouseKey(product.WarehouseID, product.Warehouse)
-		if len(stockByWarehouse) == 0 && product.Count > 0 {
-			stockByWarehouse[currentWarehouseKey] = product.Count
-		}
-
-		nextCount := product.Count
-		destinationKey := resolveWarehouseKey(payload.WarehouseID, payload.Warehouse)
-		destinationLabel := resolveWarehouseLabel(payload.WarehouseID, payload.Warehouse)
-		sourceKey := resolveWarehouseKey(payload.SourceWarehouseID, payload.SourceWarehouse)
-		if payload.SourceWarehouseID == "" && payload.SourceWarehouse == "" {
-			sourceKey = currentWarehouseKey
-		}
-
-		switch operationType {
-		case "receipt":
-			if payload.WarehouseID == "" && payload.Warehouse == "" {
-				destinationKey = currentWarehouseKey
-				destinationLabel = resolveWarehouseLabel(product.WarehouseID, product.Warehouse)
-			}
-			stockByWarehouse[destinationKey] += payload.Quantity
-			nextCount += payload.Quantity
-		case "writeoff":
-			sourceKey = pickWarehouseWithStock(stockByWarehouse, sourceKey, payload.Quantity)
-			if nextCount < payload.Quantity || stockByWarehouse[sourceKey] < payload.Quantity {
-				return c.Status(400).JSON(fiber.Map{
-					"error":     "not enough stock",
-					"available": nextCount,
-				})
-			}
-			stockByWarehouse[sourceKey] -= payload.Quantity
-			if stockByWarehouse[sourceKey] <= 0 {
-				delete(stockByWarehouse, sourceKey)
-			}
-			nextCount -= payload.Quantity
-		case "movement":
-			if payload.WarehouseID == "" && payload.Warehouse == "" {
-				return c.Status(400).JSON(fiber.Map{"error": "destination warehouse is required"})
-			}
-			sourceKey = pickWarehouseWithStock(stockByWarehouse, sourceKey, payload.Quantity)
-			if nextCount < payload.Quantity || stockByWarehouse[sourceKey] < payload.Quantity {
-				return c.Status(400).JSON(fiber.Map{
-					"error":     "not enough stock",
-					"available": nextCount,
-				})
-			}
-			if sourceKey != destinationKey {
-				stockByWarehouse[sourceKey] -= payload.Quantity
-				if stockByWarehouse[sourceKey] <= 0 {
-					delete(stockByWarehouse, sourceKey)
-				}
-				stockByWarehouse[destinationKey] += payload.Quantity
-			}
-		}
-
-		now := time.Now()
-		updateData := bson.M{
-			"count":              nextCount,
-			"stock_by_warehouse": stockByWarehouse,
-			"updated_at":         now,
-		}
-
-		if operationType == "receipt" || operationType == "movement" {
-			updateData["warehouse_id"] = destinationKey
-			updateData["warehouse"] = destinationLabel
-		} else if nextCount == 0 {
-			updateData["warehouse_id"] = product.WarehouseID
-			updateData["warehouse"] = product.Warehouse
-		}
-
-		if _, err := collection.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.M{"$set": updateData}); err != nil {
-			return c.Status(500).JSON(fiber.Map{"error": "Failed to update stock"})
-		}
-
-		operations := config.GetCollection(db, "stock_operations")
-		_, _ = operations.InsertOne(context.TODO(), bson.M{
-			"product_id":          id,
-			"type":                operationType,
-			"quantity":            payload.Quantity,
-			"source_warehouse_id": sourceKey,
-			"target_warehouse_id": destinationKey,
-			"target_warehouse":    destinationLabel,
-			"reason":              payload.Reason,
-			"comment":             payload.Comment,
-			"files":               payload.Files,
-			"serial_numbers":      payload.SerialNumbers,
-			"expiration_value":     payload.ExpirationValue,
-			"expiration_unit":      payload.ExpirationUnit,
-			"previous_count":      product.Count,
-			"next_count":          nextCount,
-			"created_at":          now,
+		return c.JSON(fiber.Map{
+			"data":        updated,
+			"operations":  operationDocs,
+			"total":       len(updated),
+			"transaction": "stock_operations",
 		})
+	})
 
-		var updated models.Product
-		if err := collection.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&updated); err != nil {
-			return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch updated product"})
+	products.Post("/stock/transfer", func(c *fiber.Ctx) error {
+		var payload InventoryBulkPayload
+		if err := c.BodyParser(&payload); err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
 		}
-		populateCategoryNames(db, &updated)
-		if updated.Images == nil {
-			updated.Images = []string{}
+		operations := payload.Operations
+		if len(operations) == 0 {
+			operations = payload.Items
 		}
+		for index := range operations {
+			operations[index].Type = "movement"
+			if operations[index].Reason == "" {
+				operations[index].Reason = payload.Reason
+			}
+			if operations[index].Comment == "" {
+				operations[index].Comment = payload.Comment
+			}
+		}
+		updated, operationDocs, err := ApplyInventoryTransactions(context.TODO(), db, operations)
+		if err != nil {
+			return inventoryErrorResponse(c, err)
+		}
+		return c.JSON(fiber.Map{"data": updated, "operations": operationDocs, "total": len(updated), "transaction": "stock_operations"})
+	})
 
-		return c.JSON(updated)
+	products.Post("/stock/writeoff", func(c *fiber.Ctx) error {
+		var payload InventoryBulkPayload
+		if err := c.BodyParser(&payload); err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
+		}
+		operations := payload.Operations
+		if len(operations) == 0 {
+			operations = payload.Items
+		}
+		for index := range operations {
+			operations[index].Type = "writeoff"
+			if operations[index].Reason == "" {
+				operations[index].Reason = payload.Reason
+			}
+			if operations[index].Comment == "" {
+				operations[index].Comment = payload.Comment
+			}
+		}
+		updated, operationDocs, err := ApplyInventoryTransactions(context.TODO(), db, operations)
+		if err != nil {
+			return inventoryErrorResponse(c, err)
+		}
+		return c.JSON(fiber.Map{"data": updated, "operations": operationDocs, "total": len(updated), "transaction": "stock_operations"})
+	})
+
+	products.Post("/stock/audit", func(c *fiber.Ctx) error {
+		var payload InventoryBulkPayload
+		if err := c.BodyParser(&payload); err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
+		}
+		operations := payload.Operations
+		if len(operations) == 0 {
+			operations = payload.Items
+		}
+		for index := range operations {
+			operations[index].Type = "adjustment"
+			if operations[index].Reason == "" {
+				operations[index].Reason = payload.Reason
+			}
+			if operations[index].Comment == "" {
+				operations[index].Comment = payload.Comment
+			}
+		}
+		updated, operationDocs, err := ApplyInventoryTransactions(context.TODO(), db, operations)
+		if err != nil {
+			return inventoryErrorResponse(c, err)
+		}
+		return c.JSON(fiber.Map{"data": updated, "operations": operationDocs, "total": len(updated), "transaction": "stock_operations"})
 	})
 
 	// Get all products with category names populated
@@ -749,9 +671,22 @@ func ProductRoutes(app fiber.Router, db *mongo.Client) {
 		if product.CategoryID == nil {
 			return c.Status(400).JSON(fiber.Map{"error": "category_id is required"})
 		}
+		if product.Count < 0 {
+			return c.Status(400).JSON(fiber.Map{"error": "count cannot be negative"})
+		}
 
 		product.CategoryName = nil
 		product.TopCategoryName = nil
+		if product.Count > 0 {
+			warehouseID := resolveInventoryWarehouseKey(product.WarehouseID, product.Warehouse)
+			product.WarehouseID = warehouseID
+			if product.Warehouse == "" {
+				product.Warehouse = resolveInventoryWarehouseLabel(product.WarehouseID, product.Warehouse)
+			}
+			product.StockByWarehouse = map[string]int{warehouseID: product.Count}
+		} else {
+			product.StockByWarehouse = map[string]int{}
+		}
 
 		// Auto-populate top_category_id from category
 		if product.CategoryID != nil {
@@ -833,7 +768,12 @@ func ProductRoutes(app fiber.Router, db *mongo.Client) {
 		}
 		if countVal, ok := updateData["count"]; ok {
 			if val, valid := toInt(countVal); valid {
-				updateData["count"] = val
+				if val < 0 {
+					return c.Status(400).JSON(fiber.Map{"error": "count cannot be negative"})
+				}
+				delete(updateData, "count")
+				delete(updateData, "stock_by_warehouse")
+				delete(updateData, "stockByWarehouse")
 			} else {
 				return c.Status(400).JSON(fiber.Map{"error": "count must be numeric"})
 			}

@@ -68,6 +68,26 @@ export const productService = {
     return apiClient.patch(`/products/${id}/stock`, stockData)
   },
 
+  async applyStockBulk(payload) {
+    return apiClient.post('/products/stock/bulk', payload)
+  },
+
+  async transferStock(payload) {
+    return apiClient.post('/products/stock/transfer', payload)
+  },
+
+  async writeoffStock(payload) {
+    return apiClient.post('/products/stock/writeoff', payload)
+  },
+
+  async saleStock(payload) {
+    return apiClient.post('/products/stock/bulk', { ...payload, type: 'sale' })
+  },
+
+  async auditStock(payload) {
+    return apiClient.post('/products/stock/audit', payload)
+  },
+
   /**
    * Delete a product
    * @param {number|string} id - Product ID

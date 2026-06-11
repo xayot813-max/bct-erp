@@ -117,6 +117,51 @@ export async function adjustProductStock(id, stockData) {
   }
 }
 
+export async function applyProductStockBulk(payload) {
+  try {
+    return await productService.applyStockBulk(payload)
+  } catch (error) {
+    console.error('Error applying product stock bulk operation:', error)
+    throw error
+  }
+}
+
+export async function transferProductStock(payload) {
+  try {
+    return await productService.transferStock(payload)
+  } catch (error) {
+    console.error('Error transferring product stock:', error)
+    throw error
+  }
+}
+
+export async function writeoffProductStock(payload) {
+  try {
+    return await productService.writeoffStock(payload)
+  } catch (error) {
+    console.error('Error writing off product stock:', error)
+    throw error
+  }
+}
+
+export async function saleProductStock(payload) {
+  try {
+    return await productService.saleStock(payload)
+  } catch (error) {
+    console.error('Error applying product sale stock operation:', error)
+    throw error
+  }
+}
+
+export async function auditProductStock(payload) {
+  try {
+    return await productService.auditStock(payload)
+  } catch (error) {
+    console.error('Error auditing product stock:', error)
+    throw error
+  }
+}
+
 export async function deleteProduct(id) {
   try {
     return await productService.delete(id)

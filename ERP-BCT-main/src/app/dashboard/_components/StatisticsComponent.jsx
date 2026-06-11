@@ -32,6 +32,8 @@ const incrementDay = (map, date, field, amount = 1) => {
   map.set(key, current)
 }
 
+const ANALYTICS_MONTH_STORAGE_KEY = "bct:dashboard:selected-month"
+
 const buildMonthSeries = (items, selectedMonth) => {
   if (!selectedMonth) return items
   const [year, month] = selectedMonth.split("-").map(Number)
@@ -51,7 +53,10 @@ export function ChartAreaInteractive() {
   const [chartData, setChartData] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [loadError, setLoadError] = React.useState("")
-  const [selectedMonth, setSelectedMonth] = React.useState("")
+  const [selectedMonth, setSelectedMonth] = React.useState(() => {
+    if (typeof window === "undefined") return ""
+    return window.localStorage.getItem(ANALYTICS_MONTH_STORAGE_KEY) || ""
+  })
 
   const locale = React.useMemo(() => {
     const language = (i18n.resolvedLanguage || i18n.language || "en").toLowerCase()
@@ -86,8 +91,16 @@ export function ChartAreaInteractive() {
         })
 
         const nextData = Array.from(buckets.values()).sort((a, b) => a.date.localeCompare(b.date))
+        const availableMonths = new Set(nextData.map((item) => item.date.slice(0, 7)))
         setChartData(nextData)
-        setSelectedMonth((current) => current || nextData.at(-1)?.date.slice(0, 7) || "")
+        setSelectedMonth((current) => {
+          if (current && availableMonths.has(current)) return current
+          if (typeof window !== "undefined") {
+            const stored = window.localStorage.getItem(ANALYTICS_MONTH_STORAGE_KEY) || ""
+            if (stored && availableMonths.has(stored)) return stored
+          }
+          return nextData.at(-1)?.date.slice(0, 7) || ""
+        })
       } catch (error) {
         if (!cancelled) {
           setLoadError(error?.message || t("analytics.loadError", { defaultValue: "Не удалось загрузить аналитику" }))
@@ -103,6 +116,11 @@ export function ChartAreaInteractive() {
       cancelled = true
     }
   }, [t])
+
+  React.useEffect(() => {
+    if (!selectedMonth || typeof window === "undefined") return
+    window.localStorage.setItem(ANALYTICS_MONTH_STORAGE_KEY, selectedMonth)
+  }, [selectedMonth])
 
   const chartConfig = React.useMemo(() => ({
     client: {
