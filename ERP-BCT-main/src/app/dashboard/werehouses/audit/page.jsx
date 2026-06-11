@@ -4,44 +4,63 @@ import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import BackLinkButton from "@/components/shared/BackLinkButton"
-import { auditProductStock, getProducts } from "@/lib/actions"
+import { auditProductStock, getProducts, getWarehouses } from "@/lib/actions"
 import { extractArrayFromResponse } from "@/lib/utils/api-helpers"
 import { toastError, toastSuccess, toastWarning } from "@/lib/toast"
+import { warehouseOptions } from "@/components/warehouse/warehouse-data"
 
-const normalizeProduct = (item, index) => {
-  const stockByWarehouse = item?.stock_by_warehouse || item?.stockByWarehouse || {}
-  const warehouseId =
-    item?.warehouse_id ||
-    item?.warehouseId ||
-    Object.keys(stockByWarehouse).find((key) => Number(stockByWarehouse[key]) > 0) ||
-    "warehouse-1"
+const getProductId = (item) => String(item?.id || item?._id || "")
 
-  return {
-    id: String(item?.id || item?._id || index + 1),
-    name: item?.name || item?.title || `Product ${index + 1}`,
-    warehouseId,
-    warehouse: item?.warehouse || warehouseId,
-    systemQuantity: Number(stockByWarehouse[warehouseId] ?? item?.count ?? 0),
-  }
+const stockAtWarehouse = (item, warehouseId) => {
+  const stock = item?.stock_by_warehouse || item?.stockByWarehouse || {}
+  return Number(stock[warehouseId] ?? 0)
 }
 
 export default function WarehouseAuditPage() {
   const { t } = useTranslation("common")
   const [products, setProducts] = useState([])
+  const [warehouses, setWarehouses] = useState([])
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState("warehouse-1")
   const [realStock, setRealStock] = useState({})
+  const [reason, setReason] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+
+  const warehouseChoices = useMemo(() => {
+    if (warehouses.length > 0) return warehouses
+    return warehouseOptions.map((item) => ({
+      id: item.id,
+      name: t(item.nameKey || "", { defaultValue: item.fallbackName || item.name || item.id }),
+    }))
+  }, [t, warehouses])
+
+  const selectedWarehouseName = useMemo(
+    () => warehouseChoices.find((item) => item.id === selectedWarehouseId)?.name || selectedWarehouseId,
+    [selectedWarehouseId, warehouseChoices],
+  )
 
   useEffect(() => {
     let cancelled = false
     const load = async () => {
       setIsLoading(true)
       try {
-        const response = await getProducts({ page: 1, limit: 500 })
-        const items = extractArrayFromResponse(response, ["products"]).map(normalizeProduct)
+        const [productResponse, warehouseResponse] = await Promise.all([
+          getProducts({ page: 1, limit: 500 }),
+          getWarehouses({ limit: 500 }),
+        ])
+        const items = extractArrayFromResponse(productResponse, ["products"])
+        const warehouseItems = extractArrayFromResponse(warehouseResponse, ["data"])
+          .map((item) => ({
+            id: String(item.id || item._id || ""),
+            name: item.name || item.id || item._id,
+            is_active: item.is_active !== false,
+          }))
+          .filter((item) => item.id && item.is_active)
         if (!cancelled) {
           setProducts(items)
-          setRealStock(Object.fromEntries(items.map((item) => [item.id, String(item.systemQuantity)])))
+          setWarehouses(warehouseItems)
+          if (warehouseItems[0]?.id) setSelectedWarehouseId(warehouseItems[0].id)
+          setReason(t("warehouse.audit.defaultReason"))
         }
       } catch (error) {
         console.error("Failed to load products for audit:", error)
@@ -57,17 +76,38 @@ export default function WarehouseAuditPage() {
     }
   }, [t])
 
+  useEffect(() => {
+    setRealStock(
+      Object.fromEntries(
+        products.map((item) => [getProductId(item), String(stockAtWarehouse(item, selectedWarehouseId))]),
+      ),
+    )
+  }, [products, selectedWarehouseId])
+
   const changedItems = useMemo(() => {
     return products
       .map((product) => {
-        const realQuantity = Number(realStock[product.id])
-        if (!Number.isFinite(realQuantity) || realQuantity < 0 || realQuantity === product.systemQuantity) return null
-        return { ...product, realQuantity }
+        const id = getProductId(product)
+        const systemQuantity = stockAtWarehouse(product, selectedWarehouseId)
+        const realQuantity = Number(realStock[id])
+        if (!id || !Number.isFinite(realQuantity) || realQuantity < 0 || realQuantity === systemQuantity) return null
+        return {
+          id,
+          name: product?.name || product?.title || id,
+          systemQuantity,
+          realQuantity,
+          diff: realQuantity - systemQuantity,
+        }
       })
       .filter(Boolean)
-  }, [products, realStock])
+  }, [products, realStock, selectedWarehouseId])
 
   const submitAudit = async () => {
+    const normalizedReason = reason.trim()
+    if (!normalizedReason) {
+      toastWarning({ title: t("warehouse.audit.reasonRequired") })
+      return
+    }
     if (changedItems.length === 0) {
       toastWarning({ title: t("warehouse.audit.noChanges") })
       return
@@ -76,21 +116,34 @@ export default function WarehouseAuditPage() {
     setIsSaving(true)
     try {
       await auditProductStock({
-        reason: t("warehouse.audit.defaultReason"),
+        reason: normalizedReason,
+        comment: t("warehouse.audit.documentComment", { warehouse: selectedWarehouseName }),
         operations: changedItems.map((item) => ({
           product_id: item.id,
-          warehouse_id: item.warehouseId,
-          warehouse: item.warehouse,
+          warehouse_id: selectedWarehouseId,
+          warehouse: selectedWarehouseName,
           system_quantity: item.systemQuantity,
           real_quantity: item.realQuantity,
-          reason: t("warehouse.audit.defaultReason"),
+          reason: normalizedReason,
         })),
       })
-      toastSuccess({ title: t("warehouse.audit.saved"), description: t("warehouse.audit.savedDescription", { count: changedItems.length }) })
+      toastSuccess({
+        title: t("warehouse.audit.saved"),
+        description: t("warehouse.audit.savedDescription", { count: changedItems.length }),
+      })
       setProducts((current) =>
         current.map((item) => {
-          const changed = changedItems.find((row) => row.id === item.id)
-          return changed ? { ...item, systemQuantity: changed.realQuantity } : item
+          const id = getProductId(item)
+          const changed = changedItems.find((row) => row.id === id)
+          if (!changed) return item
+          return {
+            ...item,
+            count: Number(item.count || 0) + changed.diff,
+            stock_by_warehouse: {
+              ...(item.stock_by_warehouse || item.stockByWarehouse || {}),
+              [selectedWarehouseId]: changed.realQuantity,
+            },
+          }
         }),
       )
     } catch (error) {
@@ -102,12 +155,12 @@ export default function WarehouseAuditPage() {
   }
 
   return (
-    <div className="mx-auto w-[95%] max-w-[1240px] py-5">
+    <div className="mx-auto w-[95%] max-w-[1320px] py-5">
       <div className="mb-8 flex min-w-0 items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-4">
           <BackLinkButton href="/dashboard/werehouses" />
           <div>
-            <h1 className="text-[52px] font-normal leading-none tracking-[-0.03em] text-[var(--text-primary)]">
+            <h1 className="text-[52px] font-normal leading-none text-[var(--text-primary)]">
               {t("warehouse.audit.title")}
             </h1>
             <p className="mt-2 text-[13px] text-[var(--text-secondary)]">{t("warehouse.audit.subtitle")}</p>
@@ -119,13 +172,36 @@ export default function WarehouseAuditPage() {
           disabled={isSaving || changedItems.length === 0}
           className="h-10 rounded-[10px] bg-[var(--primary)] px-5 text-[13px] font-medium text-[var(--primary-foreground)] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {t("warehouse.audit.save")}
+          {isSaving ? t("common.saving") : t("warehouse.audit.save")}
         </button>
       </div>
 
+      <section className="mb-6 rounded-[12px] border border-[var(--border-default)] bg-[var(--surface)] p-4 shadow-[var(--surface-shadow)]">
+        <div className="grid gap-4 md:grid-cols-[220px_1fr_180px]">
+          <div>
+            <label className="mb-1 block text-[11px] text-[var(--text-secondary)]">{t("warehouse.audit.fields.warehouse")}</label>
+            <select value={selectedWarehouseId} onChange={(event) => setSelectedWarehouseId(event.target.value)} className="h-10 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 text-[13px] text-[var(--text-primary)]">
+              {warehouseChoices.map((warehouse) => (
+                <option key={warehouse.id} value={warehouse.id}>{warehouse.name || warehouse.id}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-[11px] text-[var(--text-secondary)]">{t("warehouse.audit.fields.reason")}</label>
+            <input value={reason} onChange={(event) => setReason(event.target.value)} className="h-10 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 text-[13px] text-[var(--text-primary)]" />
+          </div>
+          <div>
+            <span className="mb-1 block text-[11px] text-[var(--text-secondary)]">{t("warehouse.audit.changed")}</span>
+            <div className="flex h-10 items-center rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 text-[13px] text-[var(--text-primary)]">
+              {changedItems.length}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="overflow-hidden rounded-[12px] border border-[var(--border-default)] bg-[var(--surface)] shadow-[var(--surface-shadow)]">
         <div className="overflow-x-auto px-3 pt-3">
-          <table className="w-full min-w-[920px] border-separate border-spacing-0 text-[12px] text-[var(--text-primary)]">
+          <table className="w-full min-w-[980px] border-separate border-spacing-0 text-[12px] text-[var(--text-primary)]">
             <thead>
               <tr className="text-[var(--text-secondary)]">
                 <th className="border-b border-r border-[var(--border-subtle)] px-4 py-4 text-left font-normal">#</th>
@@ -138,24 +214,26 @@ export default function WarehouseAuditPage() {
             </thead>
             <tbody>
               {products.map((product, index) => {
-                const realQuantity = Number(realStock[product.id])
-                const diff = Number.isFinite(realQuantity) ? realQuantity - product.systemQuantity : 0
+                const id = getProductId(product)
+                const systemQuantity = stockAtWarehouse(product, selectedWarehouseId)
+                const realQuantity = Number(realStock[id])
+                const diff = Number.isFinite(realQuantity) ? realQuantity - systemQuantity : 0
                 return (
-                  <tr key={product.id} className={index % 2 === 0 ? "bg-[var(--surface)]" : "bg-[var(--surface-elevated)]"}>
+                  <tr key={id || index} className={index % 2 === 0 ? "bg-[var(--surface)]" : "bg-[var(--surface-elevated)]"}>
                     <td className="border-r border-[var(--border-subtle)] px-4 py-4">{index + 1}</td>
-                    <td className="border-r border-[var(--border-subtle)] px-4 py-4">{product.name}</td>
-                    <td className="border-r border-[var(--border-subtle)] px-4 py-4">{product.warehouse}</td>
-                    <td className="border-r border-[var(--border-subtle)] px-4 py-4">{product.systemQuantity}</td>
+                    <td className="border-r border-[var(--border-subtle)] px-4 py-4">{product.name || product.title || id}</td>
+                    <td className="border-r border-[var(--border-subtle)] px-4 py-4">{selectedWarehouseName}</td>
+                    <td className="border-r border-[var(--border-subtle)] px-4 py-4">{systemQuantity}</td>
                     <td className="border-r border-[var(--border-subtle)] px-4 py-4">
                       <input
                         type="number"
                         min="0"
-                        value={realStock[product.id] ?? ""}
-                        onChange={(event) => setRealStock((current) => ({ ...current, [product.id]: event.target.value }))}
+                        value={realStock[id] ?? ""}
+                        onChange={(event) => setRealStock((current) => ({ ...current, [id]: event.target.value }))}
                         className="h-9 w-28 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 text-[12px] text-[var(--text-primary)]"
                       />
                     </td>
-                    <td className="px-4 py-4">{diff > 0 ? `+${diff}` : diff}</td>
+                    <td className={diff === 0 ? "px-4 py-4" : diff > 0 ? "px-4 py-4 text-emerald-400" : "px-4 py-4 text-red-400"}>{diff > 0 ? `+${diff}` : diff}</td>
                   </tr>
                 )
               })}

@@ -1181,7 +1181,8 @@
         "to": "Qayerga",
         "quantity": "Miqdor",
         "beforeAfter": "Oldin / keyin",
-        "date": "Sana"
+        "date": "Sana",
+        "document": "Hujjat"
       },
       "types": {
         "receipt": "Kirim",
@@ -1190,6 +1191,28 @@
         "adjustment": "Inventarizatsiya",
         "sale": "Sotuv",
         "unknown": "Operatsiya"
+      },
+      "form": {
+        "type": "Operatsiya turi",
+        "reason": "Sabab",
+        "comment": "Izoh",
+        "post": "Tranzaksiyani o‘tkazish",
+        "available": "Mavjud",
+        "actions": "Amallar",
+        "selectProduct": "Mahsulotni tanlang",
+        "selectWarehouse": "Omborni tanlang",
+        "addLine": "Qator qo‘shish",
+        "saved": "Ombor tranzaksiyasi o‘tkazildi",
+        "savedDescription": "O‘tkazilgan qatorlar: {{count}}",
+        "saveError": "Tranzaksiyani o‘tkazib bo‘lmadi",
+        "validation": {
+          "reason": "Operatsiya sababini kiriting",
+          "product": "Har bir qatorda mahsulot tanlang",
+          "route": "Jo‘natuvchi va qabul qiluvchi omborlar har xil bo‘lishi kerak",
+          "warehouse": "Omborni tanlang",
+          "quantity": "Miqdor noldan katta bo‘lishi kerak",
+          "realQuantity": "Haqiqiy miqdor nol yoki undan katta bo‘lishi kerak"
+        }
       }
     },
     "audit": {
@@ -1209,6 +1232,13 @@
         "system": "Tizim bo‘yicha",
         "real": "Haqiqiy",
         "diff": "Farq"
+      },
+      "reasonRequired": "Inventarizatsiya sababini kiriting",
+      "documentComment": "Ombor inventarizatsiyasi: {{warehouse}}",
+      "changed": "Farqlar",
+      "fields": {
+        "warehouse": "Tekshirilayotgan ombor",
+        "reason": "Inventarizatsiya sababi"
       }
     }
   },

@@ -1181,7 +1181,8 @@
         "to": "To",
         "quantity": "Quantity",
         "beforeAfter": "Before / after",
-        "date": "Date"
+        "date": "Date",
+        "document": "Document"
       },
       "types": {
         "receipt": "Receipt",
@@ -1190,6 +1191,28 @@
         "adjustment": "Stock audit",
         "sale": "Sale",
         "unknown": "Operation"
+      },
+      "form": {
+        "type": "Operation type",
+        "reason": "Reason",
+        "comment": "Comment",
+        "post": "Post transaction",
+        "available": "Available",
+        "actions": "Actions",
+        "selectProduct": "Select product",
+        "selectWarehouse": "Select warehouse",
+        "addLine": "Add line",
+        "saved": "Inventory transaction posted",
+        "savedDescription": "Posted lines: {{count}}",
+        "saveError": "Failed to post transaction",
+        "validation": {
+          "reason": "Enter an operation reason",
+          "product": "Select a product in every line",
+          "route": "Select different source and target warehouses",
+          "warehouse": "Select a warehouse",
+          "quantity": "Quantity must be greater than zero",
+          "realQuantity": "Physical quantity must be zero or greater"
+        }
       }
     },
     "audit": {
@@ -1209,6 +1232,13 @@
         "system": "System",
         "real": "Real",
         "diff": "Difference"
+      },
+      "reasonRequired": "Enter an inventory count reason",
+      "documentComment": "Inventory count for warehouse: {{warehouse}}",
+      "changed": "Differences",
+      "fields": {
+        "warehouse": "Count warehouse",
+        "reason": "Inventory count reason"
       }
     }
   },

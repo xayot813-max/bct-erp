@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -35,6 +36,7 @@ type InventoryTransactionPayload struct {
 
 type InventoryBulkPayload struct {
 	Type       string                        `json:"type"`
+	Reference  string                        `json:"reference"`
 	Reason     string                        `json:"reason"`
 	Comment    string                        `json:"comment"`
 	Operations []InventoryTransactionPayload `json:"operations"`
@@ -140,7 +142,7 @@ func validateReceiptSerials(payload InventoryTransactionPayload) error {
 	return nil
 }
 
-func prepareInventoryOperation(product models.Product, payload InventoryTransactionPayload, now time.Time) (inventoryPreparedOperation, error) {
+func prepareInventoryOperation(product models.Product, payload InventoryTransactionPayload, now time.Time, documentID string) (inventoryPreparedOperation, error) {
 	operationType := normalizeInventoryType(payload.Type)
 	if operationType != "receipt" && operationType != "writeoff" && operationType != "sale" && operationType != "movement" && operationType != "adjustment" {
 		return inventoryPreparedOperation{}, errors.New("type must be receipt, writeoff, sale, movement, or adjustment")
@@ -271,6 +273,7 @@ func prepareInventoryOperation(product models.Product, payload InventoryTransact
 		ProductAfter:  after,
 		UpdateData:    updateData,
 		OperationDoc: bson.M{
+			"document_id":                 documentID,
 			"product_id":                  product.ID,
 			"product_name":                product.Name,
 			"type":                        operationType,
@@ -300,36 +303,53 @@ func ApplyInventoryTransactions(ctx context.Context, db *mongo.Client, payloads 
 	}
 
 	now := time.Now()
+	documentID := fmt.Sprintf("STK-%s", now.Format("20060102150405.000000000"))
 	productsCollection := config.GetCollection(db, "products")
 	operationsCollection := config.GetCollection(db, "stock_operations")
 	prepared := make([]inventoryPreparedOperation, 0, len(payloads))
-	seenProducts := map[string]bool{}
+	productState := map[string]models.Product{}
 
 	for _, payload := range payloads {
-		if seenProducts[payload.ProductID] {
-			return nil, nil, errors.New("duplicate product_id in one inventory transaction")
-		}
-		seenProducts[payload.ProductID] = true
-
 		id, err := primitive.ObjectIDFromHex(payload.ProductID)
 		if err != nil {
 			return nil, nil, errors.New("invalid product_id")
 		}
-		var product models.Product
-		if err := productsCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&product); err != nil {
-			return nil, nil, errors.New("product not found")
+		stateKey := id.Hex()
+		product, exists := productState[stateKey]
+		if !exists {
+			if err := productsCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&product); err != nil {
+				return nil, nil, errors.New("product not found")
+			}
 		}
 		payload.Type = normalizeInventoryType(payload.Type)
-		next, err := prepareInventoryOperation(product, payload, now)
+		next, err := prepareInventoryOperation(product, payload, now, documentID)
 		if err != nil {
 			return nil, nil, err
 		}
 		prepared = append(prepared, next)
+		productState[stateKey] = next.ProductAfter
 	}
 
 	updatedProducts := make([]models.Product, 0, len(prepared))
 	insertedOperations := make([]bson.M, 0, len(prepared))
 	applied := make([]inventoryPreparedOperation, 0, len(prepared))
+	insertedOperationIDs := make([]interface{}, 0, len(prepared))
+
+	rollbackApplied := func() {
+		for i := len(applied) - 1; i >= 0; i-- {
+			rollback := applied[i]
+			_, _ = productsCollection.UpdateOne(ctx, bson.M{"_id": rollback.ID}, bson.M{"$set": bson.M{
+				"count":              rollback.ProductBefore.Count,
+				"stock_by_warehouse": rollback.ProductBefore.StockByWarehouse,
+				"warehouse_id":       rollback.ProductBefore.WarehouseID,
+				"warehouse":          rollback.ProductBefore.Warehouse,
+				"updated_at":         rollback.ProductBefore.UpdatedAt,
+			}})
+		}
+		if len(insertedOperationIDs) > 0 {
+			_, _ = operationsCollection.DeleteMany(ctx, bson.M{"_id": bson.M{"$in": insertedOperationIDs}})
+		}
+	}
 
 	for _, item := range prepared {
 		filter := bson.M{"_id": item.ID}
@@ -339,32 +359,20 @@ func ApplyInventoryTransactions(ctx context.Context, db *mongo.Client, payloads 
 
 		result, err := productsCollection.UpdateOne(ctx, filter, bson.M{"$set": item.UpdateData})
 		if err != nil || result.MatchedCount != 1 {
-			for i := len(applied) - 1; i >= 0; i-- {
-				rollback := applied[i]
-				_, _ = productsCollection.UpdateOne(ctx, bson.M{"_id": rollback.ID}, bson.M{"$set": bson.M{
-					"count":              rollback.ProductBefore.Count,
-					"stock_by_warehouse": rollback.ProductBefore.StockByWarehouse,
-					"warehouse_id":       rollback.ProductBefore.WarehouseID,
-					"warehouse":          rollback.ProductBefore.Warehouse,
-					"updated_at":         rollback.ProductBefore.UpdatedAt,
-				}})
-			}
+			rollbackApplied()
 			if err != nil {
 				return nil, nil, err
 			}
 			return nil, nil, errors.New("inventory changed during transaction")
 		}
 
-		if _, err := operationsCollection.InsertOne(ctx, item.OperationDoc); err != nil {
-			_, _ = productsCollection.UpdateOne(ctx, bson.M{"_id": item.ID}, bson.M{"$set": bson.M{
-				"count":              item.ProductBefore.Count,
-				"stock_by_warehouse": item.ProductBefore.StockByWarehouse,
-				"warehouse_id":       item.ProductBefore.WarehouseID,
-				"warehouse":          item.ProductBefore.Warehouse,
-				"updated_at":         item.ProductBefore.UpdatedAt,
-			}})
+		insertResult, err := operationsCollection.InsertOne(ctx, item.OperationDoc)
+		if err != nil {
+			applied = append(applied, item)
+			rollbackApplied()
 			return nil, nil, err
 		}
+		insertedOperationIDs = append(insertedOperationIDs, insertResult.InsertedID)
 
 		applied = append(applied, item)
 		insertedOperations = append(insertedOperations, item.OperationDoc)
