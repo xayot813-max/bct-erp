@@ -16,9 +16,10 @@ import { toastError, toastSuccess, toastWarning } from "@/lib/toast"
 import { warehouseOptions } from "@/components/warehouse/warehouse-data"
 
 const operationTypes = ["receipt", "writeoff", "movement", "adjustment"]
+const fallbackId = () => `line-${Date.now()}-${Math.random().toString(16).slice(2)}`
 
 const emptyLine = () => ({
-  lineId: crypto.randomUUID(),
+  lineId: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : fallbackId(),
   productId: "",
   quantity: "1",
   realQuantity: "0",
@@ -62,6 +63,7 @@ export default function WarehouseTransactionsPage() {
     comment: "",
   })
   const [lines, setLines] = useState([emptyLine()])
+  const [postedDocument, setPostedDocument] = useState(null)
 
   const locale = useMemo(() => {
     const language = (i18n.resolvedLanguage || i18n.language || "ru").toLowerCase()
@@ -90,6 +92,11 @@ export default function WarehouseTransactionsPage() {
   const loadJournal = useCallback(async () => {
     const response = await getInventoryTransactions({ page: 1, limit: 150 })
     setRows(extractArrayFromResponse(response))
+  }, [])
+
+  const loadProducts = useCallback(async () => {
+    const response = await getProducts({ page: 1, limit: 500 })
+    setProducts(extractArrayFromResponse(response, ["products"]))
   }, [])
 
   useEffect(() => {
@@ -136,6 +143,16 @@ export default function WarehouseTransactionsPage() {
 
   const addLine = () => setLines((current) => [...current, emptyLine()])
   const removeLine = (lineId) => setLines((current) => (current.length === 1 ? current : current.filter((line) => line.lineId !== lineId)))
+  const updateType = (type) => {
+    setForm((current) => ({ ...current, type }))
+    setLines((current) =>
+      current.map((line) => ({
+        ...line,
+        sourceWarehouseId: type === "receipt" || type === "adjustment" ? "" : line.sourceWarehouseId,
+        targetWarehouseId: type === "writeoff" ? "" : line.targetWarehouseId,
+      })),
+    )
+  }
 
   const submitTransaction = async () => {
     const reason = form.reason.trim()
@@ -206,19 +223,26 @@ export default function WarehouseTransactionsPage() {
 
     setIsSaving(true)
     try {
-      await applyProductStockBulk({
+      const result = await applyProductStockBulk({
         type: form.type,
         reason,
         comment: form.comment.trim(),
         operations,
       })
+      const operationDocs = Array.isArray(result?.operations) ? result.operations : []
+      const documentId = operationDocs[0]?.document_id || result?.document_id || "-"
       toastSuccess({
         title: t("warehouse.transactions.form.saved"),
         description: t("warehouse.transactions.form.savedDescription", { count: operations.length }),
       })
+      setPostedDocument({
+        id: documentId,
+        type: form.type,
+        lines: operations.length,
+      })
       setForm({ type: form.type, reason: "", comment: "" })
       setLines([emptyLine()])
-      await loadJournal()
+      await Promise.all([loadJournal(), loadProducts()])
     } catch (error) {
       console.error("Failed to create inventory transaction:", error)
       toastError({ title: t("warehouse.transactions.form.saveError"), description: error?.message })
@@ -245,7 +269,7 @@ export default function WarehouseTransactionsPage() {
         <div className="mb-4 flex flex-wrap items-end gap-3">
           <div className="min-w-[180px] flex-1">
             <label className="mb-1 block text-[11px] text-[var(--text-secondary)]">{t("warehouse.transactions.form.type")}</label>
-            <select value={form.type} onChange={(event) => setForm((current) => ({ ...current, type: event.target.value }))} className="h-10 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 text-[13px] text-[var(--text-primary)]">
+            <select value={form.type} onChange={(event) => updateType(event.target.value)} className="h-10 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 text-[13px] text-[var(--text-primary)]">
               {operationTypes.map((type) => (
                 <option key={type} value={type}>{operationLabel(t, type)}</option>
               ))}
@@ -263,16 +287,31 @@ export default function WarehouseTransactionsPage() {
             {isSaving ? t("common.saving") : t("warehouse.transactions.form.post")}
           </button>
         </div>
+        {postedDocument && (
+          <div className="mb-4 rounded-[8px] border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-[13px] text-emerald-200">
+            {t("warehouse.transactions.form.postedDocument", {
+              document: postedDocument.id,
+              type: operationLabel(t, postedDocument.type),
+              count: postedDocument.lines,
+            })}
+          </div>
+        )}
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[980px] border-separate border-spacing-0 text-[12px]">
             <thead className="text-[var(--text-secondary)]">
               <tr>
                 <th className="border-b border-[var(--border-subtle)] px-3 py-3 text-left font-normal">{t("warehouse.transactions.columns.product")}</th>
-                <th className="border-b border-[var(--border-subtle)] px-3 py-3 text-left font-normal">{t("warehouse.transactions.columns.from")}</th>
-                <th className="border-b border-[var(--border-subtle)] px-3 py-3 text-left font-normal">{t("warehouse.transactions.columns.to")}</th>
+                {form.type !== "receipt" && form.type !== "adjustment" && (
+                  <th className="border-b border-[var(--border-subtle)] px-3 py-3 text-left font-normal">{t("warehouse.transactions.columns.from")}</th>
+                )}
+                {form.type !== "writeoff" && (
+                  <th className="border-b border-[var(--border-subtle)] px-3 py-3 text-left font-normal">{t("warehouse.transactions.columns.to")}</th>
+                )}
                 <th className="border-b border-[var(--border-subtle)] px-3 py-3 text-left font-normal">{form.type === "adjustment" ? t("warehouse.audit.columns.real") : t("warehouse.transactions.columns.quantity")}</th>
-                <th className="border-b border-[var(--border-subtle)] px-3 py-3 text-left font-normal">{t("warehouse.transactions.form.available")}</th>
+                <th className="border-b border-[var(--border-subtle)] px-3 py-3 text-left font-normal">
+                  {form.type === "receipt" ? t("warehouse.transactions.form.currentStock") : t("warehouse.transactions.form.available")}
+                </th>
                 <th className="border-b border-[var(--border-subtle)] px-3 py-3 text-right font-normal">{t("warehouse.transactions.form.actions")}</th>
               </tr>
             </thead>
@@ -290,18 +329,22 @@ export default function WarehouseTransactionsPage() {
                         })}
                       </select>
                     </td>
-                    <td className="px-3 py-3">
-                      <select value={line.sourceWarehouseId} onChange={(event) => updateLine(line.lineId, { sourceWarehouseId: event.target.value })} disabled={form.type === "receipt" || form.type === "adjustment"} className="h-9 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-2 text-[12px] text-[var(--text-primary)] disabled:opacity-45">
-                        <option value="">{t("warehouse.transactions.form.selectWarehouse")}</option>
-                        {warehouseChoices.map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name || warehouse.id}</option>)}
-                      </select>
-                    </td>
-                    <td className="px-3 py-3">
-                      <select value={line.targetWarehouseId} onChange={(event) => updateLine(line.lineId, { targetWarehouseId: event.target.value })} disabled={form.type === "writeoff"} className="h-9 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-2 text-[12px] text-[var(--text-primary)] disabled:opacity-45">
-                        <option value="">{t("warehouse.transactions.form.selectWarehouse")}</option>
-                        {warehouseChoices.map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name || warehouse.id}</option>)}
-                      </select>
-                    </td>
+                    {form.type !== "receipt" && form.type !== "adjustment" && (
+                      <td className="px-3 py-3">
+                        <select value={line.sourceWarehouseId} onChange={(event) => updateLine(line.lineId, { sourceWarehouseId: event.target.value })} className="h-9 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-2 text-[12px] text-[var(--text-primary)]">
+                          <option value="">{t("warehouse.transactions.form.selectWarehouse")}</option>
+                          {warehouseChoices.map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name || warehouse.id}</option>)}
+                        </select>
+                      </td>
+                    )}
+                    {form.type !== "writeoff" && (
+                      <td className="px-3 py-3">
+                        <select value={line.targetWarehouseId} onChange={(event) => updateLine(line.lineId, { targetWarehouseId: event.target.value })} className="h-9 w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-2 text-[12px] text-[var(--text-primary)]">
+                          <option value="">{t("warehouse.transactions.form.selectWarehouse")}</option>
+                          {warehouseChoices.map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name || warehouse.id}</option>)}
+                        </select>
+                      </td>
+                    )}
                     <td className="px-3 py-3">
                       <input type="number" min="0" value={form.type === "adjustment" ? line.realQuantity : line.quantity} onChange={(event) => updateLine(line.lineId, form.type === "adjustment" ? { realQuantity: event.target.value } : { quantity: event.target.value })} className="h-9 w-28 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 text-[12px] text-[var(--text-primary)]" />
                     </td>

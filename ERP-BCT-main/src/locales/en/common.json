@@ -1212,7 +1212,9 @@
           "warehouse": "Select a warehouse",
           "quantity": "Quantity must be greater than zero",
           "realQuantity": "Physical quantity must be zero or greater"
-        }
+        },
+        "currentStock": "Current stock",
+        "postedDocument": "Document {{document}} posted. Type: {{type}}. Lines: {{count}}."
       }
     },
     "audit": {

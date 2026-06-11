@@ -1212,7 +1212,9 @@
           "warehouse": "Omborni tanlang",
           "quantity": "Miqdor noldan katta bo‘lishi kerak",
           "realQuantity": "Haqiqiy miqdor nol yoki undan katta bo‘lishi kerak"
-        }
+        },
+        "currentStock": "Joriy qoldiq",
+        "postedDocument": "{{document}} hujjati o‘tkazildi. Turi: {{type}}. Qatorlar: {{count}}."
       }
     },
     "audit": {

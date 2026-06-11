@@ -98,6 +98,35 @@ function reloadPage({ force = false } = {}) {
 
 export default function GlobalError({ error, reset }) {
   const isRecoverableUpdateError = isChunkLoadError(error)
+  const updateRecoveryScript = `
+    (function () {
+      try {
+        var key = "bct:global-error-inline-recovery:v1";
+        var now = Date.now ? Date.now() : new Date().getTime();
+        var state = JSON.parse(sessionStorage.getItem(key) || "{}");
+        var attempts = Number(state.attempts || 0);
+        if (!state.at || now - Number(state.at) > 60000) attempts = 0;
+        if (attempts >= 5) return;
+        sessionStorage.setItem(key, JSON.stringify({ at: now, attempts: attempts + 1 }));
+        sessionStorage.removeItem("bct:global-chunk-recovery:v2");
+        sessionStorage.removeItem("bct:next-static-recovery:v2");
+        sessionStorage.removeItem("bct:chunk-load-recovery");
+        if ("caches" in window) {
+          caches.keys().then(function(keys) { keys.forEach(function(key) { caches.delete(key); }); });
+        }
+        if (navigator.serviceWorker) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            registrations.forEach(function(registration) { registration.unregister(); });
+          });
+        }
+        var url = new URL(window.location.href);
+        url.searchParams.delete("__bct_reload");
+        setTimeout(function () { window.location.replace(url.toString()); }, 700);
+      } catch (_) {
+        setTimeout(function () { window.location.replace("/dashboard"); }, 700);
+      }
+    })();
+  `
 
   useEffect(() => {
     if (isRecoverableUpdateError && canReload()) {
@@ -108,6 +137,7 @@ export default function GlobalError({ error, reset }) {
   return (
     <html lang="ru">
       <body>
+        {isRecoverableUpdateError && <script dangerouslySetInnerHTML={{ __html: updateRecoveryScript }} />}
         <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 24 }}>
           <div style={{ maxWidth: 420, textAlign: "center", fontFamily: "sans-serif" }}>
             <h1 style={{ fontSize: 24, marginBottom: 12 }}>
