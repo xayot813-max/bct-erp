@@ -627,6 +627,12 @@ func ProductRoutes(app fiber.Router, db *mongo.Client) {
 				filter["top_category_id"] = topCategoryID
 			}
 		}
+		if ownerAdminID := c.Query("owner_admin_id"); ownerAdminID != "" {
+			filter["owner_admin_id"] = ownerAdminID
+		}
+		if isTestData := c.Query("is_test_data"); isTestData == "true" {
+			filter["is_test_data"] = true
+		}
 
 		// Search by name, ads_title, or description
 		if search := c.Query("search"); search != "" {

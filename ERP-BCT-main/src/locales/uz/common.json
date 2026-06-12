@@ -1170,8 +1170,8 @@
       "label": "Elektron narx belgisi"
     },
     "transactions": {
-      "title": "Ombor tranzaksiyalari",
-      "subtitle": "Kirim, hisobdan chiqarish, ko‘chirish, sotuv va inventarizatsiya uchun yagona jurnal.",
+      "title": "Ombor harakati jurnali",
+      "subtitle": "Kirim, hisobdan chiqarish, ko‘chirish, sotuv va inventarizatsiya jurnali.",
       "loadError": "Tranzaksiyalarni yuklab bo‘lmadi",
       "empty": "Hozircha tranzaksiyalar yo‘q.",
       "columns": {

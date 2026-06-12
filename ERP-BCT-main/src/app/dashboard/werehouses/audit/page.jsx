@@ -8,6 +8,8 @@ import { auditProductStock, getProducts, getWarehouses } from "@/lib/actions"
 import { extractArrayFromResponse } from "@/lib/utils/api-helpers"
 import { toastError, toastSuccess, toastWarning } from "@/lib/toast"
 import { warehouseOptions } from "@/components/warehouse/warehouse-data"
+import { adminService } from "@/lib/api-services"
+import { getCurrentAccessToken, getCurrentAdminProfileId } from "@/lib/profile-test-data"
 
 const getProductId = (item) => String(item?.id || item?._id || "")
 
@@ -45,10 +47,15 @@ export default function WarehouseAuditPage() {
       setIsLoading(true)
       try {
         const [productResponse, warehouseResponse] = await Promise.all([
-          getProducts({ page: 1, limit: 500 }),
+          getProducts({ page: 1, limit: 500, owner_admin_id: getCurrentAdminProfileId(), is_test_data: true }),
           getWarehouses({ limit: 500 }),
         ])
-        const items = extractArrayFromResponse(productResponse, ["products"])
+        let rawProducts = extractArrayFromResponse(productResponse, ["products"])
+        if ((!Array.isArray(rawProducts) || rawProducts.length === 0) && getCurrentAccessToken()) {
+          const seeded = await adminService.seedTestProducts(getCurrentAccessToken())
+          rawProducts = extractArrayFromResponse(seeded, ["products"])
+        }
+        const items = Array.isArray(rawProducts) ? rawProducts : []
         const warehouseItems = extractArrayFromResponse(warehouseResponse, ["data"])
           .map((item) => ({
             id: String(item.id || item._id || ""),

@@ -155,6 +155,8 @@ type Product struct {
 	StockByWarehouse map[string]int      `json:"stock_by_warehouse,omitempty" bson:"stock_by_warehouse,omitempty"`
 	NDC              FlexFloat64         `json:"NDC,omitempty" bson:"NDC,omitempty"`
 	Tax              FlexFloat64         `json:"tax,omitempty" bson:"tax,omitempty"`
+	OwnerAdminID     string              `json:"owner_admin_id,omitempty" bson:"owner_admin_id,omitempty"`
+	IsTestData       bool                `json:"is_test_data,omitempty" bson:"is_test_data,omitempty"`
 	CreatedAt        time.Time           `json:"created_at" bson:"created_at"`
 	UpdatedAt        time.Time           `json:"updated_at" bson:"updated_at"`
 }
@@ -219,6 +221,33 @@ type Contract struct {
 	CreatedAt        time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt        time.Time          `json:"updated_at" bson:"updated_at"`
 	Products         []ContractProduct  `json:"products" bson:"products"`
+}
+
+// ERPTransaction is the unified business journal entry for finance, deals, and inventory.
+type ERPTransaction struct {
+	ID               primitive.ObjectID     `json:"id" bson:"_id,omitempty"`
+	DocumentID       string                 `json:"document_id" bson:"document_id"`
+	Kind             string                 `json:"kind" bson:"kind"`
+	Type             string                 `json:"type" bson:"type"`
+	Category         string                 `json:"category,omitempty" bson:"category,omitempty"`
+	Status           string                 `json:"status" bson:"status"`
+	Amount           FlexFloat64            `json:"amount" bson:"amount"`
+	Currency         string                 `json:"currency,omitempty" bson:"currency,omitempty"`
+	Source           string                 `json:"source,omitempty" bson:"source,omitempty"`
+	Destination      string                 `json:"destination,omitempty" bson:"destination,omitempty"`
+	PaymentMethod    string                 `json:"payment_method,omitempty" bson:"payment_method,omitempty"`
+	Comment          string                 `json:"comment,omitempty" bson:"comment,omitempty"`
+	Reason           string                 `json:"reason,omitempty" bson:"reason,omitempty"`
+	ReferenceType    string                 `json:"reference_type,omitempty" bson:"reference_type,omitempty"`
+	ReferenceID      string                 `json:"reference_id,omitempty" bson:"reference_id,omitempty"`
+	RelatedContract  string                 `json:"related_contract,omitempty" bson:"related_contract,omitempty"`
+	RelatedProduct   string                 `json:"related_product,omitempty" bson:"related_product,omitempty"`
+	RelatedWarehouse string                 `json:"related_warehouse,omitempty" bson:"related_warehouse,omitempty"`
+	Quantity         int                    `json:"quantity,omitempty" bson:"quantity,omitempty"`
+	OperationAt      time.Time              `json:"operation_at,omitempty" bson:"operation_at,omitempty"`
+	Metadata         map[string]interface{} `json:"metadata,omitempty" bson:"metadata,omitempty"`
+	CreatedAt        time.Time              `json:"created_at" bson:"created_at"`
+	UpdatedAt        time.Time              `json:"updated_at" bson:"updated_at"`
 }
 
 // About model (from schema diagram)

@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "node scripts/clean-next-build.mjs && next build",
-    "start": "next start",
+    "dev": "NEXT_OUTPUT_MODE=dev node scripts/clean-next-build.mjs && NEXT_OUTPUT_MODE=dev next dev",
+    "build": "NEXT_OUTPUT_MODE=build node scripts/clean-next-build.mjs && NEXT_OUTPUT_MODE=build next build",
+    "start": "NEXT_OUTPUT_MODE=build next start",
     "lint": "next lint"
   },
   "dependencies": {

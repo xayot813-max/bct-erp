@@ -190,6 +190,126 @@ func AdminAuthRoutes(app fiber.Router, db *mongo.Client) {
 		return c.JSON(admin)
 	})
 
+	adminAuth.Post("/seed/test-products", func(c *fiber.Ctx) error {
+		adminID, err := adminIDFromRequest(c)
+		if err != nil {
+			return c.Status(401).JSON(fiber.Map{"error": "Invalid or missing admin token"})
+		}
+
+		now := time.Now()
+		topCategoriesCollection := config.GetCollection(db, "topcategories")
+		categoriesCollection := config.GetCollection(db, "categories")
+		productsCollection := config.GetCollection(db, "products")
+
+		var topCategory models.TopCategory
+		err = topCategoriesCollection.FindOne(context.TODO(), bson.M{"name": "Test Data"}).Decode(&topCategory)
+		if err == mongo.ErrNoDocuments {
+			topCategory = models.TopCategory{
+				ID:        primitive.NewObjectID(),
+				Name:      "Test Data",
+				Image:     "",
+				CreatedAt: now,
+				UpdatedAt: now,
+			}
+			if _, err := topCategoriesCollection.InsertOne(context.TODO(), topCategory); err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": "Failed to create test top category"})
+			}
+		} else if err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to load test top category"})
+		}
+
+		type categorySeed struct {
+			Name string
+		}
+		categoryMap := map[string]primitive.ObjectID{}
+		for _, item := range []categorySeed{
+			{Name: "POS Systems"},
+			{Name: "Barcode Scanners"},
+			{Name: "Label Printers"},
+			{Name: "Receipt Printers"},
+		} {
+			var category models.Category
+			err = categoriesCollection.FindOne(context.TODO(), bson.M{"name": item.Name}).Decode(&category)
+			if err == mongo.ErrNoDocuments {
+				category = models.Category{
+					ID:             primitive.NewObjectID(),
+					Name:           item.Name,
+					Image:          "",
+					TopCategoryID:  &topCategory.ID,
+					TopCategoryName: topCategory.Name,
+					CreatedAt:      now,
+					UpdatedAt:      now,
+				}
+				if _, err := categoriesCollection.InsertOne(context.TODO(), category); err != nil {
+					return c.Status(500).JSON(fiber.Map{"error": "Failed to create test category"})
+				}
+			} else if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": "Failed to load test category"})
+			}
+			categoryMap[item.Name] = category.ID
+		}
+
+		seedData := []struct {
+			Name       string
+			Category   string
+			Warehouse  string
+			WarehouseID string
+			Count      int
+			Price      float64
+		}{
+			{"Тест товар 1", "POS Systems", "Склад 1", "warehouse-1", 7, 2499000},
+			{"Тест товар 2", "Barcode Scanners", "Склад 2", "warehouse-2", 22, 890000},
+			{"Тест товар 3", "Label Printers", "Склад 1", "warehouse-1", 4, 1780000},
+			{"Тест товар 4", "POS Systems", "Склад 3", "warehouse-3", 9, 620000},
+			{"Тест товар 5", "Receipt Printers", "Склад 2", "warehouse-2", 13, 540000},
+		}
+
+		insertedOrUpdated := []models.Product{}
+
+		if _, err := productsCollection.DeleteMany(context.TODO(), bson.M{
+			"owner_admin_id": adminID.Hex(),
+			"is_test_data":   true,
+		}); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to reset existing test products"})
+		}
+
+		for _, item := range seedData {
+			categoryID := categoryMap[item.Category]
+			categoryName := item.Category
+			product := models.Product{
+				ID:              primitive.NewObjectID(),
+				Name:            item.Name,
+				Images:          []string{"/uploads/test-product-placeholder.png"},
+				Description:     "Profile test product for ERP verification",
+				Price:           models.NewFlexFloat64(item.Price),
+				CategoryID:      &categoryID,
+				TopCategoryID:   &topCategory.ID,
+				CategoryName:    &categoryName,
+				TopCategoryName: &topCategory.Name,
+				Count:           item.Count,
+				WarehouseID:     item.WarehouseID,
+				Warehouse:       item.Warehouse,
+				StockByWarehouse: map[string]int{
+					item.WarehouseID: item.Count,
+				},
+				OwnerAdminID: adminID.Hex(),
+				IsTestData:   true,
+				CreatedAt:    now,
+				UpdatedAt:    now,
+			}
+
+			if _, err := productsCollection.InsertOne(context.TODO(), product); err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": "Failed to seed test products"})
+			}
+			insertedOrUpdated = append(insertedOrUpdated, product)
+		}
+
+		return c.JSON(fiber.Map{
+			"data":  insertedOrUpdated,
+			"total": len(insertedOrUpdated),
+		})
+	})
+
 	// Debug endpoints must never expose password hashes in production.
 }
 

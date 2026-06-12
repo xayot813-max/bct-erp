@@ -14,6 +14,7 @@ import {
   getProducts,
   getFunnels,
 } from "@/lib/actions"
+import { getCurrentAdminProfileId } from "@/lib/profile-test-data"
 
 type DealFormData = {
   client: string
@@ -451,7 +452,11 @@ export const useDealStore = create<DealStore>((set, get) => ({
 
     set({ productsLoading: true, productsError: undefined })
     try {
-      const response = await getProducts({ limit: 200 })
+      const response = await getProducts({
+        limit: 200,
+        owner_admin_id: getCurrentAdminProfileId(),
+        is_test_data: true,
+      })
       const raw = extractArray(response)
 
       const products: ProductOption[] = raw.map((item, index) => {

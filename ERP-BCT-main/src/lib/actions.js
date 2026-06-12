@@ -11,7 +11,25 @@ import {
   contractService,
   funnelService,
   warehouseService,
+  financeTransactionService,
 } from './api-services'
+
+const createCollectionFallback = (collectionKey, error, extras = {}) => {
+  const message =
+    (error && typeof error.message === "string" && error.message) ||
+    "Не удалось загрузить данные"
+
+  return {
+    ok: false,
+    error: message,
+    message,
+    data: [],
+    items: [],
+    results: [],
+    [collectionKey]: [],
+    ...extras,
+  }
+}
 
 const resolveLinkedId = (value) => {
   if (!value) return undefined
@@ -77,7 +95,7 @@ export async function getProducts(params = {}) {
     return await productService.getAll(params)
   } catch (error) {
     console.error('Error fetching products:', error)
-    throw error
+    return createCollectionFallback("products", error)
   }
 }
 
@@ -122,7 +140,7 @@ export async function getInventoryTransactions(params = {}) {
     return await productService.getStockOperations(params)
   } catch (error) {
     console.error('Error fetching inventory transactions:', error)
-    throw error
+    return createCollectionFallback("data", error, { operations: [] })
   }
 }
 
@@ -189,7 +207,7 @@ export async function getCategories(params = {}) {
     return await categoryService.getAll(params)
   } catch (error) {
     console.error('Error fetching categories:', error)
-    throw error
+    return createCollectionFallback("categories", error)
   }
 }
 
@@ -238,7 +256,7 @@ export async function getTopCategories(params = {}) {
     return await topCategoryService.getAll(params)
   } catch (error) {
     console.error('Error fetching top categories:', error)
-    throw error
+    return createCollectionFallback("top_categories", error)
   }
 }
 
@@ -315,7 +333,7 @@ export async function getClients(params = {}) {
     return await clientService.getAll(params)
   } catch (error) {
     console.error("Error fetching clients:", error)
-    throw error
+    return createCollectionFallback("clients", error)
   }
 }
 
@@ -364,7 +382,7 @@ export async function getCompanies(params = {}) {
     return await companyService.getAll(params)
   } catch (error) {
     console.error("Error fetching companies:", error)
-    throw error
+    return createCollectionFallback("companies", error)
   }
 }
 
@@ -413,7 +431,7 @@ export async function getCounterparties(params = {}) {
     return await counterpartyService.getAll(params)
   } catch (error) {
     console.error("Error fetching counterparties:", error)
-    throw error
+    return createCollectionFallback("counterparties", error)
   }
 }
 
@@ -462,7 +480,7 @@ export async function getContracts(params = {}) {
     return await contractService.getAll(params)
   } catch (error) {
     console.error("Error fetching contracts:", error)
-    throw error
+    return createCollectionFallback("contracts", error)
   }
 }
 
@@ -585,7 +603,7 @@ export async function getFunnels(params = {}) {
     return await funnelService.getAll(params)
   } catch (error) {
     console.error("Error fetching funnels:", error)
-    throw error
+    return createCollectionFallback("funnels", error)
   }
 }
 
@@ -634,6 +652,24 @@ export async function getWarehouses(params = {}) {
     return await warehouseService.getAll(params)
   } catch (error) {
     console.error("Error fetching warehouses:", error)
+    return createCollectionFallback("data", error, { warehouses: [] })
+  }
+}
+
+export async function getERPTransactions(params = {}) {
+  try {
+    return await financeTransactionService.getAll(params)
+  } catch (error) {
+    console.error("Error fetching ERP transactions:", error)
+    return createCollectionFallback("data", error, { transactions: [] })
+  }
+}
+
+export async function createERPTransaction(payload) {
+  try {
+    return await financeTransactionService.create(payload)
+  } catch (error) {
+    console.error("Error creating ERP transaction:", error)
     throw error
   }
 }

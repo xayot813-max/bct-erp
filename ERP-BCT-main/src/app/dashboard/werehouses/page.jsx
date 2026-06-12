@@ -11,6 +11,8 @@ import { warehouseLinks, warehouseOptions } from "@/components/warehouse/warehou
 import { toastError } from "@/lib/toast"
 import BackLinkButton from "@/components/shared/BackLinkButton"
 import { formatMoney, normalizeCurrencyCode, resolveLocale } from "@/lib/utils/currency"
+import { adminService } from "@/lib/api-services"
+import { getCurrentAccessToken, getCurrentAdminProfileId } from "@/lib/profile-test-data"
 
 const formatDate = (value, locale) => {
   if (!value) return ""
@@ -82,7 +84,7 @@ export default function WerehousePage() {
     const load = async () => {
       try {
         const [response, warehouseResponse] = await Promise.all([
-          getProducts({ page: 1, limit: 10 }),
+          getProducts({ page: 1, limit: 10, owner_admin_id: getCurrentAdminProfileId(), is_test_data: true }),
           getWarehouses({ limit: 500 }),
         ])
         const warehouseItems = Array.isArray(warehouseResponse?.data)
@@ -98,8 +100,13 @@ export default function WerehousePage() {
           const id = String(item.id || item._id || "")
           if (id) labels[id] = item.name || id
         })
-        const items = extractArrayFromResponse(response, ["products"])
-        const normalized = (Array.isArray(items) ? items : []).map((item, index) =>
+        let sourceItems = extractArrayFromResponse(response, ["products"])
+        if ((!Array.isArray(sourceItems) || sourceItems.length === 0) && getCurrentAccessToken()) {
+          const seeded = await adminService.seedTestProducts(getCurrentAccessToken())
+          sourceItems = extractArrayFromResponse(seeded, ["products"])
+        }
+        sourceItems = Array.isArray(sourceItems) ? sourceItems : []
+        const normalized = sourceItems.map((item, index) =>
           normalizeProduct(item, index, labels, translatedProductTypes, locale),
         )
         setProducts(normalized)

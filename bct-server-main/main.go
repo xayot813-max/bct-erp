@@ -128,6 +128,7 @@ func main() {
 	routes.ContractRoutes(api, db)
 	routes.FunnelRoutes(api, db)
 	routes.WarehouseRoutes(api, db)
+	routes.ERPTransactionRoutes(api, db)
 
 	// Information pages (singleton models)
 	routes.AboutRoutes(api, db)

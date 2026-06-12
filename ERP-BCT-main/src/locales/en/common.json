@@ -1170,8 +1170,8 @@
       "label": "Electronic shelf label"
     },
     "transactions": {
-      "title": "Inventory Transactions",
-      "subtitle": "Unified journal for receipts, write-offs, transfers, sales, and audits.",
+      "title": "Warehouse Movement Journal",
+      "subtitle": "Journal for receipts, write-offs, transfers, sales, and stock audits.",
       "loadError": "Failed to load transactions",
       "empty": "No transactions yet.",
       "columns": {

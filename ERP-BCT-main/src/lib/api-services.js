@@ -449,6 +449,12 @@ export const adminService = {
       body: payload,
     })
   },
+  async seedTestProducts(token) {
+    return adminFetch("/admin/seed/test-products", {
+      method: "POST",
+      token,
+    })
+  },
 }
 
 /**
@@ -634,5 +640,16 @@ export const warehouseService = {
 
   async delete(id) {
     return apiClient.delete(`/warehouses/${id}`)
+  },
+}
+
+export const financeTransactionService = {
+  async getAll(params = {}) {
+    const endpoint = `/finance/transactions${buildQueryString(params)}`
+    return apiClient.get(endpoint)
+  },
+
+  async create(payload) {
+    return apiClient.post(`/finance/transactions`, payload)
   },
 }

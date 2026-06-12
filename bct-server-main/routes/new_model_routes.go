@@ -805,6 +805,9 @@ func ContractRoutes(app fiber.Router, db *mongo.Client) {
 		if err := syncContractHistory(db, nil, contract); err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to sync contract history"})
 		}
+		if err := upsertContractERPTransaction(db, contract); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to sync ERP transaction"})
+		}
 		return c.Status(201).JSON(contract)
 	})
 
@@ -983,6 +986,9 @@ func ContractRoutes(app fiber.Router, db *mongo.Client) {
 		if err := syncContractHistory(db, &previous, updated); err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to sync contract history"})
 		}
+		if err := upsertContractERPTransaction(db, updated); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to sync ERP transaction"})
+		}
 
 		return c.JSON(updated)
 	})
@@ -1013,6 +1019,9 @@ func ContractRoutes(app fiber.Router, db *mongo.Client) {
 
 		if err := removeContractHistoryFromEntities(db, contract); err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to sync contract history"})
+		}
+		if err := deleteERPTransactionsByReference(db, "contract", contract.ID.Hex()); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to delete ERP transaction"})
 		}
 		return c.JSON(fiber.Map{"message": "Contract deleted successfully"})
 	})

@@ -388,6 +388,10 @@ func ApplyInventoryTransactions(ctx context.Context, db *mongo.Client, payloads 
 		updatedProducts = append(updatedProducts, updated)
 	}
 
+	if err := syncInventoryOperationsToERP(db, insertedOperations); err != nil {
+		return nil, nil, err
+	}
+
 	return updatedProducts, insertedOperations, nil
 }
 

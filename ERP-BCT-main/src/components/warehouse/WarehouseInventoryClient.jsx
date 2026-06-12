@@ -28,6 +28,8 @@ import { warehouseOptions } from "@/components/warehouse/warehouse-data"
 import { toastError, toastSuccess } from "@/lib/toast"
 import BackLinkButton from "@/components/shared/BackLinkButton"
 import { formatMoney, normalizeCurrencyCode, resolveLocale } from "@/lib/utils/currency"
+import { adminService } from "@/lib/api-services"
+import { getCurrentAccessToken, getCurrentAdminProfileId } from "@/lib/profile-test-data"
 
 const actionButtonClass =
   "h-[40px] w-[30px] rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-0 text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
@@ -129,7 +131,7 @@ export default function WarehouseInventoryClient({
     const load = async () => {
       try {
         const [response, warehouseResponse] = await Promise.all([
-          getProducts({ page: 1, limit: 20 }),
+          getProducts({ page: 1, limit: 20, owner_admin_id: getCurrentAdminProfileId(), is_test_data: true }),
           getWarehouses({ limit: 500 }),
         ])
         const warehouseItems = Array.isArray(warehouseResponse?.data)
@@ -155,8 +157,13 @@ export default function WarehouseInventoryClient({
           if (id) acc[id] = item.name || id
           return acc
         }, fallbackLabels)
-        const items = extractArrayFromResponse(response, ["products"])
-        const normalized = (Array.isArray(items) ? items : []).map((item, index) =>
+        let sourceItems = extractArrayFromResponse(response, ["products"])
+        if ((!Array.isArray(sourceItems) || sourceItems.length === 0) && getCurrentAccessToken()) {
+          const seeded = await adminService.seedTestProducts(getCurrentAccessToken())
+          sourceItems = extractArrayFromResponse(seeded, ["products"])
+        }
+        sourceItems = Array.isArray(sourceItems) ? sourceItems : []
+        const normalized = sourceItems.map((item, index) =>
           normalizeProduct(item, index, labels, translatedProductTypes),
         )
         setProducts(normalized)

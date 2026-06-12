@@ -15,6 +15,8 @@ import {
 import { extractArrayFromResponse } from "@/lib/utils/api-helpers"
 import { toastError, toastSuccess, toastWarning } from "@/lib/toast"
 import { warehouseOptions } from "@/components/warehouse/warehouse-data"
+import { adminService } from "@/lib/api-services"
+import { getCurrentAccessToken, getCurrentAdminProfileId } from "@/lib/profile-test-data"
 
 const operationTypes = ["receipt", "writeoff", "movement", "adjustment"]
 const fallbackId = () => `line-${Date.now()}-${Math.random().toString(16).slice(2)}`
@@ -121,12 +123,17 @@ export default function WarehouseTransactionsPage() {
       try {
         const [operationResponse, productResponse, warehouseResponse] = await Promise.all([
           getInventoryTransactions({ page: 1, limit: 150 }),
-          getProducts({ page: 1, limit: 500 }),
+          getProducts({ page: 1, limit: 500, owner_admin_id: getCurrentAdminProfileId(), is_test_data: true }),
           getWarehouses({ limit: 500 }),
         ])
         if (cancelled) return
         setRows(extractArrayFromResponse(operationResponse))
-        setProducts(extractArrayFromResponse(productResponse, ["products"]))
+        let rawProducts = extractArrayFromResponse(productResponse, ["products"])
+        if ((!Array.isArray(rawProducts) || rawProducts.length === 0) && getCurrentAccessToken()) {
+          const seeded = await adminService.seedTestProducts(getCurrentAccessToken())
+          rawProducts = extractArrayFromResponse(seeded, ["products"])
+        }
+        setProducts(Array.isArray(rawProducts) ? rawProducts : [])
         const warehouseItems = extractArrayFromResponse(warehouseResponse, ["data"])
           .map((item) => ({
             id: String(item.id || item._id || ""),
@@ -142,6 +149,7 @@ export default function WarehouseTransactionsPage() {
           description: error?.message,
         })
         if (!cancelled) setRows([])
+        if (!cancelled) setProducts([])
       } finally {
         if (!cancelled) setIsLoading(false)
       }

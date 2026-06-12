@@ -1,5 +1,12 @@
-import { redirect } from "next/navigation"
+import WarehouseInventoryClient from "@/components/warehouse/WarehouseInventoryClient"
 
 export default function WarehouseMovementPage() {
-  redirect("/dashboard/werehouses/transactions?type=movement")
+  return (
+    <WarehouseInventoryClient
+      titleKey="warehouse.links.movement.title"
+      headingKey="warehouse.chooseProduct"
+      showWriteoffAction={false}
+      primaryAction="move"
+    />
+  )
 }

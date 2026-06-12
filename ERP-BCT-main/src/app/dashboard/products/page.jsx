@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { extractArrayFromResponse, toSelectOption } from '@/lib/utils/api-helpers'
 import { toastError } from "@/lib/toast"
 import BackLinkButton from "@/components/shared/BackLinkButton"
+import { adminService } from "@/lib/api-services"
+import { getCurrentAccessToken, getCurrentAdminProfileId } from "@/lib/profile-test-data"
 
 export default function ProductsPage() {
   const { t, i18n } = useTranslation();
@@ -60,6 +62,8 @@ export default function ProductsPage() {
         const params = {
           page: pagination.page,
           limit: pagination.limit,
+          owner_admin_id: getCurrentAdminProfileId(),
+          is_test_data: true,
         }
 
         if (debouncedSearchQuery) {
@@ -71,17 +75,25 @@ export default function ProductsPage() {
         }
 
         const response = await getProducts(params)
-        const productItems = extractArrayFromResponse(response, ["products"])
-        setProducts(Array.isArray(productItems) ? productItems : [])
+        let productItems = extractArrayFromResponse(response, ["products"])
+
+        if ((!Array.isArray(productItems) || productItems.length === 0) && getCurrentAccessToken()) {
+          const seeded = await adminService.seedTestProducts(getCurrentAccessToken())
+          productItems = extractArrayFromResponse(seeded, ["products"])
+        }
+
+        const resolvedProducts = Array.isArray(productItems) ? productItems : []
+        setProducts(resolvedProducts)
         setPagination(prev => ({
           ...prev,
           total:
             response?.meta?.total ??
             response?.total ??
-            (Array.isArray(productItems) ? productItems.length : prev.total),
+            resolvedProducts.length,
         }))
       } catch (error) {
         console.error('Error loading products:', error)
+        setProducts([])
         toastError({
           title: t("productsPage.loadErrorTitle"),
           description: error.message,
