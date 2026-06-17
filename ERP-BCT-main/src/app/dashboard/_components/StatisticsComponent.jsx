@@ -185,7 +185,7 @@ export function ChartAreaInteractive() {
   }, [filteredData])
 
   return (
-    <section className="mx-auto mt-12 w-[95%] max-w-[1240px] pb-12">
+    <section className="mx-auto mt-12 w-[95%] max-w-[1440px] pb-12">
       <div>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">

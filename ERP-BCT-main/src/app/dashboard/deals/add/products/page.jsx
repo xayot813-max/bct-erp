@@ -1,7 +1,7 @@
 import DealCategoriesView from "./_components/DealCategoriesView"
 
 import { getCategories } from "@/lib/actions"
-import { extractArrayFromResponse, getFileUrl } from "@/lib/utils/api-helpers"
+import { extractArrayFromResponse, resolveFirstFileUrl } from "@/lib/utils/api-helpers"
 import { getLocalizedValue } from "@/lib/multilingual"
 
 const normaliseCategory = (category, index) => {
@@ -36,14 +36,16 @@ const normaliseCategory = (category, index) => {
   const description =
     getLocalizedValue(record.description) || record.description || record.comment || ""
 
-  const images = record.images ?? record.image ?? record.photo ?? record.files ?? []
-  const firstImage = Array.isArray(images) && images.length > 0 ? images[0] : images
-  const image =
-    typeof firstImage === "string"
-      ? getFileUrl(firstImage)
-      : firstImage && typeof firstImage === "object"
-        ? getFileUrl(firstImage.url)
-        : ""
+  const images =
+    record.images ??
+    record.image ??
+    record.photo ??
+    record.photos ??
+    record.files ??
+    record.gallery ??
+    record.attachments ??
+    []
+  const image = resolveFirstFileUrl(images)
 
   return {
     id: String(id),

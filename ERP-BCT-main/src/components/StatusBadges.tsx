@@ -9,6 +9,7 @@ type StatusBadgesProps = {
   statusColor?: string
   paymentLabel?: string
   paymentValue?: string
+  paymentTone?: "danger" | "warning" | "success" | "default"
   showPayment?: boolean
 }
 
@@ -18,6 +19,7 @@ export default function StatusBadges({
   statusColor,
   paymentLabel,
   paymentValue,
+  paymentTone = "danger",
   showPayment = true,
 }: StatusBadgesProps) {
   const { t } = useTranslation("common")
@@ -29,6 +31,8 @@ export default function StatusBadges({
     root?.getPropertyValue("--text-primary").trim() ||
     "#111827"
   const danger = root?.getPropertyValue("--danger").trim() || "#C43A2F"
+  const success = "#2D9B6C"
+  const warning = "#C98512"
 
   const toBadgeStyle = (hex?: string) => {
     if (!hex || typeof hex !== "string") {
@@ -66,10 +70,17 @@ export default function StatusBadges({
         color: accentText,
         borderColor: `${accent}40`,
       }
-  const paymentDanger = {
-    color: danger,
-    backgroundColor: `color-mix(in srgb, ${danger} 16%, transparent)`,
-    borderColor: `color-mix(in srgb, ${danger} 30%, transparent)`,
+  const paymentColorMap = {
+    danger,
+    warning,
+    success,
+    default: accentText,
+  }
+  const paymentAccent = paymentColorMap[paymentTone] || danger
+  const paymentStyle = {
+    color: paymentAccent,
+    backgroundColor: `color-mix(in srgb, ${paymentAccent} 16%, transparent)`,
+    borderColor: `color-mix(in srgb, ${paymentAccent} 30%, transparent)`,
   }
   const resolvedStatusLabel = statusLabel || t("dealAdd.status.label", { defaultValue: "Status" })
   const resolvedStatusValue = statusValue || t("dealAdd.status.creating", { defaultValue: "Creating" })
@@ -99,9 +110,9 @@ export default function StatusBadges({
           <span
             className="rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide"
             style={{
-              color: paymentDanger.color,
-              backgroundColor: paymentDanger.backgroundColor,
-              borderColor: paymentDanger.borderColor,
+              color: paymentStyle.color,
+              backgroundColor: paymentStyle.backgroundColor,
+              borderColor: paymentStyle.borderColor,
             }}
           >
             {resolvedPaymentValue}

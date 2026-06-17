@@ -4,9 +4,9 @@
 CONTAINER_NAME="mongodb"
 BACKUP_PATH="$(pwd)/backup/db"        # backup/db papkangiz joylashgan joy
 DB_NAME="ecommerce"
-DB_USER="admin"
-DB_PASS="password123"
-AUTH_DB="admin"
+DB_USER="${MONGO_INITDB_ROOT_USERNAME:-admin}"
+DB_PASS="${MONGO_INITDB_ROOT_PASSWORD:-password123}"
+AUTH_DB="${MONGO_AUTH_DB:-admin}"
 
 echo "📦 Checking MongoDB container..."
 docker ps | grep -q $CONTAINER_NAME

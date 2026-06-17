@@ -35,6 +35,21 @@ import { toastSuccess, toastError, toastWarning } from "@/lib/toast"
 
 const ZERO_OBJECT_ID = "000000000000000000000000"
 
+const resolvePaymentStatusCode = (dealAmount: string, payCard: string, payCash: string, overrideValue: string) => {
+  if (overrideValue === "paid" || overrideValue === "partial" || overrideValue === "unpaid") {
+    return overrideValue
+  }
+
+  const total = Number(dealAmount || 0)
+  const paidCard = Number(payCard || 0)
+  const paidCash = Number(payCash || 0)
+  const paid = (Number.isFinite(paidCard) ? paidCard : 0) + (Number.isFinite(paidCash) ? paidCash : 0)
+
+  if (Number.isFinite(total) && total > 0 && paid >= total) return "paid"
+  if (paid > 0) return "partial"
+  return "unpaid"
+}
+
 const normalizeDocumentList = (value: unknown): string[] => {
   if (!value) return []
 
@@ -79,9 +94,11 @@ export default function CreateDealPage() {
   const contractIdParam = searchParams.get("contractId") ?? ""
   const typeParam = searchParams.get("type") ?? ""
   const funnelIdParam = searchParams.get("funnelId") ?? ""
+  const preserveDraftParam = searchParams.get("preserve") ?? ""
   const returnToParam = searchParams.get("returnTo") ?? ""
   const backHref = returnToParam.startsWith("/dashboard") ? returnToParam : "/dashboard/deals"
   const isEdit = Boolean(contractIdParam && typeParam === "edit")
+  const shouldPreserveDraft = preserveDraftParam === "1"
 
   const [submitting, setSubmitting] = useState(false)
   const [loadingContract, setLoadingContract] = useState(isEdit)
@@ -96,8 +113,8 @@ export default function CreateDealPage() {
   }, [loadReferenceData, loadProducts, loadFunnels])
 
   useEffect(() => {
-    initializeForm(isEdit ? "edit" : "create")
-  }, [initializeForm, isEdit])
+    initializeForm(isEdit ? "edit" : "create", shouldPreserveDraft)
+  }, [initializeForm, isEdit, shouldPreserveDraft])
 
   useEffect(() => {
     if (funnelIdParam && !isEdit) {
@@ -158,15 +175,19 @@ export default function CreateDealPage() {
   }, [formData.dealAmount, isEdit, t])
 
   const paymentStatus = useMemo(() => {
-    const total = Number(formData.dealAmount || 0)
-    const payCard = Number(formData.payCard || 0)
-    const payCash = Number(formData.payCash || 0)
-    const paid = (Number.isFinite(payCard) ? payCard : 0) + (Number.isFinite(payCash) ? payCash : 0)
-    if (Number.isFinite(total) && total > 0 && paid >= total) {
+    const statusCode = resolvePaymentStatusCode(formData.dealAmount, formData.payCard, formData.payCash, formData.paymentStatusOverride)
+    if (statusCode === "paid") {
       return t("dealAdd.payment.paid", { defaultValue: "Оплачено" })
     }
-    return paid > 0 ? t("dealAdd.payment.partial") : t("dealAdd.payment.unpaid")
-  }, [formData.dealAmount, formData.payCard, formData.payCash, t])
+    return statusCode === "partial" ? t("dealAdd.payment.partial") : t("dealAdd.payment.unpaid")
+  }, [formData.dealAmount, formData.payCard, formData.payCash, formData.paymentStatusOverride, t])
+
+  const paymentTone = useMemo(() => {
+    const statusCode = resolvePaymentStatusCode(formData.dealAmount, formData.payCard, formData.payCash, formData.paymentStatusOverride)
+    if (statusCode === "paid") return "success"
+    if (statusCode === "partial") return "warning"
+    return "danger"
+  }, [formData.dealAmount, formData.payCard, formData.payCash, formData.paymentStatusOverride])
 
   const submitLabel = isEdit ? t("dealAdd.buttons.save") : t("dealAdd.buttons.create")
   const cancelLabel = isEdit ? t("dealAdd.buttons.cancel") : t("dealAdd.buttons.reset")
@@ -176,6 +197,9 @@ export default function CreateDealPage() {
     if (isEdit && contractIdParam) {
       params.set("contractId", contractIdParam)
       params.set("type", "edit")
+    }
+    if (!isEdit) {
+      params.set("preserve", "1")
     }
     const funnelFromForm = formData.funnelId || funnelIdParam
     if (funnelFromForm) {
@@ -232,6 +256,7 @@ export default function CreateDealPage() {
         funnel_id: normalizedFunnelId,
         pay_card: Number(formData.payCard || 0),
         pay_cash: Number(formData.payCash || 0),
+        payment_status_override: formData.paymentStatusOverride === "auto" ? "" : formData.paymentStatusOverride,
         products: dealProducts.map((product) => ({
           product_id: product.id,
           price: Number(product.price ?? 0),
@@ -405,7 +430,7 @@ export default function CreateDealPage() {
             </div>
           </div>
           <div className="flex flex-col items-start gap-2 pt-0 md:items-end">
-            <StatusBadges statusValue={statusLabel} paymentValue={paymentStatus} />
+            <StatusBadges statusValue={statusLabel} paymentValue={paymentStatus} paymentTone={paymentTone} />
             {isEdit && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>

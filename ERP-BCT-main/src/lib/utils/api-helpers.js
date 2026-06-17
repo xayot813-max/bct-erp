@@ -29,6 +29,43 @@ export function getFileUrl(path) {
   return `${base}${normalizedPath}`
 }
 
+export function resolveFirstFileUrl(value) {
+  if (!value) return ""
+
+  const candidates = Array.isArray(value) ? value : [value]
+
+  for (const candidate of candidates) {
+    if (!candidate) continue
+
+    if (typeof candidate === "string") {
+      const resolved = getFileUrl(candidate)
+      if (resolved) return resolved
+      continue
+    }
+
+    if (typeof candidate === "object") {
+      const record = candidate
+      const nested =
+        record.url ??
+        record.path ??
+        record.preview ??
+        record.src ??
+        record.image ??
+        record.photo ??
+        record.file ??
+        record.original ??
+        record.thumbnail
+
+      if (typeof nested === "string" && nested.trim()) {
+        const resolved = getFileUrl(nested)
+        if (resolved) return resolved
+      }
+    }
+  }
+
+  return ""
+}
+
 /**
  * Helper function to build image URLs from API responses
  * @param {string|Array} images - Image path or array of image objects

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -33,6 +34,50 @@ type AdminUpdateRequest struct {
 type AdminAuthResponse struct {
 	Token string       `json:"token"`
 	Admin models.Admin `json:"admin"`
+}
+
+func resolveJWTSecret() (string, error) {
+	jwtSecret := strings.TrimSpace(os.Getenv("JWT_SECRET"))
+	appEnv := strings.ToLower(strings.TrimSpace(os.Getenv("APP_ENV")))
+	isProduction := appEnv == "production"
+
+	if jwtSecret == "" {
+		if isProduction {
+			return "", fiber.NewError(fiber.StatusInternalServerError, "JWT_SECRET is required in production")
+		}
+		return "your-super-secret-jwt-key-here", nil
+	}
+
+	if isProduction && jwtSecret == "your-super-secret-jwt-key-here" {
+		return "", fiber.NewError(fiber.StatusInternalServerError, "JWT_SECRET placeholder is not allowed in production")
+	}
+
+	return jwtSecret, nil
+}
+
+func buildSerialItemsForSeed(productName, warehouseID, warehouseName string, count int, now time.Time) []models.ProductSerialUnit {
+	items := make([]models.ProductSerialUnit, 0, count)
+	base := strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(productName, " ", "-"), "ТЕСТ-", "TEST-"))
+	for index := 1; index <= count; index++ {
+		items = append(items, models.ProductSerialUnit{
+			SerialNumber: base + "-" + time.Now().Format("060102") + "-" + strings.ToUpper(warehouseID) + "-" + formatSeedSerialIndex(index),
+			WarehouseID:  warehouseID,
+			Warehouse:    warehouseName,
+			CreatedAt:    now,
+			UpdatedAt:    now,
+		})
+	}
+	return items
+}
+
+func formatSeedSerialIndex(value int) string {
+	if value < 10 {
+		return "00" + strconv.Itoa(value)
+	}
+	if value < 100 {
+		return "0" + strconv.Itoa(value)
+	}
+	return strconv.Itoa(value)
 }
 
 func AdminAuthRoutes(app fiber.Router, db *mongo.Client) {
@@ -232,13 +277,13 @@ func AdminAuthRoutes(app fiber.Router, db *mongo.Client) {
 			err = categoriesCollection.FindOne(context.TODO(), bson.M{"name": item.Name}).Decode(&category)
 			if err == mongo.ErrNoDocuments {
 				category = models.Category{
-					ID:             primitive.NewObjectID(),
-					Name:           item.Name,
-					Image:          "",
-					TopCategoryID:  &topCategory.ID,
+					ID:              primitive.NewObjectID(),
+					Name:            item.Name,
+					Image:           "",
+					TopCategoryID:   &topCategory.ID,
 					TopCategoryName: topCategory.Name,
-					CreatedAt:      now,
-					UpdatedAt:      now,
+					CreatedAt:       now,
+					UpdatedAt:       now,
 				}
 				if _, err := categoriesCollection.InsertOne(context.TODO(), category); err != nil {
 					return c.Status(500).JSON(fiber.Map{"error": "Failed to create test category"})
@@ -250,12 +295,12 @@ func AdminAuthRoutes(app fiber.Router, db *mongo.Client) {
 		}
 
 		seedData := []struct {
-			Name       string
-			Category   string
-			Warehouse  string
+			Name        string
+			Category    string
+			Warehouse   string
 			WarehouseID string
-			Count      int
-			Price      float64
+			Count       int
+			Price       float64
 		}{
 			{"Тест товар 1", "POS Systems", "Склад 1", "warehouse-1", 7, 2499000},
 			{"Тест товар 2", "Barcode Scanners", "Склад 2", "warehouse-2", 22, 890000},
@@ -292,6 +337,7 @@ func AdminAuthRoutes(app fiber.Router, db *mongo.Client) {
 				StockByWarehouse: map[string]int{
 					item.WarehouseID: item.Count,
 				},
+				SerialItems:  buildSerialItemsForSeed(item.Name, item.WarehouseID, item.Warehouse, item.Count, now),
 				OwnerAdminID: adminID.Hex(),
 				IsTestData:   true,
 				CreatedAt:    now,
@@ -325,9 +371,9 @@ func adminIDFromRequest(c *fiber.Ctx) (primitive.ObjectID, error) {
 	}
 
 	tokenString := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "your-super-secret-jwt-key-here"
+	jwtSecret, err := resolveJWTSecret()
+	if err != nil {
+		return primitive.NilObjectID, fiber.ErrUnauthorized
 	}
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -350,9 +396,9 @@ func adminIDFromRequest(c *fiber.Ctx) (primitive.ObjectID, error) {
 }
 
 func generateAdminJWT(adminID, adminName, adminRole string) (string, error) {
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "your-super-secret-jwt-key-here"
+	jwtSecret, err := resolveJWTSecret()
+	if err != nil {
+		return "", err
 	}
 
 	claims := jwt.MapClaims{

@@ -717,6 +717,9 @@ func ProductRoutes(app fiber.Router, db *mongo.Client) {
 		if !product.Price.Valid() {
 			return c.Status(400).JSON(fiber.Map{"error": "price is required"})
 		}
+		if product.Currency == "" {
+			product.Currency = "UZS"
+		}
 		if product.CategoryID == nil {
 			return c.Status(400).JSON(fiber.Map{"error": "category_id is required"})
 		}
@@ -825,6 +828,11 @@ func ProductRoutes(app fiber.Router, db *mongo.Client) {
 				delete(updateData, "stockByWarehouse")
 			} else {
 				return c.Status(400).JSON(fiber.Map{"error": "count must be numeric"})
+			}
+		}
+		if currencyVal, ok := updateData["currency"]; ok {
+			if currencyString, ok := currencyVal.(string); ok && currencyString == "" {
+				updateData["currency"] = "UZS"
 			}
 		}
 

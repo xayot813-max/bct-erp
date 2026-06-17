@@ -513,6 +513,29 @@ export const clientService = {
   },
 }
 
+export const customerGroupService = {
+  async getAll(params = {}) {
+    const endpoint = `/client-groups${buildQueryString(params)}`
+    return apiClient.get(endpoint)
+  },
+
+  async getAnalytics() {
+    return apiClient.get(`/client-groups/analytics`)
+  },
+
+  async create(payload) {
+    return apiClient.post(`/client-groups`, payload)
+  },
+
+  async update(id, payload) {
+    return apiClient.put(`/client-groups/${id}`, payload)
+  },
+
+  async delete(id) {
+    return apiClient.delete(`/client-groups/${id}`)
+  },
+}
+
 /**
  * Company API Services
  */
@@ -586,6 +609,10 @@ export const contractService = {
     return apiClient.put(`/contracts/${id}`, payload)
   },
 
+  async updateFunnel(id, funnelId) {
+    return apiClient.patch(`/contracts/${id}/funnel`, { funnel_id: funnelId ?? null })
+  },
+
   async delete(id) {
     return apiClient.delete(`/contracts/${id}`)
   },
@@ -640,6 +667,29 @@ export const warehouseService = {
 
   async delete(id) {
     return apiClient.delete(`/warehouses/${id}`)
+  },
+}
+
+export const vendorService = {
+  async getAll(params = {}) {
+    const endpoint = `/vendors${buildQueryString(params)}`
+    return apiClient.get(endpoint)
+  },
+
+  async getById(id) {
+    return apiClient.get(`/vendors/${id}`)
+  },
+
+  async create(payload) {
+    return apiClient.post(`/vendors`, payload)
+  },
+
+  async update(id, payload) {
+    return apiClient.put(`/vendors/${id}`, payload)
+  },
+
+  async delete(id) {
+    return apiClient.delete(`/vendors/${id}`)
   },
 }
 

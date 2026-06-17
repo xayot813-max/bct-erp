@@ -4,9 +4,9 @@ services:
     container_name: mongodb
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
-      MONGO_INITDB_DATABASE: ecommerce
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-password123}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-ecommerce}
     ports:
       - "27017:27017"
     volumes:
@@ -26,10 +26,10 @@ services:
     depends_on:
       - mongodb
     environment:
-      - MONGODB_URI=mongodb://admin:password123@mongodb:27017/ecommerce?authSource=admin
-      - JWT_SECRET=your-super-secret-jwt-key-here
-      - APP_ENV=development
-      - PORT=9000
+      - MONGODB_URI=${MONGODB_URI:-mongodb://admin:password123@mongodb:27017/ecommerce?authSource=admin}
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-here}
+      - APP_ENV=${APP_ENV:-development}
+      - PORT=${PORT:-9000}
     volumes:
       - ./uploads:/app/uploads
     networks:

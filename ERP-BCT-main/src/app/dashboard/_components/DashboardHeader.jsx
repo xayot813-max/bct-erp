@@ -8,9 +8,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import NotificationDialog from './NotificationDialog'
 import { useAuth } from '@/components/providers/AuthProvider'
-import { LogOut, UserCircle } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { hasPermission } from '@/lib/access-control'
 
 export default function DashboardHeader() {
@@ -73,7 +72,7 @@ export default function DashboardHeader() {
   }
 
   return (
-    <header className='fixed left-0 top-0 z-[999] w-full border-b border-[var(--header-border)] bg-[var(--header-bg)] text-[var(--header-text)] shadow-[0_10px_28px_rgba(15,23,42,0.18)]'>
+    <header data-dashboard-header className='fixed left-0 top-0 z-[2147483647] w-full border-b border-[var(--header-border)] bg-[var(--header-bg)] text-[var(--header-text)] shadow-[0_10px_28px_rgba(15,23,42,0.18)]'>
       <div className="mx-auto flex h-14 w-full max-w-[1920px] items-center justify-between gap-3 px-4">
       <div className='flex h-full min-w-0 flex-1 items-center gap-5'>
         <Image className='h-8 w-auto shrink-0' width={76} height={34} src="/logo.png" alt="logo" loading='eager' />
@@ -91,8 +90,8 @@ export default function DashboardHeader() {
                     : "text-[var(--header-muted)] hover:bg-[var(--header-surface-hover)] hover:text-[var(--header-text)]"
                 )}
               >
-                <Image className="shrink-0" src={nv?.icon} alt={nv?.name} width={14} height={14} />
-                <span className='hidden max-w-[92px] truncate xl:inline 2xl:max-w-36'>{nv?.name}</span>
+                <Image className="shrink-0" src={nv?.icon} alt="" aria-hidden="true" width={14} height={14} />
+                <span suppressHydrationWarning className='hidden max-w-[92px] truncate xl:inline 2xl:max-w-36'>{nv?.name}</span>
               </Link>
             )
           })}
@@ -106,24 +105,11 @@ export default function DashboardHeader() {
           className="flex h-9 items-center gap-2 rounded-[10px] border border-[var(--primary)] bg-[var(--primary)] px-3 text-[12px] font-medium text-[var(--primary-foreground)] shadow-sm transition hover:border-[var(--primary-hover)] hover:bg-[var(--primary-hover)] sm:px-4"
         >
           <Image src="/headIcons/createDeal.svg" alt="" width={14} height={14} />
-          <span className="hidden sm:inline">{t("header.dashboard.add-deal")}</span>
+          <span suppressHydrationWarning className="hidden sm:inline">{t("header.dashboard.add-deal")}</span>
         </Link>
         )}
-        <NotificationDialog />
         <ThemeToggle />
         <LanguageSwitcher />
-        {isAuthenticated && (
-          <Link
-            href="/dashboard/setting/profile"
-            className={cn(
-              "flex h-9 items-center gap-2 rounded-[10px] border border-[var(--header-border)] bg-[var(--header-surface)] px-3 text-[12px] font-medium text-[var(--header-text)] transition hover:bg-[var(--header-surface-hover)]",
-              pathname === "/dashboard/setting/profile" && "bg-[var(--header-surface-hover)]"
-            )}
-          >
-            <UserCircle className="h-4 w-4" />
-            <span className="hidden xl:inline">{t("header.dashboard.profile", { defaultValue: "Профиль" })}</span>
-          </Link>
-        )}
         {isAuthenticated && (
           <button
             type="button"
@@ -131,7 +117,7 @@ export default function DashboardHeader() {
             className="flex h-9 items-center gap-2 rounded-[10px] border border-[var(--header-border)] bg-[var(--header-surface)] px-3 text-[12px] font-medium text-[var(--header-text)] transition hover:bg-[var(--header-surface-hover)]"
           >
             <LogOut className="h-4 w-4" />
-            <span className="hidden xl:inline">{t("header.dashboard.logout", { defaultValue: "Выйти" })}</span>
+            <span suppressHydrationWarning className="hidden xl:inline">{t("header.dashboard.logout", { defaultValue: "Выйти" })}</span>
           </button>
         )}
       </div>

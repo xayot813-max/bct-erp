@@ -8,15 +8,21 @@ const normalizeBase = (value) => {
 }
 
 const resolveApiBaseUrl = () => {
+  const appEnv = normalizeBase(process.env.APP_ENV || process.env.NODE_ENV).toLowerCase()
   const candidates = [
     normalizeBase(process.env.NEXT_PUBLIC_BASE_URL),
     normalizeBase(process.env.NEXT_PUBLIC_API_BASE_URL),
     normalizeBase(process.env.API_BASE_URL),
     normalizeBase(process.env.BASE_URL),
-    "http://localhost:9000/api",
   ].filter(Boolean)
 
-  return candidates[0] || "http://localhost:9000/api"
+  if (candidates[0]) return candidates[0]
+
+  if (appEnv === "production") {
+    throw new Error("API base URL is required in production for upload proxy")
+  }
+
+  return "http://localhost:9000/api"
 }
 
 const API_BASE = resolveApiBaseUrl().replace(/\/$/, "")
@@ -78,4 +84,3 @@ export async function POST(request) {
     )
   }
 }
-

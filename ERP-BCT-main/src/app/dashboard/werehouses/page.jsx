@@ -139,24 +139,24 @@ export default function WerehousePage() {
   }, [totalPages])
 
   return (
-    <div className="mx-auto w-[95%] max-w-[1240px] py-5">
-      <div className="mb-8 flex min-w-0 items-center gap-4">
+    <div className="mx-auto w-[95%] max-w-[1440px] pt-10 pb-5">
+      <div className="mb-10 flex min-w-0 items-center gap-4">
         <BackLinkButton href="/dashboard" />
         <h1 className="text-[52px] font-normal leading-none tracking-[-0.03em] text-[var(--text-primary)]">
           {t("warehouse.pageTitle")}
         </h1>
       </div>
 
-      <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="mb-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {warehouseLinks.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-[12px] bg-[var(--menu-card)] px-4 py-5 text-white shadow-[0_8px_20px_rgba(25,28,38,0.06)] transition hover:-translate-y-0.5 hover:bg-[var(--menu-card-hover)]"
+            className="min-h-[156px] rounded-[12px] bg-[var(--menu-card)] px-5 py-6 text-white shadow-[0_8px_20px_rgba(25,28,38,0.06)] transition hover:-translate-y-0.5 hover:bg-[var(--menu-card-hover)]"
           >
             <div className="text-[30px] leading-none"> </div>
-            <h2 className="mt-2 text-[27px] font-normal tracking-[-0.03em]">{t(item.titleKey)}</h2>
-            <p className="mt-1 text-[12px] text-white/82">{t(item.subtitleKey)}</p>
+            <h2 className="mt-3 text-[31px] font-normal tracking-[-0.03em]">{t(item.titleKey)}</h2>
+            <p className="mt-2 text-[14px] text-white/82">{t(item.subtitleKey)}</p>
           </Link>
         ))}
       </div>

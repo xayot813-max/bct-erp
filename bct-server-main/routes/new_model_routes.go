@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"strconv"
+	"strings"
 	"time"
 
 	"fiber-ecommerce/config"
@@ -16,6 +17,58 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+func ensureCompanyRecord(db *mongo.Client, name, email, address, companyPhone, fallbackPhone string, comment *string) error {
+	companyName := strings.TrimSpace(name)
+	if companyName == "" {
+		return nil
+	}
+
+	collection := config.GetCollection(db, "companies")
+	collation := &options.Collation{Locale: "en", Strength: 2}
+	count, err := collection.CountDocuments(
+		context.TODO(),
+		bson.M{"name": companyName},
+		options.Count().SetCollation(collation),
+	)
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return nil
+	}
+
+	var commentPtr *string
+	if comment != nil {
+		trimmedComment := strings.TrimSpace(*comment)
+		if trimmedComment != "" {
+			commentPtr = &trimmedComment
+		}
+	}
+
+	phone := strings.TrimSpace(companyPhone)
+	if phone == "" {
+		phone = strings.TrimSpace(fallbackPhone)
+	}
+
+	now := time.Now()
+	company := models.Company{
+		Name:         companyName,
+		OrderCount:   0,
+		TotalAmount:  models.NewFlexFloat64(0),
+		Email:        strings.TrimSpace(email),
+		Inn:          "",
+		Address:      strings.TrimSpace(address),
+		Phone:        phone,
+		Comment:      commentPtr,
+		OrderHistory: []models.OrderHistoryEntry{},
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
+
+	_, err = collection.InsertOne(context.TODO(), company)
+	return err
+}
 
 // Company CRUD
 func CompanyRoutes(app fiber.Router, db *mongo.Client) {
@@ -919,6 +972,12 @@ func ContractRoutes(app fiber.Router, db *mongo.Client) {
 					return c.Status(400).JSON(fiber.Map{"error": "Invalid " + key})
 				}
 				set[key] = flex
+			case "payment_status_override":
+				var status string
+				if err := json.Unmarshal(value, &status); err != nil {
+					return c.Status(400).JSON(fiber.Map{"error": "Invalid payment_status_override"})
+				}
+				set[key] = strings.TrimSpace(status)
 			case "products":
 				if isNull(value) {
 					set[key] = []models.ContractProduct{}
@@ -993,6 +1052,50 @@ func ContractRoutes(app fiber.Router, db *mongo.Client) {
 		return c.JSON(updated)
 	})
 
+	contracts.Patch("/:id/funnel", func(c *fiber.Ctx) error {
+		id, err := primitive.ObjectIDFromHex(c.Params("id"))
+		if err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": "Invalid ID"})
+		}
+
+		var payload struct {
+			FunnelID *string `json:"funnel_id"`
+		}
+		if err := c.BodyParser(&payload); err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
+		}
+
+		updateData := bson.M{
+			"updated_at": time.Now(),
+		}
+
+		if payload.FunnelID == nil || strings.TrimSpace(*payload.FunnelID) == "" || strings.TrimSpace(*payload.FunnelID) == primitive.NilObjectID.Hex() {
+			updateData["funnel_id"] = primitive.NilObjectID
+		} else {
+			funnelID, err := primitive.ObjectIDFromHex(strings.TrimSpace(*payload.FunnelID))
+			if err != nil {
+				return c.Status(400).JSON(fiber.Map{"error": "Invalid funnel_id"})
+			}
+			updateData["funnel_id"] = funnelID
+		}
+
+		collection := config.GetCollection(db, "contracts")
+		result, err := collection.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.M{"$set": updateData})
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to update contract funnel"})
+		}
+		if result.MatchedCount == 0 {
+			return c.Status(404).JSON(fiber.Map{"error": "Contract not found"})
+		}
+
+		var updated models.Contract
+		if err := collection.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&updated); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch updated contract"})
+		}
+
+		return c.JSON(updated)
+	})
+
 	contracts.Delete("/:id", func(c *fiber.Ctx) error {
 		id, err := primitive.ObjectIDFromHex(c.Params("id"))
 		if err != nil {
@@ -1030,6 +1133,7 @@ func ContractRoutes(app fiber.Router, db *mongo.Client) {
 // Client CRUD
 func ClientRoutes(app fiber.Router, db *mongo.Client) {
 	clients := app.Group("/clients")
+	_ = ensureCustomerGroupDefaults(db)
 
 	// Get all clients
 	clients.Get("/", func(c *fiber.Ctx) error {
@@ -1037,11 +1141,39 @@ func ClientRoutes(app fiber.Router, db *mongo.Client) {
 
 		page, _ := strconv.Atoi(c.Query("page", "1"))
 		limit, _ := strconv.Atoi(c.Query("limit", "10"))
+		if limit <= 0 {
+			limit = 10
+		}
+		if page <= 0 {
+			page = 1
+		}
 		skip := (page - 1) * limit
+		search := strings.TrimSpace(c.Query("search"))
+		groupID := strings.TrimSpace(c.Query("group_id"))
+		groupCode := strings.TrimSpace(c.Query("group_code"))
 
 		opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit)).SetSort(bson.D{{Key: "created_at", Value: -1}})
+		filter := bson.M{}
+		if search != "" {
+			filter["$or"] = []bson.M{
+				{"first_name": bson.M{"$regex": search, "$options": "i"}},
+				{"last_name": bson.M{"$regex": search, "$options": "i"}},
+				{"company": bson.M{"$regex": search, "$options": "i"}},
+				{"phone": bson.M{"$regex": search, "$options": "i"}},
+				{"email": bson.M{"$regex": search, "$options": "i"}},
+			}
+		}
+		if groupID != "" {
+			id, err := primitive.ObjectIDFromHex(groupID)
+			if err != nil {
+				return c.Status(400).JSON(fiber.Map{"error": "Invalid group ID"})
+			}
+			filter["group.id"] = id
+		} else if groupCode != "" {
+			filter["group.code"] = normalizeCustomerGroupCode(groupCode)
+		}
 
-		cursor, err := collection.Find(context.TODO(), bson.M{}, opts)
+		cursor, err := collection.Find(context.TODO(), filter, opts)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch clients"})
 		}
@@ -1058,7 +1190,7 @@ func ClientRoutes(app fiber.Router, db *mongo.Client) {
 			}
 		}
 
-		total, _ := collection.CountDocuments(context.TODO(), bson.M{})
+		total, _ := collection.CountDocuments(context.TODO(), filter)
 
 		return c.JSON(fiber.Map{
 			"data":  clients,
@@ -1098,6 +1230,7 @@ func ClientRoutes(app fiber.Router, db *mongo.Client) {
 		Company      string  `json:"company"`
 		Address      string  `json:"address"`
 		Comment      *string `json:"comment"`
+		GroupID      string  `json:"group_id"`
 	}
 
 	// Create client
@@ -1112,6 +1245,13 @@ func ClientRoutes(app fiber.Router, db *mongo.Client) {
 		}
 
 		now := time.Now()
+		group, err := resolveCustomerGroupForPayload(db, payload.GroupID)
+		if err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": "Invalid customer group"})
+		}
+		if err := ensureCompanyRecord(db, payload.Company, payload.Email, payload.Address, payload.CompanyPhone, payload.Phone, payload.Comment); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to create linked company"})
+		}
 		client := models.Client{
 			FirstName:    payload.FirstName,
 			LastName:     payload.LastName,
@@ -1121,6 +1261,7 @@ func ClientRoutes(app fiber.Router, db *mongo.Client) {
 			Company:      payload.Company,
 			Address:      payload.Address,
 			Comment:      payload.Comment,
+			Group:        &models.CustomerGroupBrief{ID: group.ID, Code: group.Code, Name: group.Name, Color: group.Color, PricingProfile: group.PricingProfile, DiscountPolicyRef: group.DiscountPolicyRef},
 			OrderHistory: []models.OrderHistoryEntry{},
 			CreatedAt:    now,
 			UpdatedAt:    now,
@@ -1144,14 +1285,35 @@ func ClientRoutes(app fiber.Router, db *mongo.Client) {
 			return c.Status(400).JSON(fiber.Map{"error": "Invalid ID"})
 		}
 
-		var updateData bson.M
-		if err := c.BodyParser(&updateData); err != nil {
+		var payload clientPayload
+		if err := c.BodyParser(&payload); err != nil {
 			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
 		}
 
-		delete(updateData, "_id")
-		delete(updateData, "created_at")
-		updateData["updated_at"] = time.Now()
+		if payload.FirstName == "" || payload.LastName == "" || payload.Phone == "" {
+			return c.Status(400).JSON(fiber.Map{"error": "First name, last name and phone are required"})
+		}
+
+		group, err := resolveCustomerGroupForPayload(db, payload.GroupID)
+		if err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": "Invalid customer group"})
+		}
+		if err := ensureCompanyRecord(db, payload.Company, payload.Email, payload.Address, payload.CompanyPhone, payload.Phone, payload.Comment); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to create linked company"})
+		}
+
+		updateData := bson.M{
+			"first_name":    payload.FirstName,
+			"last_name":     payload.LastName,
+			"email":         payload.Email,
+			"phone":         payload.Phone,
+			"company_phone": payload.CompanyPhone,
+			"company":       payload.Company,
+			"address":       payload.Address,
+			"comment":       payload.Comment,
+			"group":         buildCustomerGroupBrief(group),
+			"updated_at":    time.Now(),
+		}
 
 		collection := config.GetCollection(db, "clients")
 		update := bson.M{"$set": updateData}
@@ -1420,7 +1582,7 @@ func AboutRoutes(app fiber.Router, db *mongo.Client) {
 
 // Vendor CRUD
 func VendorRoutes(app fiber.Router, db *mongo.Client) {
-	genericCRUD(app, db, "vendors", "vendors", models.Vendor{})
+	registerVendorRoutes(app, db)
 }
 
 // Project CRUD

@@ -3,6 +3,7 @@ const outputMode = process.env.NEXT_OUTPUT_MODE === "dev" ? "dev" : "build"
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   distDir: outputMode === "dev" ? ".next-dev" : ".next-build",
+  devIndicators: false,
   images: {
     remotePatterns: [
       {

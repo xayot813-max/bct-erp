@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 
 import { getCategoryById, getProducts } from "@/lib/actions"
-import { extractArrayFromResponse, getFileUrl } from "@/lib/utils/api-helpers"
+import { extractArrayFromResponse, resolveFirstFileUrl } from "@/lib/utils/api-helpers"
 import { getLocalizedValue } from "@/lib/multilingual"
 import CategoryProductsView from "../_components/CategoryProductsView"
 
@@ -39,8 +39,15 @@ const normaliseProduct = (product, index) => {
       (Array.isArray(record.prices) ? record.prices[0] : 0),
   )
 
-  const images = record.images ?? record.image ?? record.photos ?? record.files ?? []
-  const firstImage = Array.isArray(images) && images.length > 0 ? images[0] : images
+  const images =
+    record.images ??
+    record.image ??
+    record.photos ??
+    record.photo ??
+    record.files ??
+    record.gallery ??
+    record.attachments ??
+    []
 
   const resolvedName =
     getLocalizedValue(record.name) ||
@@ -68,7 +75,7 @@ const normaliseProduct = (product, index) => {
       "",
     serialNumber: record.serial_number || record.serial || "",
     description: summary && summary.trim().length > 0 ? summary : "",
-    image: typeof firstImage === "string" ? getFileUrl(firstImage) : getFileUrl(firstImage?.url),
+    image: resolveFirstFileUrl(images),
     count: Number(record.count ?? record.quantity ?? 0),
     index: index + 1,
   }

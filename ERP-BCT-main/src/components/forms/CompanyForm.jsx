@@ -27,13 +27,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { createCompany, updateCompany, deleteCompany } from "@/lib/actions"
+import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils"
 import { useDealStore } from "@/store/dealStore"
 import { useTranslation } from "react-i18next"
 
 const createCompanySchema = (t) =>
   z.object({
     name: z.string().min(2, `${t("companyForm.fields.name")} ${t("clientForm.fields.required")}`),
-    email: z.string().email(t("clientForm.fields.emailInvalid")),
+    email: z.string().trim().optional().refine((value) => !value || /\S+@\S+\.\S+/.test(value), t("clientForm.fields.emailInvalid")),
     inn: z.string().min(5, `${t("companyForm.fields.inn")} ${t("clientForm.fields.required")}`),
     phone: z.string().min(7, t("clientForm.fields.phoneInvalid")),
     address: z.string().optional(),
@@ -76,11 +77,19 @@ export default function CompanyForm({ type, data = null, companyId = null }) {
     if (isReadonly) return
     setIsLoading(true)
     try {
+      const payload = {
+        ...values,
+        email: values.email?.trim() || "",
+        phone: normalizePhoneNumber(values.phone),
+        address: values.address?.trim() || "",
+        comment: values.comment?.trim() || "",
+      }
+
       if (isEdit && companyId) {
-        await updateCompany(companyId, values)
+        await updateCompany(companyId, payload)
         toastSuccess({ title: t("companyForm.messages.updated") })
       } else {
-        await createCompany(values)
+        await createCompany(payload)
         toastSuccess({ title: t("companyForm.messages.created") })
       }
       await loadReferenceData(true)
@@ -124,7 +133,7 @@ export default function CompanyForm({ type, data = null, companyId = null }) {
           <BackLinkButton href={backHref} />
           <div>
             <h1 className="text-[52px] font-normal leading-none tracking-[-0.03em] text-[#252833]">{pageTitle}</h1>
-            <p className="mt-3 text-[11px] text-[#8B91A0]">{t("companyForm.breadcrumb")}</p>
+            <p className="mt-3 text-[12px] text-[#8B91A0]">{t("companyForm.breadcrumb")}</p>
           </div>
         </div>
 
@@ -184,7 +193,7 @@ export default function CompanyForm({ type, data = null, companyId = null }) {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("companyForm.fields.email")}<span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>{t("companyForm.fields.email")}</FormLabel>
                     <FormControl>
                       <Input placeholder={t("companyForm.placeholders.email")} disabled={isReadonly} {...field} />
                     </FormControl>
@@ -214,7 +223,12 @@ export default function CompanyForm({ type, data = null, companyId = null }) {
                   <FormItem>
                     <FormLabel>{t("companyForm.fields.phone")}</FormLabel>
                     <FormControl>
-                      <Input placeholder={t("companyForm.placeholders.phone")} disabled={isReadonly} {...field} />
+                      <Input
+                        placeholder={t("companyForm.placeholders.phone")}
+                        disabled={isReadonly}
+                        {...field}
+                        onChange={(event) => field.onChange(formatPhoneNumber(event.target.value))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -248,7 +262,7 @@ export default function CompanyForm({ type, data = null, companyId = null }) {
               />
 
               {data && !isAdd && (
-                <div className="grid grid-cols-1 gap-3 rounded-[4px] border border-dashed border-[#D8DBE2] p-3 text-[8px] text-[#8B91A0] sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 rounded-[8px] border border-dashed border-[#D8DBE2] p-4 text-[12px] leading-5 text-[#8B91A0] sm:grid-cols-2">
                   <div>
                     <span className="font-medium text-gray-900">{t("companyForm.meta.orders")}</span> {data.order_count ?? 0}
                   </div>
@@ -271,11 +285,11 @@ export default function CompanyForm({ type, data = null, companyId = null }) {
                     variant="outline"
                     onClick={() => router.push("/dashboard/companies")}
                     disabled={isLoading}
-                    className="h-[22px] rounded-[3px] border-[#D8DBE2] px-4 text-[8px] font-normal"
+                    className="h-9 rounded-[8px] border-[#D8DBE2] px-4 text-[13px] font-normal"
                   >
                     {t("companyForm.actions.cancel")}
                   </Button>
-                  <Button type="submit" className="h-[22px] rounded-[3px] bg-white px-4 text-[8px] font-normal text-[#252833] shadow-none ring-1 ring-[#D8DBE2] hover:bg-[#F5F6F8]" disabled={isLoading}>
+                  <Button type="submit" className="h-9 rounded-[8px] bg-white px-4 text-[13px] font-normal text-[#252833] shadow-none ring-1 ring-[#D8DBE2] hover:bg-[#F5F6F8]" disabled={isLoading}>
                     {isEdit ? t("common.save", { defaultValue: "Save" }) : t("companyForm.actions.create")}
                   </Button>
                 </div>

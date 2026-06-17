@@ -82,9 +82,11 @@ export default function WarehouseInventoryClient({
   const [moveWarehouseId, setMoveWarehouseId] = useState("warehouse-5")
   const [moveQuantity, setMoveQuantity] = useState("")
   const [moveComment, setMoveComment] = useState("")
+  const [moveSerialNumbers, setMoveSerialNumbers] = useState("")
   const [writeoffProductId, setWriteoffProductId] = useState("")
   const [writeoffQuantity, setWriteoffQuantity] = useState("1")
   const [writeoffReason, setWriteoffReason] = useState("")
+  const [writeoffSerialNumbers, setWriteoffSerialNumbers] = useState("")
   const [page, setPage] = useState(1)
   const deferredSearch = useDeferredValue(search)
   const itemsPerPage = 5
@@ -214,6 +216,7 @@ export default function WarehouseInventoryClient({
     setMoveWarehouseId(fallbackDestination?.id || "")
     setMoveQuantity(product?.count ? String(product.count) : "")
     setMoveComment("")
+    setMoveSerialNumbers("")
     setMoveOpen(true)
   }
 
@@ -222,6 +225,7 @@ export default function WarehouseInventoryClient({
     setWriteoffProductId(product?.id || "")
     setWriteoffQuantity(product?.count > 0 ? "1" : "0")
     setWriteoffReason("")
+    setWriteoffSerialNumbers("")
     setWriteoffOpen(true)
   }
 
@@ -229,6 +233,11 @@ export default function WarehouseInventoryClient({
     const selectedProduct = products.find((item) => item.id === writeoffProductId) || activeProduct
     const quantity = Number(writeoffQuantity)
     const available = Number(selectedProduct?.count ?? 0)
+    const serialNumbers = writeoffSerialNumbers
+      .split(/\r?\n|,/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+    const uniqueSerialCount = new Set(serialNumbers).size
 
     if (!selectedProduct) {
       toastError({ title: t("warehouse.dialogs.move.errors.product") })
@@ -253,6 +262,15 @@ export default function WarehouseInventoryClient({
       return
     }
 
+    if (serialNumbers.length !== quantity || uniqueSerialCount !== serialNumbers.length) {
+      toastError({
+        title: t("warehouse.receipt.validationSerials", {
+          defaultValue: "Количество уникальных серийных номеров должно совпадать с количеством товара",
+        }),
+      })
+      return
+    }
+
     const nextCount = Math.max(0, available - quantity)
     const isPersistableProduct = /^[a-f0-9]{24}$/i.test(String(selectedProduct?.id || ""))
 
@@ -264,6 +282,7 @@ export default function WarehouseInventoryClient({
           source_warehouse_id: selectedProduct.warehouseId,
           source_warehouse: selectedProduct.warehouse,
           reason: writeoffReason.trim(),
+          serial_numbers: serialNumbers,
         })
         const normalized = normalizeProduct(updatedProduct?.data || updatedProduct, 0, warehouseLabelsById, translatedProductTypes)
         setProducts((prev) =>
@@ -305,6 +324,7 @@ export default function WarehouseInventoryClient({
     setWriteoffProductId(productId)
     setActiveProduct(product)
     setWriteoffQuantity(product?.count > 0 ? "1" : "0")
+    setWriteoffSerialNumbers("")
   }
 
   const handleMoveProductChange = (productId) => {
@@ -314,11 +334,17 @@ export default function WarehouseInventoryClient({
     setActiveProduct(product)
     setMoveQuantity(product?.count ? String(product.count) : "")
     setMoveWarehouseId(fallbackDestination?.id || "")
+    setMoveComment("")
+    setMoveSerialNumbers("")
   }
 
   const confirmMove = () => {
     const selectedProduct = products.find((item) => item.id === moveProductId) || activeProduct
     const quantity = Number(moveQuantity)
+    const serialNumbers = moveSerialNumbers
+      .split(/\r?\n|,/)
+      .map((item) => item.trim())
+      .filter(Boolean)
 
     if (!selectedProduct) {
       toastError({ title: t("warehouse.dialogs.move.errors.product") })
@@ -348,6 +374,15 @@ export default function WarehouseInventoryClient({
       return
     }
 
+    if (serialNumbers.length !== quantity || new Set(serialNumbers).size !== serialNumbers.length) {
+      toastError({
+        title: t("warehouse.receipt.validationSerials", {
+          defaultValue: "Количество уникальных серийных номеров должно совпадать с количеством товара",
+        }),
+      })
+      return
+    }
+
     const destination = warehouseChoices.find((item) => item.id === moveWarehouseId)
     const destinationName = destination?.name || moveWarehouseId
     const isPersistableProduct = /^[a-f0-9]{24}$/i.test(String(selectedProduct?.id || ""))
@@ -361,6 +396,7 @@ export default function WarehouseInventoryClient({
         warehouse_id: moveWarehouseId,
         warehouse: destinationName,
         comment: moveComment.trim(),
+        serial_numbers: serialNumbers,
       })
         .then((updatedProduct) => {
           const normalized = normalizeProduct(updatedProduct?.data || updatedProduct, 0, warehouseLabelsById, translatedProductTypes)
@@ -416,17 +452,17 @@ export default function WarehouseInventoryClient({
   }
 
   return (
-    <div className="mx-auto w-[95%] max-w-[1240px] py-5">
-      <div className="mb-6 flex items-start justify-between gap-5">
-        <div>
+    <div className="mx-auto w-[95%] max-w-[1240px] px-1 py-5 pb-10 sm:px-0">
+      <div className="mb-6 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div className="min-w-0">
           <div className="flex items-center gap-3">
             <BackLinkButton href="/dashboard/werehouses" />
-            <h1 className="text-[52px] font-normal leading-none tracking-[-0.03em] text-[var(--text-primary)]">{t(titleKey)}</h1>
+            <h1 className="text-[38px] font-normal leading-none tracking-[-0.03em] text-[var(--text-primary)] sm:text-[44px] xl:text-[52px]">{t(titleKey)}</h1>
           </div>
-          {headingKey && <p className="mt-6 text-[16px] text-[var(--text-primary)]">{t(headingKey)}</p>}
+          {headingKey && <p className="mt-4 text-[14px] text-[var(--text-primary)] sm:mt-6 sm:text-[16px]">{t(headingKey)}</p>}
         </div>
-        <div className="flex w-full max-w-[520px] items-center justify-end gap-3">
-          <div className="relative w-full max-w-[305px]">
+        <div className="flex w-full flex-col gap-3 sm:flex-row xl:max-w-[520px] xl:justify-end">
+          <div className="relative w-full xl:max-w-[305px]">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-muted)]" />
             <Input
               value={search}
@@ -440,7 +476,7 @@ export default function WarehouseInventoryClient({
               type="button"
               onClick={() => openMove()}
               disabled={products.length === 0}
-              className="h-[36px] min-w-[190px] rounded-[8px] bg-[var(--surface-elevated)] px-4 text-[12px] font-medium text-[var(--text-primary)] shadow-sm ring-1 ring-[var(--border-default)] hover:bg-[var(--surface-hover)]"
+              className="h-[36px] w-full rounded-[8px] bg-[var(--surface-elevated)] px-4 text-[12px] font-medium text-[var(--text-primary)] shadow-sm ring-1 ring-[var(--border-default)] hover:bg-[var(--surface-hover)] sm:min-w-[190px] sm:w-auto"
             >
               {t("warehouse.actions.createMovement")}
             </Button>
@@ -450,7 +486,7 @@ export default function WarehouseInventoryClient({
               type="button"
               onClick={() => openWriteoff()}
               disabled={products.length === 0}
-              className="h-[36px] min-w-[174px] rounded-[8px] bg-[var(--surface-elevated)] px-4 text-[12px] font-medium text-[var(--text-primary)] shadow-sm ring-1 ring-[var(--border-default)] hover:bg-[var(--surface-hover)]"
+              className="h-[36px] w-full rounded-[8px] bg-[var(--surface-elevated)] px-4 text-[12px] font-medium text-[var(--text-primary)] shadow-sm ring-1 ring-[var(--border-default)] hover:bg-[var(--surface-hover)] sm:min-w-[174px] sm:w-auto"
             >
               {t("warehouse.actions.createWriteoff", { defaultValue: "Создать списание" })}
             </Button>
@@ -621,6 +657,19 @@ export default function WarehouseInventoryClient({
                   className="min-h-[92px] rounded-[8px] text-[13px]"
                 />
               </div>
+              <div>
+                <label className="mb-1 block text-[12px] font-medium text-[var(--text-secondary)]">
+                  {t("warehouse.receipt.fields.serialNumbers", { defaultValue: "Серийные номера" })}<span className="text-[var(--danger)]">*</span>
+                </label>
+                <Textarea
+                  value={writeoffSerialNumbers}
+                  onChange={(event) => setWriteoffSerialNumbers(event.target.value)}
+                  placeholder={t("warehouse.receipt.placeholders.serialNumbers", {
+                    defaultValue: "Введите каждый серийный номер с новой строки",
+                  })}
+                  className="min-h-[92px] rounded-[8px] text-[13px]"
+                />
+              </div>
             </div>
             <div className="mt-8 flex items-center justify-end gap-3">
               <Button variant="outline" className="h-10 px-6 text-[12px]" onClick={() => setWriteoffOpen(false)}>
@@ -708,6 +757,19 @@ export default function WarehouseInventoryClient({
                   onChange={(event) => setMoveQuantity(event.target.value)}
                   placeholder={activeProduct ? String(activeProduct.count) : t("warehouse.dialogs.move.placeholders.quantity")}
                   className="h-[36px] rounded-[8px] border-[#e5e8ee] text-[12px]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-medium text-[var(--text-secondary)]">
+                  {t("warehouse.receipt.fields.serialNumbers", { defaultValue: "Серийные номера" })}<span className="text-[var(--danger)]">*</span>
+                </label>
+                <Textarea
+                  value={moveSerialNumbers}
+                  onChange={(event) => setMoveSerialNumbers(event.target.value)}
+                  placeholder={t("warehouse.receipt.placeholders.serialNumbers", {
+                    defaultValue: "Введите каждый серийный номер с новой строки",
+                  })}
+                  className="min-h-[92px] rounded-[8px] border-[#e5e8ee] text-[12px]"
                 />
               </div>
               <div>

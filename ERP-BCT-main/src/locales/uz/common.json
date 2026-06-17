@@ -187,9 +187,13 @@
         "title": "Mahsulotlar",
         "desc": "Mahsulotlarni ko‘rish, qo‘shish va tahrirlash"
       },
+      "categories": {
+        "title": "Kategoriyalar",
+        "desc": "Mahsulot katalogi tuzilmasi"
+      },
       "warehouse": {
         "title": "Ombor",
-        "desc": "Qoldiq, kelib tushgan va hisobdan chiqarish"
+        "desc": "Qoldiq, yetkazib berish va hisobdan chiqarish"
       }
     }
   },
@@ -270,6 +274,16 @@
       "payCash": {
         "label": "Naqd to‘lov",
         "placeholder": "0.00"
+      },
+      "paymentStatusOverride": {
+        "label": "To‘lov holati rejimi",
+        "placeholder": "Holat rejimini tanlang",
+        "options": {
+          "auto": "Avtomatik",
+          "paid": "To‘langan",
+          "partial": "Qisman to‘langan",
+          "unpaid": "To‘lanmagan"
+        }
       },
       "comments": {
         "label": "Izohlar",
@@ -556,6 +570,7 @@
       "name": "Ism Familiya",
       "orders": "Buyurtmalar",
       "totalAmount": "Umumiy xarid summasi",
+      "group": "Guruh",
       "phone": "Telefon",
       "email": "Email",
       "actions": "Harakatlar",
@@ -650,9 +665,88 @@
     "title": "Mahsulotlar",
     "searchPlaceholder": "Qidirish...",
     "allCategories": "Barcha kategoriyalar",
+    "categoriesButton": "Kategoriyalar",
     "addButton": "Mahsulot qo‘shish",
     "loadErrorTitle": "Mahsulotlarni yuklab bo‘lmadi",
     "categoryFallback": "Kategoriya {{index}}"
+  },
+  "suppliers": {
+    "entityLabel": "Yetkazib beruvchi",
+    "columns": {
+      "name": "Yetkazib beruvchi",
+      "phone": "Telefon",
+      "agent": "Agent",
+      "defaultMode": "Standart rejim",
+      "debtLimit": "Qarz limiti",
+      "active": "Faol",
+      "actions": "Amallar"
+    },
+    "dialog": {
+      "deleteTitle": "Yetkazib beruvchini o‘chirish kerakmi?",
+      "deleteDesc": "Yetkazib beruvchi qayta tiklanmaydigan tarzda o‘chiriladi.",
+      "cancel": "Bekor qilish",
+      "confirm": "O‘chirish"
+    }
+  },
+  "suppliersPage": {
+    "title": "Yetkazib beruvchilar",
+    "addButton": "Yetkazib beruvchi qo‘shish",
+    "searchPlaceholder": "Yetkazib beruvchilarni qidirish...",
+    "loadErrorTitle": "Yetkazib beruvchilarni yuklab bo‘lmadi"
+  },
+  "supplierForm": {
+    "breadcrumb": "Ombor / Yetkazib beruvchilar",
+    "titles": {
+      "add": "Yangi yetkazib beruvchi",
+      "edit": "Yetkazib beruvchini tahrirlash",
+      "show": "Yetkazib beruvchi"
+    },
+    "fields": {
+      "name": "Nomi",
+      "phone": "Telefon",
+      "agent": "Agent",
+      "defaultMode": "Standart rejim",
+      "allowCash": "Naqd to‘lovga ruxsat berish",
+      "allowDebt": "Qarz bilan ishlashga ruxsat berish",
+      "allowMixed": "Aralash to‘lovga ruxsat berish",
+      "activeForSupplies": "Yangi yetkazib berishlar uchun faol",
+      "currentDebt": "Joriy qarz",
+      "debtLimit": "Qarz limiti",
+      "comment": "Izoh"
+    },
+    "placeholders": {
+      "name": "Yetkazib beruvchi nomini kiriting",
+      "phone": "Telefonni kiriting",
+      "agent": "Agent nomini kiriting",
+      "comment": "Yetkazib beruvchi haqida qo‘shimcha ma’lumot"
+    },
+    "defaultModes": {
+      "partial": "Qisman",
+      "cash": "Naqd",
+      "debt": "Qarzga"
+    },
+    "validation": {
+      "name": "Yetkazib beruvchi nomini kiriting",
+      "defaultMode": "Standart rejimni tanlang",
+      "phone": "Telefon raqamini to'liq kiriting"
+    },
+    "actions": {
+      "create": "Saqlash",
+      "edit": "Tahrirlash",
+      "delete": "O‘chirish",
+      "cancel": "Yopish"
+    },
+    "messages": {
+      "created": "Yetkazib beruvchi yaratildi",
+      "updated": "Yetkazib beruvchi yangilandi",
+      "deleted": "Yetkazib beruvchi o‘chirildi",
+      "saveError": "Yetkazib beruvchini saqlab bo‘lmadi",
+      "deleteError": "Yetkazib beruvchini o‘chirib bo‘lmadi"
+    },
+    "dialog": {
+      "deleteTitle": "Yetkazib beruvchini o‘chirish kerakmi?",
+      "deleteDesc": "Bu amalni bekor qilib bo‘lmaydi."
+    }
   },
   "counterparties": {
     "columns": {
@@ -712,6 +806,65 @@
     "title": "Mijozlar",
     "addButton": "Mijoz qo‘shish",
     "loadErrorTitle": "Mijozlarni yuklab bo‘lmadi",
+    "subtitle": "Mijozlarni hozirdan segmentlarga ajrating: bugun analitika uchun, keyin esa narx va chegirma qoidalari uchun.",
+    "filters": {
+      "allGroups": "Barcha guruhlar",
+      "groupPlaceholder": "Guruh bo‘yicha filtr"
+    },
+    "analytics": {
+      "title": "Mijoz guruhlari analitikasi",
+      "description": "Har bir segment bo‘yicha mijozlar soni, buyurtmalar hajmi va tushumni kuzating.",
+      "totalClients": "Tanlangan mijozlar",
+      "totalGroups": "Mijoz guruhlari",
+      "largestSegment": "Eng katta segment",
+      "revenueLeader": "Tushum bo‘yicha yetakchi",
+      "clientsLabel": "mijoz",
+      "orders": "Buyurtmalar",
+      "revenue": "Tushum",
+      "avg": "O‘rtacha"
+    },
+    "groups": {
+      "pageTitle": "Mijoz guruhlari",
+      "pageLink": "Mijoz guruhlari",
+      "backToClients": "Mijozlar",
+      "loadErrorTitle": "Mijoz guruhlarini yuklab bo‘lmadi",
+      "names": {
+        "retail": "Chakana",
+        "wholesale": "Ulgurji",
+        "regular": "Oddiy",
+        "vip": "VIP",
+        "corporate": "Korporativ",
+        "distributor": "Distributorlar"
+      },
+      "manageButton": "Guruhlarni boshqarish",
+      "dialogTitle": "Mijoz guruhlari",
+      "dialogDescription": "CRM jarayonlari, analitika va kelajakdagi narx siyosati uchun tizimli va maxsus segmentlar.",
+      "system": "Tizimli",
+      "pricingProfile": "Narx profili",
+      "discountPolicy": "Chegirma qoidasi havolasi",
+      "edit": "Tahrirlash",
+      "delete": "O‘chirish",
+      "editTitle": "Mijoz guruhini tahrirlash",
+      "createTitle": "Mijoz guruhi yaratish",
+      "fields": {
+        "name": "Guruh nomi",
+        "code": "Ichki kod",
+        "pricing": "Narx profili",
+        "discount": "Chegirma qoidasi",
+        "color": "Badge rangi",
+        "priority": "Ustuvorlik",
+        "description": "Tavsif va biznes maqsadi"
+      },
+      "reset": "Tiklash",
+      "save": "Guruhni saqlash",
+      "create": "Guruh yaratish",
+      "created": "Mijoz guruhi yaratildi",
+      "updated": "Mijoz guruhi yangilandi",
+      "deleted": "Mijoz guruhi o‘chirildi",
+      "saveError": "Mijoz guruhini saqlab bo‘lmadi",
+      "deleteError": "Mijoz guruhini o‘chirib bo‘lmadi",
+      "validationTitle": "Guruh nomi majburiy"
+    },
     "tabs": {
       "clients": "Mijozlar",
       "companies": "Kompaniyalar"
@@ -758,6 +911,7 @@
     "fields": {
       "firstName": "Ism",
       "lastName": "Familiya",
+      "group": "Mijoz guruhi",
       "source": "Qayerdan kelgan",
       "company": "Kompaniya",
       "phonePersonal": "Telefon raqami (shaxsiy)",
@@ -771,6 +925,7 @@
     },
     "placeholders": {
       "firstName": "Aziz",
+      "group": "Mijoz guruhini tanlang",
       "company": "Possible Group",
       "phone": "+998 99 999-99-99",
       "email": "example@site.com",
@@ -781,6 +936,11 @@
     "history": {
       "title": "Xaridlar tarixi",
       "empty": "Hali xaridlar yo‘q. Tarix bitim yaratilgandan keyin paydo bo‘ladi.",
+      "summary": {
+        "totalOrders": "Jami xaridlar",
+        "totalSpent": "Umumiy summa",
+        "lastPurchase": "So‘nggi xarid"
+      },
       "headers": {
         "index": "#",
         "name": "Nomi",
@@ -955,15 +1115,21 @@
       "deleted": "Mahsulot muvaffaqiyatli o‘chirildi!",
       "saveError": "Mahsulotni saqlashda xato",
       "deleteError": "Mahsulotni o‘chirishda xato",
-      "imageUploadHint": "Rasm yuklash saqlangandan keyin mavjud bo‘ladi."
+      "imageUploadHint": "Rasm yuklash saqlangandan keyin mavjud bo‘ladi.",
+      "validationError": "Forma maydonlarini tekshiring",
+      "validationErrorDescription": "Saqlashdan oldin majburiy maydonlarni to‘ldiring va xatolarni tuzating.",
+      "warrantyHint": "Raqam va birlikni kiriting: kun, oy yoki yil.",
+      "priceHint": "Summani kiriting va narx valyutasini tanlang."
     },
     "fields": {
       "name": "Mahsulot nomi",
-      "adsTitle": "Reklama sarlavhasi",
       "category": "Kategoriya",
       "topCategory": "Top kategoriya",
-      "warranty": "Yaroqlilik muddati",
-      "priceUsd": "Narx (USD)",
+      "warranty": "Kafolat",
+      "warrantyPeriod": "Kafolat muddati",
+      "warrantyUnit": "Birlik",
+      "price": "Narx",
+      "currency": "Valyuta",
       "serialNumber": "Seriya raqami",
       "barcode": "Shtrix-kod",
       "discount": "Chegirma",
@@ -976,14 +1142,19 @@
     },
     "placeholders": {
       "name": "Mahsulot nomini kiriting",
-      "adsTitle": "Reklama sarlavhasini kiriting",
-      "warranty": "Yaroqlilik muddatini kiriting",
+      "warranty": "Kafolat muddatini kiriting",
+      "warrantyValue": "Masalan: 24",
       "selectCategory": "Kategoriyani tanlang",
       "selectTopCategory": "Top kategoriyani tanlang",
       "loading": "Yuklanmoqda...",
       "serialNumber": "Seriya raqamini kiriting",
       "barcode": "Shtrix-kodni kiriting",
       "techSpecs": "Mahsulotning texnik xususiyatlarini kiriting...\\nMisol:\\n- Protsessor: Intel Core i7\\n- Xotira: 16GB RAM\\n- Disk: 512GB SSD"
+    },
+    "warrantyUnits": {
+      "days": "Kun",
+      "months": "Oy",
+      "years": "Yil"
     },
     "fallbacks": {
       "category": "Kategoriya {{index}}",
@@ -1010,7 +1181,7 @@
     "table": {
       "warehouse": "Ombor",
       "quantity": "Miqdor",
-      "emptyProducts": "Mahsulotlar topilmadi. Mahsulot qo‘shing yoki kirim yarating."
+      "emptyProducts": "Mahsulotlar topilmadi. Mahsulot qo‘shing yoki yetkazib berishni rasmiylashtiring."
     },
     "names": {
       "one": "Ombor 1",
@@ -1025,8 +1196,12 @@
         "subtitle": "Mahsulotlarni tez tahrirlash"
       },
       "receipt": {
-        "title": "Qabul",
-        "subtitle": "Mahsulot qabulini yaratish"
+        "title": "Yetkazib berish",
+        "subtitle": "Mahsulot yetkazib berishini rasmiylashtirish"
+      },
+      "suppliers": {
+        "title": "Yetkazib beruvchilar",
+        "subtitle": "Yetkazib beruvchilarni qo‘shish va sozlash"
       },
       "writeoff": {
         "title": "Hisobdan chiqarish",
@@ -1155,7 +1330,7 @@
       "listUpdated": "Ombor yangilandi",
       "listCreated": "Ombor yaratildi",
       "listDeleted": "Ombor o‘chirildi",
-      "receiptSaved": "Qabul saqlandi",
+      "receiptSaved": "Yetkazib berish saqlandi",
       "photoLater": "Rasm yuklash keyingi bosqichda mavjud bo‘ladi",
       "actionCompleted": "Amal bajarildi.",
       "createError": "Ombor yaratib bo‘lmadi",
@@ -1185,7 +1360,7 @@
         "document": "Hujjat"
       },
       "types": {
-        "receipt": "Kirim",
+        "receipt": "Yetkazib berish",
         "writeoff": "Hisobdan chiqarish",
         "movement": "Ko‘chirish",
         "adjustment": "Inventarizatsiya",
@@ -1330,6 +1505,8 @@
     "cancel": "Bekor qilish",
     "save": "Saqlash",
     "deleting": "O‘chirilmoqda...",
+    "yes": "Ha",
+    "no": "Yo‘q",
     "back": "Ortga",
     "selectedCount": "{{count}} ta tanlandi",
     "selectOptions": "Variantlarni tanlang...",
@@ -1370,6 +1547,86 @@
     "createDeal": "Bitim yaratish",
     "loadError": "Moliyani yuklab bo‘lmadi",
     "empty": "Hozircha haqiqiy moliyaviy operatsiyalar yo‘q. Hisob-kitoblarni ko‘rish uchun bitim yarating.",
+    "sections": {
+      "transactions": "Tranzaksiyalar",
+      "accounts": "Hisoblar",
+      "categories": "Kategoriyalar"
+    },
+    "accounts": {
+      "subtitle": "Naqd pul, karta va o‘tkazma balansi bir ekranda.",
+      "centerLabel": "Moliyaviy markaz",
+      "netRevenue": "Sof tushum",
+      "manualBalance": "Qo‘lda balans",
+      "operations": "Operatsiyalar",
+      "debts": "Qarzlar",
+      "activeAccounts": "Faol hisoblar",
+      "balance": "Balans",
+      "typeLabel": "Hisob turi"
+    },
+    "categories": {
+      "subtitle": "Moliyaviy operatsiya turlari bo‘yicha hisobot.",
+      "title": "Operatsiya kategoriyalari",
+      "uncategorized": "Kategoriyasiz",
+      "empty": "Kategoriyalar birinchi tranzaksiyalardan keyin paydo bo‘ladi.",
+      "columns": {
+        "name": "Kategoriya",
+        "income": "Kirim",
+        "expense": "Chiqim",
+        "balance": "Balans",
+        "operations": "Operatsiyalar"
+      }
+    },
+    "transaction": {
+      "pageTitle": "Tranzaksiya",
+      "pageSubtitle": "Kirim yoki chiqimni yarating va saqlang, shunda operatsiya darhol moliyaviy hisobga tushadi.",
+      "add": "Tranzaksiya qo‘shish",
+      "backToFinance": "Moliyaga qaytish",
+      "formPageTitle": "Yangi tranzaksiya",
+      "formTitleIncome": "Pul kirimini rasmiylashtirish",
+      "formTitleExpense": "Pul chiqimini rasmiylashtirish",
+      "submit": "Tranzaksiyani saqlash",
+      "saved": "Tranzaksiya saqlandi",
+      "saveError": "Tranzaksiyani saqlab bo‘lmadi",
+      "types": {
+        "income": "Pul kirimi",
+        "expense": "Pul chiqimi"
+      },
+      "paymentMethods": {
+        "cash": "Naqd pul",
+        "card": "Karta",
+        "transfer": "O‘tkazma",
+        "multi": "Aralash to‘lov"
+      },
+      "fields": {
+        "amount": "Summa",
+        "currency": "Valyuta",
+        "category": "Operatsiya turi",
+        "account": "Hisob",
+        "breakdownCash": "Naqd pul",
+        "breakdownCard": "Karta",
+        "breakdownTransfer": "O‘tkazma",
+        "counterpartyIncome": "Kimdan",
+        "counterpartyExpense": "Kimga",
+        "operationAt": "Operatsiya sanasi",
+        "reason": "Asos",
+        "comment": "Izoh"
+      },
+      "placeholders": {
+        "amount": "Masalan: 125000",
+        "category": "Masalan: Sotuv, Qaytarish, Xarid",
+        "counterpartyIncome": "Mijoz, kassir, kompaniya",
+        "counterpartyExpense": "Yetkazib beruvchi, xodim, servis",
+        "reason": "Hujjat raqami yoki sabab",
+        "comment": "Operatsiya tavsifi"
+      },
+      "validation": {
+        "amount": "To‘g‘ri summani kiriting",
+        "category": "Operatsiya turini ko‘rsating",
+        "counterparty": "Operatsiya kimdan yoki kimga ekanini ko‘rsating",
+        "reason": "Operatsiya asosini ko‘rsating",
+        "breakdown": "Aralash to‘lov summasi tranzaksiya umumiy summasiga teng bo‘lishi kerak"
+      }
+    },
     "statusPaid": "To‘langan",
     "statusPartial": "Qisman to‘langan",
     "statusUnpaid": "To‘lanmagan",

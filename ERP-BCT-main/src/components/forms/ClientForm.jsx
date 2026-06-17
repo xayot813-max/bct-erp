@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { z } from "zod"
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import BackLinkButton from "@/components/shared/BackLinkButton"
 import {
   AlertDialog,
@@ -26,8 +27,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { createClient, updateClient, deleteClient, createCompany, getCompanies } from "@/lib/actions"
+import { createClient, updateClient, deleteClient, createCompany, getCompanies, getCustomerGroups } from "@/lib/actions"
 import { useDealStore } from "@/store/dealStore"
+import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils"
 import { splitFullName } from "@/lib/utils/text"
 import { useTranslation } from "react-i18next"
 
@@ -37,29 +39,21 @@ const ClientSchema = z.object({
   email: z.string().optional(),
   phone: z.string().min(9),
   company: z.string().min(1),
+  group_id: z.string().min(1),
   company_phone: z.string().optional(),
   address: z.string().optional(),
   comment: z.string().optional(),
 })
 
-const formatUzPhone = (value = "") => {
-  const digits = String(value).replace(/\D/g, "")
-  const localDigits = digits.startsWith("998") ? digits.slice(3) : digits
-  const limited = localDigits.slice(0, 9)
-  const operator = limited.slice(0, 2)
-  const first = limited.slice(2, 5)
-  const second = limited.slice(5, 7)
-  const third = limited.slice(7, 9)
-
-  let formatted = "+998"
-  if (operator) formatted += ` ${operator}`
-  if (first) formatted += ` ${first}`
-  if (second) formatted += `-${second}`
-  if (third) formatted += `-${third}`
-  return formatted
+const localizeCustomerGroupName = (group, t) => {
+  const code = typeof group?.code === "string" ? group.code.trim().toLowerCase() : ""
+  if (!code) return group?.name || ""
+  const translated = t(`clientsPage.groups.names.${code}`, { defaultValue: group?.name || code })
+  return translated || group?.name || code
 }
 
-const normalizePhone = (value = "") => String(value).replace(/\s/g, "")
+const isRegularCustomerGroup = (group) =>
+  String(group?.code || "").trim().toLowerCase() === "regular"
 
 const toNumber = (value) => {
   const parsed = Number(value)
@@ -141,6 +135,7 @@ export default function ClientForm({ type, data = null, clientId = null }) {
   const { t, i18n } = useTranslation("common")
   const loadReferenceData = useDealStore((state) => state.loadReferenceData)
   const [isLoading, setIsLoading] = useState(false)
+  const [groups, setGroups] = useState([])
 
   const isReadonly = type === "show"
   const isEdit = type === "edit"
@@ -170,6 +165,7 @@ export default function ClientForm({ type, data = null, clientId = null }) {
       email: data?.email || "",
       phone: data?.phone || "",
       company: data?.company || "",
+      group_id: data?.group?.id || data?.group_id || "",
       company_phone: data?.company_phone || data?.phone_company || "",
       address: data?.address || "",
       comment: data?.comment || "",
@@ -188,6 +184,20 @@ export default function ClientForm({ type, data = null, clientId = null }) {
     [data],
   )
 
+  const historySummary = useMemo(() => {
+    const totalSpent = historyRows.reduce((sum, row) => sum + row.amount, 0)
+    const orderCount = Number(data?.order_count || historyRows.length || 0)
+    const lastPurchaseDate = historyRows.reduce((latest, row) => {
+      if (!row.purchaseDate) return latest
+      const nextTime = new Date(row.purchaseDate).getTime()
+      if (Number.isNaN(nextTime)) return latest
+      if (!latest) return row.purchaseDate
+      return nextTime > new Date(latest).getTime() ? row.purchaseDate : latest
+    }, "")
+
+    return { totalSpent, orderCount, lastPurchaseDate }
+  }, [data?.order_count, historyRows])
+
   const form = useForm({
     resolver: zodResolver(
       ClientSchema.superRefine((values, ctx) => {
@@ -200,11 +210,14 @@ export default function ClientForm({ type, data = null, clientId = null }) {
         if (values.email && !/\S+@\S+\.\S+/.test(values.email)) {
           ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["email"], message: t("clientForm.fields.emailInvalid") })
         }
-        if (!values.phone || values.phone.trim().length < 9) {
+        if (!values.phone || normalizePhoneNumber(values.phone).replace(/\D/g, "").length < 7) {
           ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["phone"], message: t("clientForm.fields.phonePersonal") })
         }
         if (!values.company || values.company.trim().length < 1) {
           ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["company"], message: t("clientForm.fields.company") + " " + t("clientForm.fields.required") })
+        }
+        if (!values.group_id || values.group_id.trim().length < 1) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["group_id"], message: t("clientForm.fields.group", { defaultValue: "Customer group" }) + " " + t("clientForm.fields.required") })
         }
       }),
     ),
@@ -214,16 +227,40 @@ export default function ClientForm({ type, data = null, clientId = null }) {
 
   const pageTitle = isAdd ? t("clientForm.titles.add") : isEdit ? t("clientForm.titles.edit") : t("clientForm.titles.show")
 
+  useEffect(() => {
+    const loadGroups = async () => {
+      try {
+        const response = await getCustomerGroups({ limit: 200 })
+        const items = response?.data || response?.customer_groups || []
+        const list = Array.isArray(items) ? items : []
+        setGroups(list)
+
+        const currentValue = form.getValues("group_id")
+        if (!currentValue) {
+          const regular = list.find(isRegularCustomerGroup) || list[0]
+          if (regular?.id) {
+            form.setValue("group_id", regular.id, { shouldValidate: false, shouldDirty: false })
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load customer groups:", error)
+      }
+    }
+
+    loadGroups()
+  }, [form])
+
   const handleSubmit = async (values) => {
     if (isReadonly) return
 
     setIsLoading(true)
     try {
-      const payload = {
+        const payload = {
         ...values,
         email: values.email?.trim() || "",
-        phone: normalizePhone(values.phone),
-        company_phone: normalizePhone(values.company_phone),
+        phone: normalizePhoneNumber(values.phone),
+        company_phone: normalizePhoneNumber(values.company_phone),
+        group_id: values.group_id,
         comment: values.comment?.trim() ? values.comment.trim() : undefined,
       }
 
@@ -243,7 +280,7 @@ export default function ClientForm({ type, data = null, clientId = null }) {
             await createCompany({
               name: companyName,
               email: values.email?.trim() || "",
-              phone: normalizePhone(values.company_phone || values.phone),
+              phone: normalizePhoneNumber(values.company_phone || values.phone),
               inn: "",
               address: values.address?.trim() || "",
               comment: values.comment?.trim() || undefined,
@@ -381,6 +418,31 @@ export default function ClientForm({ type, data = null, clientId = null }) {
 
               <FormField
                 control={form.control}
+                name="group_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("clientForm.fields.group", { defaultValue: "Customer group" })}<span className="text-red-500">{t("clientForm.fields.required")}</span></FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange} disabled={isReadonly}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={t("clientForm.placeholders.group", { defaultValue: "Select customer group" })} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {groups.map((group) => (
+                            <SelectItem key={group.id} value={group.id}>
+                              {localizeCustomerGroupName(group, t)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
@@ -390,7 +452,7 @@ export default function ClientForm({ type, data = null, clientId = null }) {
                         placeholder={t("clientForm.placeholders.phone")}
                         disabled={isReadonly}
                         {...field}
-                        onChange={(event) => field.onChange(formatUzPhone(event.target.value))}
+                        onChange={(event) => field.onChange(formatPhoneNumber(event.target.value))}
                       />
                     </FormControl>
                     <FormMessage />
@@ -409,7 +471,7 @@ export default function ClientForm({ type, data = null, clientId = null }) {
                         placeholder={t("clientForm.placeholders.phone")}
                         disabled={isReadonly}
                         {...field}
-                        onChange={(event) => field.onChange(formatUzPhone(event.target.value))}
+                        onChange={(event) => field.onChange(formatPhoneNumber(event.target.value))}
                       />
                     </FormControl>
                     <FormMessage />
@@ -464,9 +526,28 @@ export default function ClientForm({ type, data = null, clientId = null }) {
           </Form>
         </CardContent>
       </Card>
-      {isReadonly && historyRows.length > 0 && (
+      {isReadonly && (
         <section className="mt-12">
           <h2 className="mb-3 ml-3 text-[13px] font-normal text-[var(--text-primary)]">{t("clientForm.history.title")}</h2>
+          <div className="mb-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--surface)] px-4 py-3 shadow-[var(--surface-shadow)]">
+              <div className="text-[11px] text-[var(--text-secondary)]">{t("clientForm.history.summary.totalOrders", { defaultValue: "Всего покупок" })}</div>
+              <div className="mt-2 text-[22px] font-semibold text-[var(--text-primary)]">{historySummary.orderCount}</div>
+            </div>
+            <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--surface)] px-4 py-3 shadow-[var(--surface-shadow)]">
+              <div className="text-[11px] text-[var(--text-secondary)]">{t("clientForm.history.summary.totalSpent", { defaultValue: "Общая сумма" })}</div>
+              <div className="mt-2 text-[22px] font-semibold text-[var(--text-primary)]">{new Intl.NumberFormat(locale).format(historySummary.totalSpent)} {t("products.currency")}</div>
+            </div>
+            <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--surface)] px-4 py-3 shadow-[var(--surface-shadow)]">
+              <div className="text-[11px] text-[var(--text-secondary)]">{t("clientForm.history.summary.lastPurchase", { defaultValue: "Последняя покупка" })}</div>
+              <div className="mt-2 text-[16px] font-semibold text-[var(--text-primary)]">
+                {historySummary.lastPurchaseDate
+                  ? formatDateValue(historySummary.lastPurchaseDate, locale)
+                  : t("clientForm.history.empty")}
+              </div>
+            </div>
+          </div>
+          {historyRows.length > 0 ? (
           <div className="overflow-hidden rounded-[8px] border border-[var(--border-default)] bg-[var(--surface)] p-2 shadow-[var(--surface-shadow)]">
             <table className="w-full border-separate border-spacing-0 text-[10px] text-[var(--text-primary)]">
               <thead>
@@ -490,6 +571,11 @@ export default function ClientForm({ type, data = null, clientId = null }) {
               </tbody>
             </table>
           </div>
+          ) : (
+            <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--surface)] px-4 py-10 text-center text-[13px] text-[var(--text-secondary)] shadow-[var(--surface-shadow)]">
+              {t("clientForm.history.empty")}
+            </div>
+          )}
         </section>
       )}
     </div>

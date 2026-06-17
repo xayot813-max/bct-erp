@@ -123,6 +123,7 @@ func main() {
 	routes.ProductRoutes(api, db) // Updated with category names and price
 	routes.OrderRoutes(api, db)   // Updated to reference users instead of clients
 	routes.CompanyRoutes(api, db)
+	routes.CustomerGroupRoutes(api, db)
 	routes.ClientRoutes(api, db)
 	routes.CounterpartyRoutes(api, db)
 	routes.ContractRoutes(api, db)

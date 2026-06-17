@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { getCategories } from "@/lib/actions"
 import { getCategoriesColumns } from "@/lib/columns"
 import { toastError } from "@/lib/toast"
+import BackLinkButton from "@/components/shared/BackLinkButton"
 
 export default function CategoriesPage() {
   const { t, i18n } = useTranslation("common")
@@ -87,7 +88,12 @@ export default function CategoriesPage() {
   return (
     <div className="mx-auto w-[95%] max-w-[1240px] py-5">
       <div className="mb-3 flex items-center justify-between gap-4">
-        <h1 className="text-[52px] font-normal leading-none tracking-[-0.03em] text-[var(--text-primary)]">{t("categoriesPage.title", { defaultValue: "Categories" })}</h1>
+        <div className="flex min-w-0 items-center gap-4">
+          <BackLinkButton href="/dashboard/products" />
+          <h1 className="text-[52px] font-normal leading-none tracking-[-0.03em] text-[var(--text-primary)]">
+            {t("categoriesPage.title", { defaultValue: "Categories" })}
+          </h1>
+        </div>
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-muted)]" />

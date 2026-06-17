@@ -6,6 +6,7 @@ import { Loader2, Plus, Search } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { DataTable } from "@/components/shared/DataTable"
+import BackLinkButton from "@/components/shared/BackLinkButton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getCompaniesColumns } from "@/lib/columns"
@@ -80,8 +81,13 @@ export default function CompaniesPage() {
   return (
     <div className="mx-auto w-[95%] max-w-[1240px] py-5">
       <div className="mb-3 flex items-center justify-between gap-4">
-        <h1 className="text-[52px] font-normal leading-none tracking-[-0.03em] text-[var(--text-primary)]">{t("companiesPage.title", { defaultValue: "Companies" })}</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-4">
+          <BackLinkButton href="/dashboard" />
+          <h1 className="text-[52px] font-normal leading-none tracking-[-0.03em] text-[var(--text-primary)]">
+            {t("companiesPage.title", { defaultValue: "Companies" })}
+          </h1>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-3">
           <ClientTabs active="companies" />
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-muted)]" />
@@ -92,11 +98,12 @@ export default function CompaniesPage() {
               className="h-[36px] w-[220px] rounded-[8px] border-[var(--border-default)] bg-[var(--surface)] pl-9 text-[12px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
             />
           </div>
-        <Link href="/dashboard/companies/add">
-          <Button variant="outline" className="h-[36px] w-[170px] rounded-[8px] border-[var(--border-default)] bg-[var(--surface)] px-4 text-[12px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]">
-            <Plus className="mr-1 h-4 w-4" /> {t("companiesPage.addButton", { defaultValue: "Add company" })}
-          </Button>
-        </Link>
+          <div className="h-[36px] w-[180px] rounded-[8px] opacity-0 pointer-events-none" aria-hidden="true" />
+          <Link href="/dashboard/companies/add">
+            <Button variant="outline" className="h-[36px] w-[170px] rounded-[8px] border-[var(--border-default)] bg-[var(--surface)] px-4 text-[12px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]">
+              <Plus className="mr-1 h-4 w-4" /> {t("companiesPage.addButton", { defaultValue: "Add company" })}
+            </Button>
+          </Link>
         </div>
       </div>
 

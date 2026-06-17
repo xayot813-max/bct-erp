@@ -187,9 +187,13 @@
         "title": "Products",
         "desc": "View, add and edit products"
       },
+      "categories": {
+        "title": "Categories",
+        "desc": "Product catalog structure"
+      },
       "warehouse": {
         "title": "Warehouse",
-        "desc": "Stocks, arrivals and write-offs"
+        "desc": "Stocks, supplies and write-offs"
       }
     }
   },
@@ -270,6 +274,16 @@
       "payCash": {
         "label": "Pay in cash",
         "placeholder": "0.00"
+      },
+      "paymentStatusOverride": {
+        "label": "Payment status mode",
+        "placeholder": "Select status mode",
+        "options": {
+          "auto": "Automatic",
+          "paid": "Paid",
+          "partial": "Partially paid",
+          "unpaid": "Unpaid"
+        }
       },
       "comments": {
         "label": "Comments",
@@ -556,6 +570,7 @@
       "name": "Full name",
       "orders": "Orders",
       "totalAmount": "Total purchase amount",
+      "group": "Group",
       "phone": "Phone",
       "email": "Email",
       "actions": "Actions",
@@ -650,9 +665,88 @@
     "title": "Products",
     "searchPlaceholder": "Search...",
     "allCategories": "All categories",
+    "categoriesButton": "Categories",
     "addButton": "Add product",
     "loadErrorTitle": "Failed to load products",
     "categoryFallback": "Category {{index}}"
+  },
+  "suppliers": {
+    "entityLabel": "Supplier",
+    "columns": {
+      "name": "Supplier",
+      "phone": "Phone",
+      "agent": "Agent",
+      "defaultMode": "Default mode",
+      "debtLimit": "Debt limit",
+      "active": "Active",
+      "actions": "Actions"
+    },
+    "dialog": {
+      "deleteTitle": "Delete supplier?",
+      "deleteDesc": "The supplier will be permanently deleted.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    }
+  },
+  "suppliersPage": {
+    "title": "Suppliers",
+    "addButton": "Add supplier",
+    "searchPlaceholder": "Search suppliers...",
+    "loadErrorTitle": "Failed to load suppliers"
+  },
+  "supplierForm": {
+    "breadcrumb": "Warehouse / Suppliers",
+    "titles": {
+      "add": "New supplier",
+      "edit": "Edit supplier",
+      "show": "Supplier"
+    },
+    "fields": {
+      "name": "Name",
+      "phone": "Phone",
+      "agent": "Agent",
+      "defaultMode": "Default mode",
+      "allowCash": "Allow cash payments",
+      "allowDebt": "Allow debt mode",
+      "allowMixed": "Allow mixed payments",
+      "activeForSupplies": "Active for new supplies",
+      "currentDebt": "Current debt",
+      "debtLimit": "Debt limit",
+      "comment": "Comment"
+    },
+    "placeholders": {
+      "name": "Enter supplier name",
+      "phone": "Enter phone number",
+      "agent": "Enter agent name",
+      "comment": "Additional supplier information"
+    },
+    "defaultModes": {
+      "partial": "Partial",
+      "cash": "Cash",
+      "debt": "Debt"
+    },
+    "validation": {
+      "name": "Enter supplier name",
+      "defaultMode": "Select a default mode",
+      "phone": "Enter a complete phone number"
+    },
+    "actions": {
+      "create": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Close"
+    },
+    "messages": {
+      "created": "Supplier created",
+      "updated": "Supplier updated",
+      "deleted": "Supplier deleted",
+      "saveError": "Failed to save supplier",
+      "deleteError": "Failed to delete supplier"
+    },
+    "dialog": {
+      "deleteTitle": "Delete supplier?",
+      "deleteDesc": "This action cannot be undone."
+    }
   },
   "counterparties": {
     "columns": {
@@ -712,6 +806,65 @@
     "title": "Clients",
     "addButton": "Add client",
     "loadErrorTitle": "Failed to load clients",
+    "subtitle": "Segment the customer base now for analytics and later for pricing or discount automation.",
+    "filters": {
+      "allGroups": "All groups",
+      "groupPlaceholder": "Filter by group"
+    },
+    "analytics": {
+      "title": "Customer group analytics",
+      "description": "Track segment size, order volume and revenue for every customer group.",
+      "totalClients": "Clients in view",
+      "totalGroups": "Customer groups",
+      "largestSegment": "Largest segment",
+      "revenueLeader": "Revenue leader",
+      "clientsLabel": "clients",
+      "orders": "Orders",
+      "revenue": "Revenue",
+      "avg": "Average"
+    },
+    "groups": {
+      "pageTitle": "Customer groups",
+      "pageLink": "Customer groups",
+      "backToClients": "Clients",
+      "loadErrorTitle": "Failed to load customer groups",
+      "names": {
+        "retail": "Retail",
+        "wholesale": "Wholesale",
+        "regular": "Regular",
+        "vip": "VIP",
+        "corporate": "Corporate",
+        "distributor": "Distributor"
+      },
+      "manageButton": "Manage groups",
+      "dialogTitle": "Customer groups",
+      "dialogDescription": "System and custom segments for CRM workflows, analytics and future pricing rules.",
+      "system": "System",
+      "pricingProfile": "Pricing profile",
+      "discountPolicy": "Discount policy ref",
+      "edit": "Edit",
+      "delete": "Delete",
+      "editTitle": "Edit customer group",
+      "createTitle": "Create customer group",
+      "fields": {
+        "name": "Group name",
+        "code": "Internal code",
+        "pricing": "Pricing profile",
+        "discount": "Discount policy ref",
+        "color": "Badge color",
+        "priority": "Priority",
+        "description": "Description and business purpose"
+      },
+      "reset": "Reset",
+      "save": "Save group",
+      "create": "Create group",
+      "created": "Customer group created",
+      "updated": "Customer group updated",
+      "deleted": "Customer group deleted",
+      "saveError": "Failed to save customer group",
+      "deleteError": "Failed to delete customer group",
+      "validationTitle": "Group name is required"
+    },
     "tabs": {
       "clients": "Clients",
       "companies": "Companies"
@@ -758,6 +911,7 @@
     "fields": {
       "firstName": "Name",
       "lastName": "Last name",
+      "group": "Customer group",
       "source": "Source",
       "company": "Company",
       "phonePersonal": "Phone number (personal)",
@@ -771,6 +925,7 @@
     },
     "placeholders": {
       "firstName": "Aziz",
+      "group": "Select customer group",
       "company": "Possible Group",
       "phone": "+998 99 999-99-99",
       "email": "example@site.com",
@@ -781,6 +936,11 @@
     "history": {
       "title": "Purchase history",
       "empty": "No purchases yet. History will appear after a deal is created.",
+      "summary": {
+        "totalOrders": "Total purchases",
+        "totalSpent": "Total amount",
+        "lastPurchase": "Last purchase"
+      },
       "headers": {
         "index": "#",
         "name": "Name",
@@ -955,15 +1115,21 @@
       "deleted": "Product deleted successfully!",
       "saveError": "Error saving product",
       "deleteError": "Error deleting product",
-      "imageUploadHint": "Image upload will be available after saving."
+      "imageUploadHint": "Image upload will be available after saving.",
+      "validationError": "Please check the form fields",
+      "validationErrorDescription": "Fill in the required fields and fix validation errors before saving.",
+      "warrantyHint": "Specify both the number and the unit: days, months, or years.",
+      "priceHint": "Enter the amount and choose the price currency."
     },
     "fields": {
       "name": "Product name",
-      "adsTitle": "Promotional headline",
       "category": "Category",
       "topCategory": "Top category",
-      "warranty": "Shelf life",
-      "priceUsd": "Price (USD)",
+      "warranty": "Warranty",
+      "warrantyPeriod": "Warranty period",
+      "warrantyUnit": "Unit",
+      "price": "Price",
+      "currency": "Currency",
       "serialNumber": "Serial number",
       "barcode": "Barcode",
       "discount": "Discount",
@@ -976,14 +1142,19 @@
     },
     "placeholders": {
       "name": "Enter product name",
-      "adsTitle": "Enter promotional headline",
-      "warranty": "Enter shelf life",
+      "warranty": "Enter warranty period",
+      "warrantyValue": "Example: 24",
       "selectCategory": "Select category",
       "selectTopCategory": "Select top category",
       "loading": "Loading...",
       "serialNumber": "Enter serial number",
       "barcode": "Enter barcode",
       "techSpecs": "Enter technical specifications for the product...\\nExample:\\n- Processor: Intel Core i7\\n- Memory: 16GB RAM\\n- Drive: 512GB SSD"
+    },
+    "warrantyUnits": {
+      "days": "Days",
+      "months": "Months",
+      "years": "Years"
     },
     "fallbacks": {
       "category": "Category {{index}}",
@@ -1010,7 +1181,7 @@
     "table": {
       "warehouse": "Warehouse",
       "quantity": "Quantity",
-      "emptyProducts": "No products found. Add a product or create a receipt."
+      "emptyProducts": "No products found. Add a product or register a supply."
     },
     "names": {
       "one": "Warehouse 1",
@@ -1025,8 +1196,12 @@
         "subtitle": "Quick product editor"
       },
       "receipt": {
-        "title": "Receipt",
-        "subtitle": "Create a goods receipt"
+        "title": "Supply",
+        "subtitle": "Register product supply"
+      },
+      "suppliers": {
+        "title": "Suppliers",
+        "subtitle": "Add and configure suppliers"
       },
       "writeoff": {
         "title": "Write-off",
@@ -1072,13 +1247,13 @@
         "months": "months",
         "years": "years"
       },
-      "validationProduct": "Select a product for receipt",
+      "validationProduct": "Select a product for supply",
       "validationRequired": "Fill in all required fields",
       "validationQuantity": "Quantity must be greater than zero",
       "validationSerials": "The number of unique serial numbers must match the product quantity",
       "validationExpiration": "Specify the shelf life and unit",
       "photoInfo": "You can add up to 4 photos of the product or documents.",
-      "saveError": "Failed to save receipt"
+      "saveError": "Failed to save supply"
     },
     "dialogs": {
       "writeoff": {
@@ -1155,7 +1330,7 @@
       "listUpdated": "Warehouse updated",
       "listCreated": "Warehouse created",
       "listDeleted": "Warehouse deleted",
-      "receiptSaved": "Receipt saved",
+      "receiptSaved": "Supply saved",
       "photoLater": "Photo upload will be available in the next step",
       "actionCompleted": "Action completed.",
       "createError": "Failed to create warehouse",
@@ -1171,7 +1346,7 @@
     },
     "transactions": {
       "title": "Warehouse Movement Journal",
-      "subtitle": "Journal for receipts, write-offs, transfers, sales, and stock audits.",
+      "subtitle": "Journal for supplies, write-offs, transfers, sales, and stock audits.",
       "loadError": "Failed to load transactions",
       "empty": "No transactions yet.",
       "columns": {
@@ -1185,7 +1360,7 @@
         "document": "Document"
       },
       "types": {
-        "receipt": "Receipt",
+        "receipt": "Supply",
         "writeoff": "Write-off",
         "movement": "Transfer",
         "adjustment": "Stock audit",
@@ -1330,6 +1505,8 @@
     "cancel": "Cancel",
     "save": "Save",
     "deleting": "Deleting...",
+    "yes": "Yes",
+    "no": "No",
     "back": "Back",
     "selectedCount": "{{count}} selected",
     "selectOptions": "Select options...",
@@ -1370,6 +1547,86 @@
     "createDeal": "Create Deal",
     "loadError": "Failed to load finance",
     "empty": "There are no real financial operations yet. Create a deal to see calculations.",
+    "sections": {
+      "transactions": "Transactions",
+      "accounts": "Accounts",
+      "categories": "Categories"
+    },
+    "accounts": {
+      "subtitle": "Cash, card, and transfer balances on one screen.",
+      "centerLabel": "Financial center",
+      "netRevenue": "Net revenue",
+      "manualBalance": "Manual balance",
+      "operations": "Operations",
+      "debts": "Debts",
+      "activeAccounts": "Active accounts",
+      "balance": "Balance",
+      "typeLabel": "Account type"
+    },
+    "categories": {
+      "subtitle": "Summary by financial operation types.",
+      "title": "Operation categories",
+      "uncategorized": "Uncategorized",
+      "empty": "Categories will appear after the first transactions.",
+      "columns": {
+        "name": "Category",
+        "income": "Income",
+        "expense": "Expense",
+        "balance": "Balance",
+        "operations": "Operations"
+      }
+    },
+    "transaction": {
+      "pageTitle": "Transaction",
+      "pageSubtitle": "Create and save an income or expense so the operation is immediately recorded in financial accounting.",
+      "add": "Add transaction",
+      "backToFinance": "Back to finance",
+      "formPageTitle": "New transaction",
+      "formTitleIncome": "Recording incoming funds",
+      "formTitleExpense": "Recording outgoing funds",
+      "submit": "Save transaction",
+      "saved": "Transaction saved",
+      "saveError": "Failed to save transaction",
+      "types": {
+        "income": "Money received",
+        "expense": "Money spent"
+      },
+      "paymentMethods": {
+        "cash": "Cash",
+        "card": "Card",
+        "transfer": "Transfer",
+        "multi": "Split payment"
+      },
+      "fields": {
+        "amount": "Amount",
+        "currency": "Currency",
+        "category": "Operation type",
+        "account": "Account",
+        "breakdownCash": "Cash",
+        "breakdownCard": "Card",
+        "breakdownTransfer": "Transfer",
+        "counterpartyIncome": "From whom",
+        "counterpartyExpense": "To whom",
+        "operationAt": "Operation date",
+        "reason": "Basis",
+        "comment": "Comment"
+      },
+      "placeholders": {
+        "amount": "For example: 125000",
+        "category": "For example: Sale, Refund, Purchase",
+        "counterpartyIncome": "Client, cashier, company",
+        "counterpartyExpense": "Supplier, employee, service",
+        "reason": "Document number or reason",
+        "comment": "Operation description"
+      },
+      "validation": {
+        "amount": "Enter a valid amount",
+        "category": "Specify the operation type",
+        "counterparty": "Specify from whom or to whom the operation is made",
+        "reason": "Specify the basis for the operation",
+        "breakdown": "The split payment total must match the transaction amount"
+      }
+    },
     "statusPaid": "Paid",
     "statusPartial": "Partially paid",
     "statusUnpaid": "Unpaid",

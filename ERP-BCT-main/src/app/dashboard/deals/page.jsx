@@ -110,6 +110,21 @@ const mixWithWhite = (hex, alpha = 0.72) => {
   return `rgba(${mix(r)}, ${mix(g)}, ${mix(b)}, 1)`
 }
 
+const tintForDealCard = (hex, alpha = 0.16) => {
+  const { r, g, b } = hexToRgb(hex)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+const borderForDealCard = (hex, alpha = 0.36) => {
+  const { r, g, b } = hexToRgb(hex)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+const glowForDealCard = (hex, alpha = 0.12) => {
+  const { r, g, b } = hexToRgb(hex)
+  return `0 16px 32px rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
 const contractFunnelId = (contract) => {
   if (!contract) return ""
   const direct =
@@ -440,19 +455,17 @@ export default function DealsPage() {
       if (!draggedId || draggedId === targetColumnId) return
       if (draggedId === UNASSIGNED_COLUMN_ID || targetColumnId === UNASSIGNED_COLUMN_ID) return
 
-      setColumnOrder((prev) => {
-        const previousOrder = [...prev]
-        const withoutUnassigned = prev.filter((id) => id !== UNASSIGNED_COLUMN_ID)
-        const filteredDragged = withoutUnassigned.filter((id) => id !== draggedId)
-        const targetIndex = filteredDragged.indexOf(targetColumnId)
-        if (targetIndex === -1) return prev
-        filteredDragged.splice(targetIndex, 0, draggedId)
-        const nextOrder = [UNASSIGNED_COLUMN_ID, ...filteredDragged]
-        persistFunnelOrder(nextOrder, previousOrder)
-        return nextOrder
-      })
+      const previousOrder = [...columnOrder]
+      const withoutUnassigned = previousOrder.filter((id) => id !== UNASSIGNED_COLUMN_ID)
+      const filteredDragged = withoutUnassigned.filter((id) => id !== draggedId)
+      const targetIndex = filteredDragged.indexOf(targetColumnId)
+      if (targetIndex === -1) return
+      filteredDragged.splice(targetIndex, 0, draggedId)
+      const nextOrder = [UNASSIGNED_COLUMN_ID, ...filteredDragged]
+      setColumnOrder(nextOrder)
+      persistFunnelOrder(nextOrder, previousOrder)
     },
-    [persistFunnelOrder],
+    [columnOrder, persistFunnelOrder],
   )
 
   const moveContractToColumn = useCallback(
@@ -614,7 +627,10 @@ export default function DealsPage() {
         >
           {columns.map((column) => {
             const columnColor = column.color || "#5B6FDD"
-            const cardColor = column.isUnassigned ? "var(--surface-elevated)" : mixWithWhite(columnColor, 0.78)
+            const cardColor = column.isUnassigned ? "var(--surface-elevated)" : tintForDealCard(columnColor, 0.14)
+            const cardBorderColor = column.isUnassigned ? "var(--border-default)" : borderForDealCard(columnColor, 0.38)
+            const cardShadow = column.isUnassigned ? "var(--surface-shadow)" : glowForDealCard(columnColor, 0.1)
+            const columnLineColor = column.isUnassigned ? "rgba(226,232,240,0.85)" : borderForDealCard(columnColor, 0.95)
             const totalsByCurrency = column.deals.reduce((acc, deal) => {
               const currency = normalizeCurrencyCode(deal.contract_currency || deal.currency)
               acc[currency] = (acc[currency] || 0) + Number(deal.contract_amount ?? deal.amount ?? 0)
@@ -653,7 +669,7 @@ export default function DealsPage() {
                   <p className="text-[12px] leading-none text-[var(--text-secondary)]">{summaryLabel}</p>
                   <div
                     className="h-[2px] w-full"
-                    style={{ backgroundColor: columnColor }}
+                    style={{ backgroundColor: columnLineColor }}
                   />
                 </div>
 
@@ -696,10 +712,11 @@ export default function DealsPage() {
                       return (
                         <div
                           key={contractId || contractIdentifier(deal, defaultDealLabel)}
-                          className={`group rounded-[3px] border px-2 py-1.5 shadow-sm transition ${isDragging ? "opacity-60" : ""}`}
+                          className={`group rounded-[10px] border px-3 py-2.5 transition ${isDragging ? "opacity-60" : ""}`}
                           style={{
                             backgroundColor: cardColor,
-                            borderColor: column.isUnassigned ? "#F1F5F9" : `${columnColor}55`,
+                            borderColor: cardBorderColor,
+                            boxShadow: cardShadow,
                           }}
                           draggable={!isUpdating}
                           onDragStart={(event) => handleCardDragStart(event, deal, column.id)}
@@ -711,16 +728,16 @@ export default function DealsPage() {
                               <p className="text-[11px] leading-none text-[var(--text-secondary)]">
                                 {contractClientName(deal)}
                               </p>
-                              <p className="mt-1 text-[12px] font-semibold leading-none text-[var(--text-primary)]">
+                              <p className="mt-1 text-[13px] font-semibold leading-none text-[var(--text-primary)]">
                                 {contractTitle(deal, t, defaultDealLabel)}
                               </p>
                             </div>
                             <span className="text-[11px] text-[var(--text-secondary)]">{contractDate(deal)}</span>
                           </div>
-                          <div className="mt-2 text-[11px] leading-4 text-[var(--text-secondary)]">
+                          <div className="mt-2 text-[12px] leading-5 text-[var(--text-secondary)]">
                             {contractComment(deal)}
                           </div>
-                          <div className="mt-2 flex items-center justify-between text-[11px] text-[var(--text-primary)]">
+                          <div className="mt-3 flex items-center justify-between text-[11px] text-[var(--text-primary)]">
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
@@ -764,8 +781,8 @@ export default function DealsPage() {
                             </div>
                             <span>{t("dealPage.noTasks")}</span>
                           </div>
-                          <div className="mt-1 flex items-center justify-between text-[11px] text-[var(--text-secondary)]">
-                            <span>{contractAmount(deal)}</span>
+                          <div className="mt-2 flex items-center justify-between text-[12px] text-[var(--text-secondary)]">
+                            <span className="font-medium text-[var(--text-primary)]">{contractAmount(deal)}</span>
                             <div className="opacity-0 transition group-hover:opacity-100">
                               <span className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
                                 {t("dealPage.moveLabel")}

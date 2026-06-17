@@ -215,11 +215,11 @@ export default function AddImages({
         <Button
           type="button"
           variant="outline"
-          className="h-[40px] w-full rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 text-[12px] font-medium uppercase text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+          className="h-[44px] w-full rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 text-[12px] font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
           onClick={triggerFileInput}
           disabled={disabled || ((images.length >= maxImages && !isSingleImage) || uploading)}
         >
-          <div className="flex items-center gap-2 text-[var(--text-primary)]">
+          <div className="flex w-full items-center justify-center gap-2 text-[var(--text-primary)]">
             {uploading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -228,7 +228,7 @@ export default function AddImages({
             ) : (
               <>
                 <Upload className="h-4 w-4" />
-                <span className="text-center">{t("images.addPhoto", { defaultValue: "Add photo" })}</span>
+                <span className="text-center leading-none">{t("images.addPhoto", { defaultValue: "Add photo" })}</span>
                 {resolvedAllowMultiple && (
                   <span className="text-[10px] text-[var(--text-muted)]">
                     {images.length}/{maxImages}
@@ -248,6 +248,10 @@ export default function AddImages({
           disabled={disabled}
           onChange={handleImageUpload}
         />
+
+        <p className="text-center text-[12px] leading-5 text-[var(--text-secondary)]">
+          {resolvedInfoText}
+        </p>
 
         {images.length > 0 && (
           <div className={cn("grid gap-2", isSingleImage ? "grid-cols-1" : "grid-cols-2")}>

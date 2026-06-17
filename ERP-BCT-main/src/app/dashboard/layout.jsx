@@ -1,10 +1,10 @@
 // HECH QAYERGA "use client" YO'Q
 import { cookies } from "next/headers";
-import DashboardHeader from "./_components/DashboardHeader";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import DashboardHeader from "./_components/DashboardHeader";
 import AuthGate from "@/components/providers/AuthGate";
-import ScrollRestorationReset from "@/components/shared/ScrollRestorationReset";
 import PermissionGate from "@/components/providers/PermissionGate";
+import ScrollRestorationReset from "@/components/shared/ScrollRestorationReset";
 
 export default async function DashboardLayout({ children }) {
   const cookieStore = await cookies();

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRouter } from 'next/navigation'
-import { SelectItem } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import AddImages from '@/components/shared/AddImages'
 import { Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
@@ -26,7 +26,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { createProduct, updateProduct, deleteProduct, getCategories, getTopCategories } from '@/lib/actions'
-import { buildImageUrls, extractArrayFromResponse, toSelectOption, ensureOption } from '@/lib/utils/api-helpers'
+import { buildImageUrls, extractArrayFromResponse, toSelectOption, ensureOption, resolveRecordId } from '@/lib/utils/api-helpers'
 import { toastError, toastSuccess, toastWarning } from "@/lib/toast"
 import { parseMultilingual, stringifyMultilingual, hasMultilingualContent, getLocalizedValue } from "@/lib/multilingual"
 import { useTranslation } from "react-i18next"
@@ -35,9 +35,56 @@ import FormLanguageToolbar from "@/components/forms/FormLanguageToolbar"
 import ProductDescriptionEditor from "@/components/forms/ProductDescriptionEditor"
 import { parseDescriptionState, serializeDescriptionState } from "@/lib/utils/product-description"
 import BackLinkButton from "@/components/shared/BackLinkButton"
+import { currencyReferenceOptions } from "@/lib/reference-data"
 
 const productInputClass =
   "h-11 rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+
+const WARRANTY_UNITS = ["days", "months", "years"]
+
+const parseWarrantyParts = (value = "") => {
+  const raw = String(value || "").trim()
+  if (!raw) return { warranty_value: "", warranty_unit: "months" }
+
+  const parsedMultilingual = parseMultilingual(raw)
+  const localizedRaw = parsedMultilingual?.ru || parsedMultilingual?.uz || parsedMultilingual?.en || raw
+  const match = String(localizedRaw).trim().match(/^(\d+)\s*(day|days|month|months|year|years|день|дня|дней|месяц|месяца|месяцев|год|года|лет|kun|oy|yil)?$/i)
+  if (!match) {
+    return { warranty_value: raw, warranty_unit: "months" }
+  }
+
+  const unitRaw = String(match[2] || "").toLowerCase()
+  let warrantyUnit = "months"
+  if (["day", "days", "день", "дня", "дней", "kun"].includes(unitRaw)) warrantyUnit = "days"
+  if (["year", "years", "год", "года", "лет", "yil"].includes(unitRaw)) warrantyUnit = "years"
+
+  return {
+    warranty_value: match[1] || "",
+    warranty_unit: warrantyUnit,
+  }
+}
+
+const buildWarrantyPayload = (value, unit) => {
+  const amount = String(value || "").trim()
+  if (!amount) return ""
+  return `${amount} ${unit}`
+}
+
+const normalizeMoneyInput = (value = "") => {
+  const normalized = String(value).replace(/\s/g, "").replace(",", ".")
+  const [integer = "", ...fractionParts] = normalized.split(".")
+  const digits = integer.replace(/\D/g, "")
+  const fraction = fractionParts.join("").replace(/\D/g, "").slice(0, 2)
+  return fractionParts.length > 0 ? `${digits}.${fraction}` : digits
+}
+
+const formatMoneyInput = (value = "") => {
+  const normalized = normalizeMoneyInput(value)
+  if (!normalized) return ""
+  const [integer, fraction] = normalized.split(".")
+  const formattedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+  return fraction !== undefined ? `${formattedInteger}.${fraction}` : formattedInteger
+}
 
 export default function ProductForm({ type, data = null, productId = null }) {
   const router = useRouter()
@@ -138,7 +185,7 @@ export default function ProductForm({ type, data = null, productId = null }) {
     return () => {
       isMounted = false
     }
-  }, [data])
+  }, [data, t])
 
   useEffect(() => {
     let isMounted = true
@@ -203,13 +250,13 @@ export default function ProductForm({ type, data = null, productId = null }) {
     return () => {
       isMounted = false
     }
-  }, [data])
+  }, [data, t])
 
   const toNumberOptional = (value) => {
     if (value === null || value === undefined || value === "") return undefined
     if (typeof value === "number") return value
     if (typeof value === "string") {
-      const parsed = Number(value)
+      const parsed = Number(value.replace(/\s/g, ""))
       return Number.isNaN(parsed) ? value : parsed
     }
     return value
@@ -222,11 +269,12 @@ export default function ProductForm({ type, data = null, productId = null }) {
         (value) => hasMultilingualContent(parseMultilingual(value)),
         t("productForm.fields.name") + " " + t("clientForm.fields.required"),
       ),
-    ads_title: z.string().optional(),
     category_id: z.string().min(1, t("productForm.fields.category") + " " + t("clientForm.fields.required")),
     top_category_id: z.string().optional(),
-    warranty: z.string().optional(),
-    price: z.preprocess(toNumberOptional, z.number({ invalid_type_error: t("productForm.fields.priceUsd") }).min(0, t("clientForm.fields.invalid"))),
+    warranty_value: z.string().optional(),
+    warranty_unit: z.string().optional(),
+    price_currency: z.string().min(1, t("productForm.fields.currency", { defaultValue: "Currency" })),
+    price: z.preprocess(toNumberOptional, z.number({ invalid_type_error: t("productForm.fields.price") }).min(0, t("clientForm.fields.invalid"))),
     description: z.string().optional(),
     serial_number: z.string().optional(),
     shtrix_number: z.string().optional(),
@@ -241,15 +289,21 @@ export default function ProductForm({ type, data = null, productId = null }) {
     [data],
   )
 
+  const initialWarranty = useMemo(
+    () => parseWarrantyParts(data?.warranty || data?.guarantee || ""),
+    [data],
+  )
+
   const form = useForm({
     resolver: zodResolver(ProductValidation),
     defaultValues: {
       name: data?.name || "",
-      ads_title: data?.ads_title || data?.adsTitle || "",
       category_id: data?.category_id?.toString() || data?.category?.id?.toString() || "",
       top_category_id: data?.top_category_id?.toString() || data?.top_category?.id?.toString() || "",
-      warranty: data?.warranty || data?.guarantee || "",
-      price: data?.price !== undefined && data?.price !== null ? String(data?.price) : "0",
+      warranty_value: initialWarranty.warranty_value,
+      warranty_unit: initialWarranty.warranty_unit,
+      price_currency: data?.currency || data?.price_currency || "UZS",
+      price: data?.price !== undefined && data?.price !== null ? String(data?.price) : "",
       description: initialDescription,
       serial_number: data?.serial_number || "",
       shtrix_number: data?.shtrix_number || data?.barcode || "",
@@ -260,6 +314,52 @@ export default function ProductForm({ type, data = null, productId = null }) {
     },
     mode: "onSubmit",
   })
+
+  const selectedTopCategoryId = form.watch("top_category_id")
+  const selectedCategoryId = form.watch("category_id")
+
+  const filteredCategories = useMemo(() => {
+    if (!selectedTopCategoryId) return categories
+    return categories.filter((category) => {
+      const linkedTopCategoryId =
+        resolveRecordId(category?.raw?.top_category_id) ||
+        resolveRecordId(category?.raw?.topCategoryId) ||
+        resolveRecordId(category?.top_category_id)
+      return linkedTopCategoryId === selectedTopCategoryId
+    })
+  }, [categories, selectedTopCategoryId])
+
+  useEffect(() => {
+    const currentCategoryId = form.getValues("category_id")
+    if (!currentCategoryId) return
+
+    const currentCategory = categories.find((category) => category.id === currentCategoryId)
+    if (!currentCategory) return
+
+    const linkedTopCategoryId =
+      resolveRecordId(currentCategory?.raw?.top_category_id) ||
+      resolveRecordId(currentCategory?.raw?.topCategoryId) ||
+      resolveRecordId(currentCategory?.top_category_id)
+
+    if (linkedTopCategoryId && form.getValues("top_category_id") !== linkedTopCategoryId) {
+      form.setValue("top_category_id", linkedTopCategoryId, { shouldDirty: true, shouldValidate: true })
+    }
+  }, [categories, form, selectedCategoryId])
+
+  useEffect(() => {
+    const currentCategoryId = form.getValues("category_id")
+    if (!currentCategoryId || !selectedTopCategoryId) return
+
+    const currentCategory = categories.find((category) => category.id === currentCategoryId)
+    const linkedTopCategoryId =
+      resolveRecordId(currentCategory?.raw?.top_category_id) ||
+      resolveRecordId(currentCategory?.raw?.topCategoryId) ||
+      resolveRecordId(currentCategory?.top_category_id)
+
+    if (linkedTopCategoryId && linkedTopCategoryId !== selectedTopCategoryId) {
+      form.setValue("category_id", "", { shouldDirty: true, shouldValidate: true })
+    }
+  }, [categories, form, selectedTopCategoryId, selectedCategoryId])
 
   const onSubmit = async (values) => {
     setIsLoading(true)
@@ -274,23 +374,16 @@ export default function ProductForm({ type, data = null, productId = null }) {
 
       // Prepare product data
       const nameMultilingual = parseMultilingual(values.name)
-      const adsTitleMultilingual = parseMultilingual(values.ads_title || "")
-      const warrantyMultilingual = parseMultilingual(values.warranty || "")
       const priceValue = typeof values.price === "number" ? values.price : Number(values.price || 0)
+      const warrantyValue = buildWarrantyPayload(values.warranty_value, values.warranty_unit || "months")
 
       const productData = {
         name: stringifyMultilingual(nameMultilingual),
-        ads_title: hasMultilingualContent(adsTitleMultilingual)
-          ? stringifyMultilingual(adsTitleMultilingual)
-          : "",
         category_id: values.category_id,
         top_category_id: values.top_category_id || undefined,
-        warranty: hasMultilingualContent(warrantyMultilingual)
-          ? stringifyMultilingual(warrantyMultilingual)
-          : "",
-        guarantee: hasMultilingualContent(warrantyMultilingual)
-          ? stringifyMultilingual(warrantyMultilingual)
-          : "",
+        currency: values.price_currency || "UZS",
+        warranty: warrantyValue,
+        guarantee: warrantyValue,
         price: priceValue,
         description: serializeDescriptionState(parseDescriptionState(values.description)),
         serial_number: values.serial_number?.trim() || "",
@@ -327,6 +420,14 @@ export default function ProductForm({ type, data = null, productId = null }) {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const onInvalidSubmit = (errors) => {
+    const firstMessage = Object.values(errors || {})[0]?.message
+    toastError({
+      title: t("productForm.messages.validationError", { defaultValue: "Проверьте обязательные поля" }),
+      description: firstMessage || t("productForm.messages.validationErrorDescription", { defaultValue: "Заполните обязательные поля формы и попробуйте снова." }),
+    })
   }
 
   const handleDelete = async () => {
@@ -397,7 +498,7 @@ export default function ProductForm({ type, data = null, productId = null }) {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-4">
           <FormLanguageToolbar className="mb-2" />
 
           {/* Main Grid Layout */}
@@ -432,38 +533,23 @@ export default function ProductForm({ type, data = null, productId = null }) {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="ads_title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("productForm.fields.adsTitle")}</FormLabel>
-                        <FormControl>
-                          <MultilingualInput
-                            value={parseMultilingual(field.value)}
-                            onChange={(updated) => field.onChange(stringifyMultilingual(updated))}
-                            placeholder={t("productForm.placeholders.adsTitle")}
-                            disabled={isReadonly}
-                            className={productInputClass}
-                            hideLanguageSwitcher
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
                   <div className="grid grid-cols-1 gap-3 text-primary md:grid-cols-2">
                     <CustomFormField
                       fieldType={FormFieldType.SELECT}
                       control={form.control}
                       name="category_id"
                       label={t("productForm.fields.category")}
-                      placeholder={loadingCategories ? t("productForm.placeholders.loading") : t("productForm.placeholders.selectCategory")}
+                      placeholder={
+                        loadingCategories
+                          ? t("productForm.placeholders.loading")
+                          : selectedTopCategoryId
+                            ? t("productForm.placeholders.selectCategory")
+                            : t("productForm.placeholders.selectCategory")
+                      }
                       required
                       disabled={isReadonly || loadingCategories}
                     >
-                      {categories.map((category) => {
+                      {filteredCategories.map((category) => {
                         const localized =
                           getLocalizedValue(category.name, i18n.language) ||
                           (category.raw
@@ -524,36 +610,114 @@ export default function ProductForm({ type, data = null, productId = null }) {
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     <FormField
                       control={form.control}
-                      name="warranty"
-                      render={({ field }) => (
+                      name="warranty_value"
+                      render={({ field, fieldState }) => (
                         <FormItem>
-                          <FormLabel>{t("productForm.fields.warranty")}</FormLabel>
-                          <FormControl>
-                          <MultilingualInput
-                            value={parseMultilingual(field.value)}
-                            onChange={(updated) => field.onChange(stringifyMultilingual(updated))}
-                            placeholder={t("productForm.placeholders.warranty")}
-                            disabled={isReadonly}
-                            className={productInputClass}
-                            hideLanguageSwitcher
-                          />
-                          </FormControl>
-                          <FormMessage />
+                          <FormLabel>{t("productForm.fields.warrantyPeriod", { defaultValue: "Срок гарантии" })}</FormLabel>
+                          <div className="grid grid-cols-[1fr_180px] gap-3">
+                            <FormControl>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                placeholder={t("productForm.placeholders.warrantyValue", { defaultValue: "Например: 24" })}
+                                disabled={isReadonly}
+                                {...field}
+                                onFocus={(event) => {
+                                  if (String(field.value || "").trim() === "0") {
+                                    field.onChange("")
+                                  }
+                                }}
+                                onChange={(event) => {
+                                  field.onChange(event.target.value.replace(/\D/g, ""))
+                                }}
+                                className={productInputClass}
+                              />
+                            </FormControl>
+                            <FormField
+                              control={form.control}
+                              name="warranty_unit"
+                              render={({ field: unitField }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Select value={unitField.value || "months"} onValueChange={unitField.onChange} disabled={isReadonly}>
+                                      <SelectTrigger className={productInputClass}>
+                                        <SelectValue placeholder={t("productForm.fields.warrantyUnit", { defaultValue: "Единица" })} />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {WARRANTY_UNITS.map((unit) => (
+                                          <SelectItem key={unit} value={unit}>
+                                            {t(`productForm.warrantyUnits.${unit}`, { defaultValue: unit })}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <p className="text-[12px] text-[var(--text-secondary)]">
+                            {t("productForm.messages.warrantyHint", { defaultValue: "Укажите число и единицу измерения, чтобы было понятно: дни, месяцы или годы." })}
+                          </p>
+                          {fieldState.error && <p className="text-sm text-red-500">{fieldState.error.message}</p>}
                         </FormItem>
                       )}
                     />
 
-                    <CustomFormField
-                      fieldType={FormFieldType.NUMBER}
+                    <FormField
                       control={form.control}
                       name="price"
-                      label={t("productForm.fields.priceUsd")}
-                      placeholder="0.00"
-                      required
-                      disabled={isReadonly}
-                      inputClass={productInputClass}
-                      step="0.01"
-                      inputMode="decimal"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <FormLabel>{t("productForm.fields.price", { defaultValue: "Цена" })}<span className="text-red-500">{t("clientForm.fields.required")}</span></FormLabel>
+                          <div className="grid grid-cols-[1fr_160px] gap-3">
+                            <FormControl>
+                              <input
+                                type="text"
+                                inputMode="decimal"
+                                placeholder="0"
+                                disabled={isReadonly}
+                                value={formatMoneyInput(field.value)}
+                                onFocus={() => {
+                                  if (normalizeMoneyInput(field.value) === "0") {
+                                    field.onChange("")
+                                  }
+                                }}
+                                onChange={(event) => {
+                                  field.onChange(normalizeMoneyInput(event.target.value))
+                                }}
+                                className={productInputClass}
+                              />
+                            </FormControl>
+                            <FormField
+                              control={form.control}
+                              name="price_currency"
+                              render={({ field: currencyField }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Select value={currencyField.value || "UZS"} onValueChange={currencyField.onChange} disabled={isReadonly}>
+                                      <SelectTrigger className={productInputClass}>
+                                        <SelectValue placeholder={t("productForm.fields.currency", { defaultValue: "Валюта" })} />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {currencyReferenceOptions.map((currency) => (
+                                          <SelectItem key={currency.id} value={currency.id}>
+                                            {currency.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <p className="text-[12px] text-[var(--text-secondary)]">
+                            {t("productForm.messages.priceHint", { defaultValue: "Сначала укажите сумму, затем выберите валюту цены." })}
+                          </p>
+                          {fieldState.error && <p className="text-sm text-red-500">{fieldState.error.message}</p>}
+                        </FormItem>
+                      )}
                     />
                   </div>
 

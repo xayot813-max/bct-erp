@@ -134,6 +134,11 @@ export default function ProductsPage() {
           <h1 className="text-[52px] font-normal leading-none tracking-[-0.03em] text-[var(--text-primary)]">{t("productsPage.title")}</h1>
         </div>
         <div className="flex items-center gap-3">
+          <Link href="/dashboard/products/categories">
+            <Button variant="outline" className="h-11 min-w-[176px] rounded-[10px] border-[var(--border-default)] bg-[var(--surface)] px-4 text-[13px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)]">
+              {t("productsPage.categoriesButton", { defaultValue: "Категории" })}
+            </Button>
+          </Link>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
             <Input

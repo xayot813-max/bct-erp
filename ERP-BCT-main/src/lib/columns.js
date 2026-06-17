@@ -4,6 +4,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ArrowUpRight, Pencil, Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -27,6 +28,7 @@ import {
   deleteCompany,
   deleteCounterparty,
   deleteProduct,
+  deleteVendor,
 } from "@/lib/actions";
 
 const API_BASE_URL = "https://q-bit.uz";
@@ -116,6 +118,14 @@ const resolveEntityId = (record) =>
   record?.ID ||
   record?.Id ||
   null;
+
+const localizeCustomerGroupName = (group, t) => {
+  const code = typeof group?.code === "string" ? group.code.trim().toLowerCase() : ""
+  if (code) {
+    return translate(t, `clientsPage.groups.names.${code}`, group?.name || code)
+  }
+  return group?.name || "—"
+}
 
 const tableActionButtonClass =
   "h-7 w-7 rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-0 text-[var(--text-secondary)] shadow-none transition-colors hover:border-[var(--accent)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]";
@@ -217,6 +227,24 @@ export const getClientsColumns = (t) => [
     accessorKey: "total_amount",
     header: translate(t, "clients.columns.totalAmount", "Общая сумма покупок"),
     cell: ({ row }) => resolveRealTotalMoney(row.original),
+  },
+  {
+    accessorKey: "group",
+    header: translate(t, "clients.columns.group", "Группа"),
+    cell: ({ row }) => {
+      const group = row.original.group
+      if (!group?.name) return "—"
+
+      return (
+        <Badge
+          variant="outline"
+          className="rounded-[999px] border-[var(--border-default)] bg-[var(--surface-elevated)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-primary)]"
+          style={group.color ? { borderColor: `${group.color}66`, backgroundColor: `${group.color}12` } : undefined}
+        >
+          {localizeCustomerGroupName(group, t)}
+        </Badge>
+      )
+    },
   },
   {
     accessorKey: "phone",
@@ -511,6 +539,14 @@ export const getCategoriesColumns = (t, language = "ru") => [
       })(),
   },
   {
+    accessorKey: "top_category_name",
+    header: translate(t, "productForm.fields.topCategory", "Верхняя категория"),
+    cell: ({ row }) => {
+      const value = row.original.top_category_name || row.original.topCategoryName || "";
+      return getLocalizedValue(value, language) || "—";
+    },
+  },
+  {
     id: "actions",
     header: translate(t, "categories.columns.actions", "Действия"),
     cell: ({ row }) => {
@@ -533,6 +569,81 @@ export const getCategoriesColumns = (t, language = "ru") => [
             action={deleteCategory}
             cancelText={translate(t, "categories.dialog.cancel", "Отмена")}
             confirmText={translate(t, "categories.dialog.confirm", "Удалить")}
+            deletingText={translate(t, "common.deleting", "Удаление...")}
+          />
+        </div>
+      );
+    },
+  },
+];
+
+export const getSuppliersColumns = (t) => [
+  {
+    accessorKey: "id",
+    header: "#",
+    cell: ({ row }) => row.index + 1,
+  },
+  {
+    accessorKey: "name",
+    header: translate(t, "suppliers.columns.name", "Поставщик"),
+    cell: ({ row }) => row.original.name || "—",
+  },
+  {
+    accessorKey: "phone",
+    header: translate(t, "suppliers.columns.phone", "Телефон"),
+    cell: ({ row }) => formatUzPhone(row.original.phone) || "—",
+  },
+  {
+    accessorKey: "agent",
+    header: translate(t, "suppliers.columns.agent", "Агент"),
+    cell: ({ row }) => row.original.agent || "—",
+  },
+  {
+    accessorKey: "default_mode",
+    header: translate(t, "suppliers.columns.defaultMode", "Режим по умолчанию"),
+    cell: ({ row }) =>
+      translate(
+        t,
+        `supplierForm.defaultModes.${row.original.default_mode || "partial"}`,
+        row.original.default_mode || "partial",
+      ),
+  },
+  {
+    accessorKey: "debt_limit",
+    header: translate(t, "suppliers.columns.debtLimit", "Лимит долга"),
+    cell: ({ row }) => row.original.debt_limit ?? 0,
+  },
+  {
+    accessorKey: "active_for_supplies",
+    header: translate(t, "suppliers.columns.active", "Активен"),
+    cell: ({ row }) =>
+      row.original.active_for_supplies !== false
+        ? translate(t, "common.yes", "Да")
+        : translate(t, "common.no", "Нет"),
+  },
+  {
+    id: "actions",
+    header: translate(t, "suppliers.columns.actions", "Действия"),
+    cell: ({ row }) => {
+      const supplier = row.original;
+      const supplierId = resolveEntityId(supplier);
+
+      return (
+        <div className="w-full flex gap-2 justify-end">
+          <Link href={supplierId ? `/dashboard/werehouses/suppliers/${supplierId}?type=edit` : "#"}>
+            <Button className={tableActionButtonClass} size="icon" variant="ghost">
+              <Pencil className={tableActionIconClass} />
+            </Button>
+          </Link>
+
+          <DeleteEntityAction
+            id={supplierId}
+            label={translate(t, "suppliers.entityLabel", "Supplier")}
+            title={translate(t, "suppliers.dialog.deleteTitle", "Удалить поставщика?")}
+            description={translate(t, "suppliers.dialog.deleteDesc", "Поставщик будет удалён без возможности восстановления.")}
+            action={deleteVendor}
+            cancelText={translate(t, "suppliers.dialog.cancel", "Отмена")}
+            confirmText={translate(t, "suppliers.dialog.confirm", "Удалить")}
             deletingText={translate(t, "common.deleting", "Удаление...")}
           />
         </div>

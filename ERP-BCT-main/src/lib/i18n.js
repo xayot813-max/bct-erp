@@ -27,12 +27,13 @@ const getInitialLanguage = () => {
     return "ru";
   }
 
+  const htmlLanguage = document.documentElement.lang || "";
   const cookieMatch = document.cookie.match(/(?:^|; )i18nextLng=([^;]*)/);
   const cookieLanguage = cookieMatch ? decodeURIComponent(cookieMatch[1]) : "";
   const storedLanguage = window.localStorage.getItem("i18nextLng") || "";
-  const htmlLanguage = document.documentElement.lang || "";
 
-  return normalizeLanguage(cookieLanguage || storedLanguage || htmlLanguage || "ru");
+  // Keep the first client render aligned with SSR to avoid hydration mismatches.
+  return normalizeLanguage(htmlLanguage || cookieLanguage || storedLanguage || "ru");
 };
 
 i18n

@@ -28,14 +28,19 @@ import {
 import { createCounterparty, updateCounterparty, deleteCounterparty } from "@/lib/actions"
 import { useDealStore } from "@/store/dealStore"
 import { splitFullName } from "@/lib/utils/text"
+import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
 
 const createCounterpartySchema = (t) =>
   z.object({
     name: z.string().min(2, t("counterpartyForm.fields.name") + " " + t("clientForm.fields.required")),
     position: z.string().min(2, t("counterpartyForm.fields.position") + " " + t("clientForm.fields.required")),
-    email: z.string().email(t("counterpartyForm.fields.email") + " " + t("clientForm.fields.invalid")),
-    phone: z.string().min(9, t("counterpartyForm.fields.phone") + " " + t("clientForm.fields.invalid")),
+    email: z
+      .string()
+      .trim()
+      .optional()
+      .refine((value) => !value || /\S+@\S+\.\S+/.test(value), t("counterpartyForm.fields.email") + " " + t("clientForm.fields.invalid")),
+    phone: z.string().trim().min(7, t("counterpartyForm.fields.phone") + " " + t("clientForm.fields.invalid")),
     company: z.string().min(1, t("counterpartyForm.fields.company") + " " + t("clientForm.fields.required")),
     company_phone: z.string().optional(),
     address: z.string().optional(),
@@ -92,12 +97,18 @@ export default function CounterpartyForm({ type, data = null, counterpartyId = n
   })
 
   const pageTitle = isAdd ? t("counterpartyForm.titles.add") : isEdit ? t("counterpartyForm.titles.edit") : t("counterpartyForm.titles.show")
+  const autoCompleteMode = isAdd ? "new-password" : "off"
 
   const buildPayload = (values) => {
     const derived = splitFullName(values.name)
 
     return {
       ...values,
+      email: values.email?.trim() || "",
+      phone: normalizePhoneNumber(values.phone),
+      company_phone: normalizePhoneNumber(values.company_phone),
+      address: values.address?.trim() || "",
+      comment: values.comment?.trim() || "",
       first_name: derived.first || values.name,
       last_name: derived.last || values.position,
       fullname: values.name,
@@ -197,7 +208,15 @@ export default function CounterpartyForm({ type, data = null, counterpartyId = n
 
       <div className="min-h-[570px] rounded-md bg-white p-5 shadow-[0_1px_12px_rgba(24,28,38,0.03)]">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3" autoComplete="off">
+              {isAdd && (
+                <>
+                  <input type="text" name="fake-name" autoComplete="name" className="hidden" tabIndex={-1} aria-hidden="true" />
+                  <input type="email" name="fake-email" autoComplete="email" className="hidden" tabIndex={-1} aria-hidden="true" />
+                  <input type="tel" name="fake-phone" autoComplete="tel" className="hidden" tabIndex={-1} aria-hidden="true" />
+                  <input type="password" name="fake-password" autoComplete="new-password" className="hidden" tabIndex={-1} aria-hidden="true" />
+                </>
+              )}
               <FormField
                 control={form.control}
                 name="name"
@@ -205,7 +224,7 @@ export default function CounterpartyForm({ type, data = null, counterpartyId = n
                   <FormItem>
                     <FormLabel className="text-[11px] font-medium text-[#20242d]">{t("counterpartyForm.fields.name")}<span className="text-[#ff3b30]">*</span></FormLabel>
                     <FormControl>
-                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder={t("counterpartyForm.placeholders.name")} disabled={isReadonly} {...field} />
+                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder={t("counterpartyForm.placeholders.name")} disabled={isReadonly} autoComplete={autoCompleteMode} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -219,7 +238,7 @@ export default function CounterpartyForm({ type, data = null, counterpartyId = n
                   <FormItem>
                     <FormLabel className="text-[11px] font-medium text-[#20242d]">{t("counterpartyForm.fields.position")}</FormLabel>
                     <FormControl>
-                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder={t("counterpartyForm.placeholders.position")} disabled={isReadonly} {...field} />
+                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder={t("counterpartyForm.placeholders.position")} disabled={isReadonly} autoComplete={autoCompleteMode} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -231,9 +250,9 @@ export default function CounterpartyForm({ type, data = null, counterpartyId = n
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11px] font-medium text-[#20242d]">{t("counterpartyForm.fields.email")}<span className="text-[#ff3b30]">*</span></FormLabel>
+                    <FormLabel className="text-[11px] font-medium text-[#20242d]">{t("counterpartyForm.fields.email")}</FormLabel>
                     <FormControl>
-                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder={t("counterpartyForm.placeholders.email")} disabled={isReadonly} {...field} />
+                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder={t("counterpartyForm.placeholders.email")} disabled={isReadonly} autoComplete={isAdd ? "new-password" : "email"} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -247,7 +266,14 @@ export default function CounterpartyForm({ type, data = null, counterpartyId = n
                   <FormItem>
                     <FormLabel className="text-[11px] font-medium text-[#20242d]">{t("counterpartyForm.fields.phone")}</FormLabel>
                     <FormControl>
-                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder={t("counterpartyForm.placeholders.phone")} disabled={isReadonly} {...field} />
+                      <Input
+                        className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]"
+                        placeholder={t("counterpartyForm.placeholders.phone")}
+                        disabled={isReadonly}
+                        autoComplete={autoCompleteMode}
+                        {...field}
+                        onChange={(event) => field.onChange(formatPhoneNumber(event.target.value))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -261,7 +287,7 @@ export default function CounterpartyForm({ type, data = null, counterpartyId = n
                   <FormItem>
                     <FormLabel className="text-[11px] font-medium text-[#20242d]">{t("counterpartyForm.fields.company")}</FormLabel>
                     <FormControl>
-                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder={t("counterpartyForm.placeholders.company")} disabled={isReadonly} {...field} />
+                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder={t("counterpartyForm.placeholders.company")} disabled={isReadonly} autoComplete={autoCompleteMode} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -275,7 +301,14 @@ export default function CounterpartyForm({ type, data = null, counterpartyId = n
                   <FormItem>
                     <FormLabel className="text-[11px] font-medium text-[#20242d]">{t("counterpartyForm.fields.companyPhone")}</FormLabel>
                     <FormControl>
-                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder="+998 99 999-99-99" disabled={isReadonly} {...field} />
+                      <Input
+                        className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]"
+                        placeholder={t("counterpartyForm.placeholders.phone")}
+                        disabled={isReadonly}
+                        autoComplete={autoCompleteMode}
+                        {...field}
+                        onChange={(event) => field.onChange(formatPhoneNumber(event.target.value))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -289,7 +322,7 @@ export default function CounterpartyForm({ type, data = null, counterpartyId = n
                   <FormItem>
                     <FormLabel className="text-[11px] font-medium text-[#20242d]">{t("counterpartyForm.fields.address")}</FormLabel>
                     <FormControl>
-                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder={t("counterpartyForm.placeholders.address")} disabled={isReadonly} {...field} />
+                      <Input className="h-[31px] rounded-[5px] border-[#cfd4dc] bg-white px-2 text-[11px]" placeholder={t("counterpartyForm.placeholders.address")} disabled={isReadonly} autoComplete={autoCompleteMode} {...field} />
                     </FormControl>
                   </FormItem>
                 )}

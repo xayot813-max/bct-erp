@@ -57,7 +57,7 @@ export function AuthProvider({
   children,
   initialUserData = null,
   cookieNames = DEFAULTS,
-  pollMs = 800,
+  pollMs = 15000,
   /** ixtiyoriy: userObj dan tokenlarni qanday olishni o'zingiz belgilash */
   tokenSelector, // (userObj) => ({ accessToken, refreshToken })
 }) {

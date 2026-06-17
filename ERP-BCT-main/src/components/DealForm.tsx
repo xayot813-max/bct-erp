@@ -31,7 +31,7 @@ const fieldClass =
   "h-[42px] rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 text-[13px] text-[var(--text-primary)] shadow-none placeholder:text-[var(--text-muted)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
 const textareaClass =
   "min-h-[86px] rounded-[7px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-3 text-[13px] text-[var(--text-primary)] shadow-none placeholder:text-[var(--text-muted)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-const labelClass = "text-[13px] font-medium leading-none text-[var(--text-primary)]"
+const labelClass = "text-[15px] font-semibold leading-none text-[var(--text-primary)]"
 
 const normalizeMoneyInput = (value: string) => {
   const normalized = value.replace(/\s/g, "").replace(",", ".")
@@ -49,6 +49,21 @@ const formatMoneyInput = (value: string) => {
   return fraction !== undefined ? `${formattedInteger}.${fraction}` : formattedInteger
 }
 
+const resolvePaymentStatus = (dealAmount: string, payCard: string, payCash: string, overrideValue: string) => {
+  if (overrideValue === "paid" || overrideValue === "partial" || overrideValue === "unpaid") {
+    return overrideValue
+  }
+
+  const total = Number(dealAmount || 0)
+  const paidCard = Number(payCard || 0)
+  const paidCash = Number(payCash || 0)
+  const paid = (Number.isFinite(paidCard) ? paidCard : 0) + (Number.isFinite(paidCash) ? paidCash : 0)
+
+  if (total > 0 && paid >= total) return "paid"
+  if (paid > 0) return "partial"
+  return "unpaid"
+}
+
 function RequiredLabel({ children }: { children: ReactNode }) {
   return (
     <label className={labelClass}>
@@ -60,12 +75,12 @@ function RequiredLabel({ children }: { children: ReactNode }) {
 
 function AddButton({ href, label }: { href: string; label: string }) {
   return (
-      <Link
+    <Link
       href={href}
       aria-label={label}
-      className="ml-2 flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[7px] border border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm transition hover:border-[var(--primary-hover)] hover:bg-[var(--primary-hover)]"
+      className="ml-3 flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[10px] border border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[0_10px_24px_rgba(0,0,0,0.18)] transition hover:border-[var(--primary-hover)] hover:bg-[var(--primary-hover)]"
     >
-      <Plus className="h-4 w-4" />
+      <Plus className="h-[18px] w-[18px]" strokeWidth={2.25} />
     </Link>
   )
 }
@@ -104,15 +119,16 @@ export default function DealForm({
     const payCash = Number(formData.payCash || 0)
     const paid = (Number.isFinite(payCard) ? payCard : 0) + (Number.isFinite(payCash) ? payCash : 0)
     const remaining = Math.max(0, (Number.isFinite(total) ? total : 0) - paid)
+    const statusCode = resolvePaymentStatus(formData.dealAmount, formData.payCard, formData.payCash, formData.paymentStatusOverride)
     const status =
-      total > 0 && paid >= total
+      statusCode === "paid"
         ? t("dealAdd.payment.paid", { defaultValue: "Оплачено" })
-        : paid > 0
+        : statusCode === "partial"
           ? t("dealAdd.payment.partial")
           : t("dealAdd.payment.unpaid")
     const formatter = (value: number) => formatMoney(value, formData.currency)
     return { total, paid, remaining, status, formatter }
-  }, [formData.currency, formData.dealAmount, formData.payCard, formData.payCash, t])
+  }, [formData.currency, formData.dealAmount, formData.payCard, formData.payCash, formData.paymentStatusOverride, t])
 
   useEffect(() => {
     if (autoSelectFunnel && !formData.funnelId && funnels.length > 0) {
@@ -284,6 +300,25 @@ export default function DealForm({
             <p className="mt-2 text-[12px] leading-5 text-[var(--text-secondary)]">
               {t("dealForm.multiPayment.help", { defaultValue: "You can split the payment between transfer and cash." })}
             </p>
+            <div className="mt-3">
+              <label className="mb-2 block text-[12px] text-[var(--text-secondary)]">
+                {t("dealForm.fields.paymentStatusOverride.label", { defaultValue: "Статус оплаты" })}
+              </label>
+              <Select
+                value={formData.paymentStatusOverride}
+                onValueChange={(nextValue) => setFormField("paymentStatusOverride", nextValue)}
+              >
+                <SelectTrigger className={fieldClass}>
+                  <SelectValue placeholder={t("dealForm.fields.paymentStatusOverride.placeholder", { defaultValue: "Выберите режим статуса" })} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">{t("dealForm.fields.paymentStatusOverride.options.auto", { defaultValue: "Автоматически" })}</SelectItem>
+                  <SelectItem value="paid">{t("dealForm.fields.paymentStatusOverride.options.paid", { defaultValue: "Оплачено" })}</SelectItem>
+                  <SelectItem value="partial">{t("dealForm.fields.paymentStatusOverride.options.partial", { defaultValue: "Оплачено частично" })}</SelectItem>
+                  <SelectItem value="unpaid">{t("dealForm.fields.paymentStatusOverride.options.unpaid", { defaultValue: "Не оплачено" })}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="mt-3 grid gap-2 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface)] p-3 text-[12px]">
               <PaymentLine label={t("finance.totalAmount", { defaultValue: "Общая сумма" })} value={paymentSummary.formatter(paymentSummary.total)} />
               <PaymentLine label={t("finance.paidAmount", { defaultValue: "Оплачено" })} value={paymentSummary.formatter(paymentSummary.paid)} />

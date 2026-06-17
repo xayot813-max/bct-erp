@@ -6,11 +6,13 @@ import {
   topCategoryService,
   fileService,
   clientService,
+  customerGroupService,
   companyService,
   counterpartyService,
   contractService,
   funnelService,
   warehouseService,
+  vendorService,
   financeTransactionService,
 } from './api-services'
 
@@ -373,6 +375,51 @@ export async function deleteClient(id) {
   }
 }
 
+export async function getCustomerGroups(params = {}) {
+  try {
+    return await customerGroupService.getAll(params)
+  } catch (error) {
+    console.error("Error fetching customer groups:", error)
+    return createCollectionFallback("customer_groups", error)
+  }
+}
+
+export async function getCustomerGroupAnalytics() {
+  try {
+    return await customerGroupService.getAnalytics()
+  } catch (error) {
+    console.error("Error fetching customer group analytics:", error)
+    return createCollectionFallback("analytics", error)
+  }
+}
+
+export async function createCustomerGroup(payload) {
+  try {
+    return await customerGroupService.create(payload)
+  } catch (error) {
+    console.error("Error creating customer group:", error)
+    throw error
+  }
+}
+
+export async function updateCustomerGroup(id, payload) {
+  try {
+    return await customerGroupService.update(id, payload)
+  } catch (error) {
+    console.error("Error updating customer group:", error)
+    throw error
+  }
+}
+
+export async function deleteCustomerGroup(id) {
+  try {
+    return await customerGroupService.delete(id)
+  } catch (error) {
+    console.error("Error deleting customer group:", error)
+    throw error
+  }
+}
+
 /**
  * Server Actions for Companies
  */
@@ -522,72 +569,7 @@ export async function deleteContract(id) {
 
 export async function updateContractFunnel(id, funnelId) {
   try {
-    const response = await contractService.getById(id)
-    const contract = response?.data || response
-    if (!contract || typeof contract !== "object") {
-      throw new Error("Contract not found")
-    }
-
-    const clientId = resolveLinkedId(
-      contract.client_id ?? contract.client ?? contract.clientId,
-    )
-    const counterpartyId = resolveLinkedId(
-      contract.counterparty_id ?? contract.counterparty ?? contract.counterpartyId,
-    )
-    const companyId = resolveLinkedId(
-      contract.company_id ?? contract.company ?? contract.companyId,
-    )
-
-    if (!clientId || !counterpartyId || !companyId) {
-      throw new Error("Не удалось определить связанные сущности сделки")
-    }
-
-    let productsRaw = Array.isArray(contract.products) ? contract.products : []
-    if (productsRaw.length === 0) {
-      productsRaw = Array.isArray(contract.items) ? contract.items : []
-    }
-    if (productsRaw.length === 0) {
-      productsRaw = Array.isArray(contract.positions) ? contract.positions : []
-    }
-
-    const products = productsRaw
-      .map((item, index) => mapContractProductForUpdate(item, index))
-      .filter((item) => Boolean(item))
-
-    const payload = {
-      client_id: clientId,
-      counterparty_id: counterpartyId,
-      company_id: companyId,
-      guarantee:
-        (typeof contract.guarantee === "string" && contract.guarantee) ||
-        (typeof contract.warranty === "string" && contract.warranty) ||
-        "",
-      comment:
-        (typeof contract.comment === "string" && contract.comment) ||
-        (typeof contract.description === "string" && contract.description) ||
-        "",
-      contract_number:
-        (typeof contract.contract_number === "string" && contract.contract_number) ||
-        (typeof contract.contractNumber === "string" && contract.contractNumber) ||
-        "",
-      deal_date:
-        contract.deal_date ??
-        contract.dealDate ??
-        contract.shipment_date ??
-        contract.shipmentDate ??
-        null,
-      contract_amount: Number(contract.contract_amount ?? contract.amount ?? 0),
-      contract_currency:
-        (typeof contract.contract_currency === "string" && contract.contract_currency) ||
-        (typeof contract.currency === "string" && contract.currency) ||
-        "UZS",
-      funnel_id: funnelId ?? null,
-      pay_card: Number(contract.pay_card ?? contract.card ?? 0),
-      pay_cash: Number(contract.pay_cash ?? contract.cash ?? 0),
-      products,
-    }
-
-    return await contractService.update(id, payload)
+    return await contractService.updateFunnel(id, funnelId)
   } catch (error) {
     console.error("Error updating contract funnel:", error)
     throw error
@@ -706,6 +688,51 @@ export async function deleteWarehouse(id) {
     return await warehouseService.delete(id)
   } catch (error) {
     console.error("Error deleting warehouse:", error)
+    throw error
+  }
+}
+
+export async function getVendors(params = {}) {
+  try {
+    return await vendorService.getAll(params)
+  } catch (error) {
+    console.error("Error fetching vendors:", error)
+    return createCollectionFallback("data", error, { vendors: [] })
+  }
+}
+
+export async function getVendorById(id) {
+  try {
+    return await vendorService.getById(id)
+  } catch (error) {
+    console.error("Error fetching vendor:", error)
+    throw error
+  }
+}
+
+export async function createVendor(payload) {
+  try {
+    return await vendorService.create(payload)
+  } catch (error) {
+    console.error("Error creating vendor:", error)
+    throw error
+  }
+}
+
+export async function updateVendor(id, payload) {
+  try {
+    return await vendorService.update(id, payload)
+  } catch (error) {
+    console.error("Error updating vendor:", error)
+    throw error
+  }
+}
+
+export async function deleteVendor(id) {
+  try {
+    return await vendorService.delete(id)
+  } catch (error) {
+    console.error("Error deleting vendor:", error)
     throw error
   }
 }

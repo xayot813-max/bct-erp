@@ -106,6 +106,13 @@ img {
   background: var(--background-primary);
 }
 
+.dashboard-shell [data-dashboard-header] {
+  position: fixed !important;
+  inset: 0 0 auto 0 !important;
+  z-index: 2147483647 !important;
+  min-height: 56px;
+}
+
 .dashboard-shell :is(button, a, input, textarea, select, th, td, label, [data-slot="button"], [data-slot="input"], [data-slot="select-trigger"], [data-slot="select-item"], [data-slot="pagination-link"], [data-slot="dropdown-menu-trigger"], [role="button"]) {
   text-rendering: optimizeLegibility;
   letter-spacing: normal;

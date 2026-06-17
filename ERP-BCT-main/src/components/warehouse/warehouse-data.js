@@ -10,6 +10,11 @@ export const warehouseLinks = [
     subtitleKey: "warehouse.links.receipt.subtitle",
   },
   {
+    href: "/dashboard/werehouses/suppliers",
+    titleKey: "warehouse.links.suppliers.title",
+    subtitleKey: "warehouse.links.suppliers.subtitle",
+  },
+  {
     href: "/dashboard/werehouses/writeoff",
     titleKey: "warehouse.links.writeoff.title",
     subtitleKey: "warehouse.links.writeoff.subtitle",

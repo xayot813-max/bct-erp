@@ -52,6 +52,86 @@ type inventoryPreparedOperation struct {
 	OperationDoc  bson.M
 }
 
+func normalizeSerialList(values []string) []string {
+	normalized := make([]string, 0, len(values))
+	seen := map[string]bool{}
+	for _, value := range values {
+		serial := strings.TrimSpace(value)
+		if serial == "" || seen[serial] {
+			continue
+		}
+		seen[serial] = true
+		normalized = append(normalized, serial)
+	}
+	return normalized
+}
+
+func normalizeProductSerialItems(product models.Product) []models.ProductSerialUnit {
+	items := make([]models.ProductSerialUnit, 0, len(product.SerialItems)+1)
+	seen := map[string]bool{}
+
+	for _, item := range product.SerialItems {
+		serial := strings.TrimSpace(item.SerialNumber)
+		if serial == "" || seen[serial] {
+			continue
+		}
+		seen[serial] = true
+		warehouseID := resolveInventoryWarehouseKey(item.WarehouseID, item.Warehouse)
+		items = append(items, models.ProductSerialUnit{
+			SerialNumber: serial,
+			WarehouseID:  warehouseID,
+			Warehouse:    resolveInventoryWarehouseLabel(warehouseID, item.Warehouse),
+			CreatedAt:    item.CreatedAt,
+			UpdatedAt:    item.UpdatedAt,
+		})
+	}
+
+	if len(items) == 0 && strings.TrimSpace(product.SerialNumber) != "" && product.Count == 1 {
+		warehouseID := resolveInventoryWarehouseKey(product.WarehouseID, product.Warehouse)
+		items = append(items, models.ProductSerialUnit{
+			SerialNumber: strings.TrimSpace(product.SerialNumber),
+			WarehouseID:  warehouseID,
+			Warehouse:    resolveInventoryWarehouseLabel(warehouseID, product.Warehouse),
+			CreatedAt:    product.CreatedAt,
+			UpdatedAt:    product.UpdatedAt,
+		})
+	}
+
+	return items
+}
+
+func serialWarehouseTotals(items []models.ProductSerialUnit) map[string]int {
+	totals := map[string]int{}
+	for _, item := range items {
+		warehouseID := resolveInventoryWarehouseKey(item.WarehouseID, item.Warehouse)
+		totals[warehouseID]++
+	}
+	return totals
+}
+
+func ensureSerialNumbersAvailable(ctx context.Context, productsCollection *mongo.Collection, currentProductID primitive.ObjectID, serials []string) error {
+	if len(serials) == 0 {
+		return nil
+	}
+
+	filter := bson.M{
+		"_id": bson.M{"$ne": currentProductID},
+		"$or": []bson.M{
+			{"serial_number": bson.M{"$in": serials}},
+			{"serial_items.serial_number": bson.M{"$in": serials}},
+		},
+	}
+
+	conflicts, err := productsCollection.CountDocuments(ctx, filter)
+	if err != nil {
+		return err
+	}
+	if conflicts > 0 {
+		return errors.New("serial numbers must be globally unique")
+	}
+	return nil
+}
+
 func normalizeInventoryType(value string) string {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "receive", "receipt":
@@ -124,32 +204,22 @@ func pickWarehouseWithInventory(stock map[string]int, preferred string, quantity
 	return "warehouse-1"
 }
 
-func validateReceiptSerials(payload InventoryTransactionPayload) error {
-	seenSerials := map[string]bool{}
-	for _, serial := range payload.SerialNumbers {
-		normalized := strings.TrimSpace(serial)
-		if normalized == "" {
-			continue
-		}
-		if seenSerials[normalized] {
-			return errors.New("serial numbers must be unique")
-		}
-		seenSerials[normalized] = true
-	}
-	if len(seenSerials) > 0 && len(seenSerials) != payload.Quantity {
+func validateInventorySerials(payload InventoryTransactionPayload) error {
+	normalizedSerials := normalizeSerialList(payload.SerialNumbers)
+	if len(normalizedSerials) > 0 && len(normalizedSerials) != payload.Quantity {
 		return errors.New("serial numbers count must match quantity")
 	}
 	return nil
 }
 
-func prepareInventoryOperation(product models.Product, payload InventoryTransactionPayload, now time.Time, documentID string) (inventoryPreparedOperation, error) {
+func prepareInventoryOperation(ctx context.Context, productsCollection *mongo.Collection, product models.Product, payload InventoryTransactionPayload, now time.Time, documentID string) (inventoryPreparedOperation, error) {
 	operationType := normalizeInventoryType(payload.Type)
 	if operationType != "receipt" && operationType != "writeoff" && operationType != "sale" && operationType != "movement" && operationType != "adjustment" {
 		return inventoryPreparedOperation{}, errors.New("type must be receipt, writeoff, sale, movement, or adjustment")
 	}
 
-	if operationType == "receipt" {
-		if err := validateReceiptSerials(payload); err != nil {
+	if operationType == "receipt" || operationType == "writeoff" || operationType == "movement" || operationType == "sale" {
+		if err := validateInventorySerials(payload); err != nil {
 			return inventoryPreparedOperation{}, err
 		}
 	}
@@ -159,9 +229,13 @@ func prepareInventoryOperation(product models.Product, payload InventoryTransact
 	}
 
 	stockByWarehouse := copyPositiveStock(product.StockByWarehouse)
+	serialItems := normalizeProductSerialItems(product)
 	currentWarehouseKey := resolveInventoryWarehouseKey(product.WarehouseID, product.Warehouse)
 	if len(stockByWarehouse) == 0 && product.Count > 0 {
 		stockByWarehouse[currentWarehouseKey] = product.Count
+	}
+	if len(serialItems) > 0 {
+		stockByWarehouse = serialWarehouseTotals(serialItems)
 	}
 	if product.Count != sumStock(stockByWarehouse) {
 		product.Count = sumStock(stockByWarehouse)
@@ -178,6 +252,7 @@ func prepareInventoryOperation(product models.Product, payload InventoryTransact
 	}
 
 	quantity := payload.Quantity
+	normalizedSerials := normalizeSerialList(payload.SerialNumbers)
 
 	switch operationType {
 	case "receipt":
@@ -185,13 +260,49 @@ func prepareInventoryOperation(product models.Product, payload InventoryTransact
 			destinationKey = currentWarehouseKey
 			destinationLabel = resolveInventoryWarehouseLabel(product.WarehouseID, product.Warehouse)
 		}
+		if err := ensureSerialNumbersAvailable(ctx, productsCollection, product.ID, normalizedSerials); err != nil {
+			return inventoryPreparedOperation{}, err
+		}
 		stockByWarehouse[destinationKey] += quantity
 		nextCount += quantity
+		for _, serial := range normalizedSerials {
+			serialItems = append(serialItems, models.ProductSerialUnit{
+				SerialNumber: serial,
+				WarehouseID:  destinationKey,
+				Warehouse:    destinationLabel,
+				CreatedAt:    now,
+				UpdatedAt:    now,
+			})
+		}
 	case "writeoff", "sale":
 		sourceKey = pickWarehouseWithInventory(stockByWarehouse, sourceKey, quantity)
 		if nextCount < quantity || stockByWarehouse[sourceKey] < quantity {
 			return inventoryPreparedOperation{}, errors.New("not enough stock")
 		}
+		if len(normalizedSerials) != quantity {
+			return inventoryPreparedOperation{}, errors.New("serial numbers count must match quantity")
+		}
+		remaining := make([]models.ProductSerialUnit, 0, len(serialItems))
+		selectedSerials := map[string]bool{}
+		for _, serial := range normalizedSerials {
+			selectedSerials[serial] = false
+		}
+		for _, item := range serialItems {
+			warehouseID := resolveInventoryWarehouseKey(item.WarehouseID, item.Warehouse)
+			if warehouseID == sourceKey {
+				if _, exists := selectedSerials[item.SerialNumber]; exists && !selectedSerials[item.SerialNumber] {
+					selectedSerials[item.SerialNumber] = true
+					continue
+				}
+			}
+			remaining = append(remaining, item)
+		}
+		for _, found := range selectedSerials {
+			if !found {
+				return inventoryPreparedOperation{}, errors.New("serial number not found in source warehouse")
+			}
+		}
+		serialItems = remaining
 		stockByWarehouse[sourceKey] -= quantity
 		if stockByWarehouse[sourceKey] <= 0 {
 			delete(stockByWarehouse, sourceKey)
@@ -207,6 +318,29 @@ func prepareInventoryOperation(product models.Product, payload InventoryTransact
 		}
 		if nextCount < quantity || stockByWarehouse[sourceKey] < quantity {
 			return inventoryPreparedOperation{}, errors.New("not enough stock")
+		}
+		if len(normalizedSerials) != quantity {
+			return inventoryPreparedOperation{}, errors.New("serial numbers count must match quantity")
+		}
+		selectedSerials := map[string]bool{}
+		for _, serial := range normalizedSerials {
+			selectedSerials[serial] = false
+		}
+		for index := range serialItems {
+			warehouseID := resolveInventoryWarehouseKey(serialItems[index].WarehouseID, serialItems[index].Warehouse)
+			if warehouseID == sourceKey {
+				if _, exists := selectedSerials[serialItems[index].SerialNumber]; exists && !selectedSerials[serialItems[index].SerialNumber] {
+					selectedSerials[serialItems[index].SerialNumber] = true
+					serialItems[index].WarehouseID = destinationKey
+					serialItems[index].Warehouse = destinationLabel
+					serialItems[index].UpdatedAt = now
+				}
+			}
+		}
+		for _, found := range selectedSerials {
+			if !found {
+				return inventoryPreparedOperation{}, errors.New("serial number not found in source warehouse")
+			}
 		}
 		stockByWarehouse[sourceKey] -= quantity
 		if stockByWarehouse[sourceKey] <= 0 {
@@ -227,6 +361,51 @@ func prepareInventoryOperation(product models.Product, payload InventoryTransact
 			systemQuantity = *payload.SystemQuantity
 		}
 		quantity = *payload.RealQuantity - systemQuantity
+		if len(serialItems) > 0 || len(normalizedSerials) > 0 {
+			diff := *payload.RealQuantity - systemQuantity
+			if diff > 0 {
+				if len(normalizedSerials) != diff {
+					return inventoryPreparedOperation{}, errors.New("serial numbers count must match quantity")
+				}
+				if err := ensureSerialNumbersAvailable(ctx, productsCollection, product.ID, normalizedSerials); err != nil {
+					return inventoryPreparedOperation{}, err
+				}
+				for _, serial := range normalizedSerials {
+					serialItems = append(serialItems, models.ProductSerialUnit{
+						SerialNumber: serial,
+						WarehouseID:  sourceKey,
+						Warehouse:    sourceLabel,
+						CreatedAt:    now,
+						UpdatedAt:    now,
+					})
+				}
+			} else if diff < 0 {
+				if len(normalizedSerials) != -diff {
+					return inventoryPreparedOperation{}, errors.New("serial numbers count must match quantity")
+				}
+				remaining := make([]models.ProductSerialUnit, 0, len(serialItems))
+				selectedSerials := map[string]bool{}
+				for _, serial := range normalizedSerials {
+					selectedSerials[serial] = false
+				}
+				for _, item := range serialItems {
+					warehouseID := resolveInventoryWarehouseKey(item.WarehouseID, item.Warehouse)
+					if warehouseID == sourceKey {
+						if _, exists := selectedSerials[item.SerialNumber]; exists && !selectedSerials[item.SerialNumber] {
+							selectedSerials[item.SerialNumber] = true
+							continue
+						}
+					}
+					remaining = append(remaining, item)
+				}
+				for _, found := range selectedSerials {
+					if !found {
+						return inventoryPreparedOperation{}, errors.New("serial number not found in source warehouse")
+					}
+				}
+				serialItems = remaining
+			}
+		}
 		if *payload.RealQuantity == 0 {
 			delete(stockByWarehouse, sourceKey)
 		} else {
@@ -244,6 +423,7 @@ func prepareInventoryOperation(product models.Product, payload InventoryTransact
 	updateData := bson.M{
 		"count":              nextCount,
 		"stock_by_warehouse": stockByWarehouse,
+		"serial_items":       serialItems,
 		"updated_at":         now,
 	}
 
@@ -258,6 +438,7 @@ func prepareInventoryOperation(product models.Product, payload InventoryTransact
 	after := product
 	after.Count = nextCount
 	after.StockByWarehouse = stockByWarehouse
+	after.SerialItems = serialItems
 	if warehouseID, ok := updateData["warehouse_id"].(string); ok {
 		after.WarehouseID = warehouseID
 	}
@@ -285,7 +466,7 @@ func prepareInventoryOperation(product models.Product, payload InventoryTransact
 			"reason":                      payload.Reason,
 			"comment":                     payload.Comment,
 			"files":                       payload.Files,
-			"serial_numbers":              payload.SerialNumbers,
+			"serial_numbers":              normalizedSerials,
 			"expiration_value":            payload.ExpirationValue,
 			"expiration_unit":             payload.ExpirationUnit,
 			"previous_count":              product.Count,
@@ -322,7 +503,7 @@ func ApplyInventoryTransactions(ctx context.Context, db *mongo.Client, payloads 
 			}
 		}
 		payload.Type = normalizeInventoryType(payload.Type)
-		next, err := prepareInventoryOperation(product, payload, now, documentID)
+		next, err := prepareInventoryOperation(ctx, productsCollection, product, payload, now, documentID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -341,6 +522,7 @@ func ApplyInventoryTransactions(ctx context.Context, db *mongo.Client, payloads 
 			_, _ = productsCollection.UpdateOne(ctx, bson.M{"_id": rollback.ID}, bson.M{"$set": bson.M{
 				"count":              rollback.ProductBefore.Count,
 				"stock_by_warehouse": rollback.ProductBefore.StockByWarehouse,
+				"serial_items":       rollback.ProductBefore.SerialItems,
 				"warehouse_id":       rollback.ProductBefore.WarehouseID,
 				"warehouse":          rollback.ProductBefore.Warehouse,
 				"updated_at":         rollback.ProductBefore.UpdatedAt,

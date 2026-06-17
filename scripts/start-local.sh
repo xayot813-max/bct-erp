@@ -8,6 +8,7 @@ BACK_DIR="$ROOT_DIR/bct-server-main"
 RUNTIME_DIR="$ROOT_DIR/.local-runtime"
 BACK_BIN="$RUNTIME_DIR/backend-local"
 FRONT_SCREEN_SESSION="bct-erp-frontend"
+FRONTEND_NODE_VERSION="20.20.2"
 
 mkdir -p "$RUNTIME_DIR"
 
@@ -105,11 +106,11 @@ start_frontend() {
     return
   fi
 
-  echo "Запускаю frontend dev-сервер на :3000..."
+  echo "Запускаю frontend dev-сервер на :3000 через Node $FRONTEND_NODE_VERSION..."
   if screen -ls | grep -q "[.]$FRONT_SCREEN_SESSION"; then
     screen -S "$FRONT_SCREEN_SESSION" -X quit >/dev/null 2>&1 || true
   fi
-  screen -dmS "$FRONT_SCREEN_SESSION" bash -lc "cd '$FRONT_DIR' && exec npm run dev -- -p 3000 >'$RUNTIME_DIR/frontend.log' 2>&1"
+  screen -dmS "$FRONT_SCREEN_SESSION" bash -lc "cd '$FRONT_DIR' && NEXT_OUTPUT_MODE=dev exec npx -y node@$FRONTEND_NODE_VERSION ./node_modules/next/dist/bin/next dev -p 3000 >'$RUNTIME_DIR/frontend.log' 2>&1"
   echo "$FRONT_SCREEN_SESSION" >"$RUNTIME_DIR/frontend.screen"
 }
 

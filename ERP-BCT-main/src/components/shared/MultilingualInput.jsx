@@ -1,7 +1,6 @@
 "use client"
 
 import { useContext, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
 
 import { FormLanguageContext } from "@/components/forms/FormLanguageContext"
 import { Input } from "@/components/ui/input"
@@ -20,7 +19,6 @@ export default function MultilingualInput({
   activeLanguage,
   onLanguageChange,
 }) {
-  const { i18n } = useTranslation("common")
   const formLanguage = useContext(FormLanguageContext)
 
   const defaultLanguage = useMemo(
@@ -55,16 +53,13 @@ export default function MultilingualInput({
     onChange?.(updated)
   }
 
-  const handleLanguageSwitch = async (lang) => {
+  const handleLanguageSwitch = (lang) => {
     if (disabled) return
     onLanguageChange?.(lang)
     if (formLanguage?.setActiveLanguage) {
       formLanguage.setActiveLanguage(lang)
     } else if (!activeLanguage) {
       setInternalLang(lang)
-      if (i18n.language !== lang) {
-        await i18n.changeLanguage(lang)
-      }
     }
   }
 

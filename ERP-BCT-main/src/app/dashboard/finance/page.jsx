@@ -6,6 +6,7 @@ import { ArrowUpRight, Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { createERPTransaction, getContracts, getERPTransactions } from "@/lib/actions"
+import { currencyReferenceOptions } from "@/lib/reference-data"
 import { extractArrayFromResponse } from "@/lib/utils/api-helpers"
 import { formatMoney, normalizeCurrencyCode, resolveLocale } from "@/lib/utils/currency"
 import { toastError, toastSuccess, toastWarning } from "@/lib/toast"
@@ -15,31 +16,9 @@ const toNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-const paymentState = (contract) => {
-  const total = toNumber(contract?.contract_amount)
-  const paid = toNumber(contract?.pay_card) + toNumber(contract?.pay_cash)
-  if (total > 0 && paid >= total) return "paid"
-  if (paid > 0) return "partial"
-  return "unpaid"
-}
-
 const transactionModes = ["income", "expense"]
 const paymentMethodOptions = ["cash", "card", "transfer", "multi"]
-
-const paymentMethodLabel = (t, value) => {
-  switch (value) {
-    case "cash":
-      return t("finance.transaction.paymentMethods.cash", { defaultValue: "Наличные" })
-    case "card":
-      return t("finance.transaction.paymentMethods.card", { defaultValue: "Карта" })
-    case "transfer":
-      return t("finance.transaction.paymentMethods.transfer", { defaultValue: "Перевод" })
-    case "multi":
-      return t("finance.transaction.paymentMethods.multi", { defaultValue: "Мультиоплата" })
-    default:
-      return value || "—"
-  }
-}
+const sectionOptions = ["transactions", "accounts", "categories"]
 
 const toDatetimeLocalValue = (value) => {
   const date = value ? new Date(value) : new Date()
@@ -65,6 +44,32 @@ const createInitialForm = () => ({
   breakdownTransfer: "",
 })
 
+const paymentMethodLabel = (t, value) => {
+  switch (value) {
+    case "cash":
+      return t("finance.transaction.paymentMethods.cash", { defaultValue: "Наличные" })
+    case "card":
+      return t("finance.transaction.paymentMethods.card", { defaultValue: "Карта" })
+    case "transfer":
+      return t("finance.transaction.paymentMethods.transfer", { defaultValue: "Перевод" })
+    case "multi":
+      return t("finance.transaction.paymentMethods.multi", { defaultValue: "Мультиоплата" })
+    default:
+      return value || "—"
+  }
+}
+
+const paymentState = (contract) => {
+  const override = contract?.payment_status_override || contract?.paymentStatusOverride
+  if (override === "paid" || override === "partial" || override === "unpaid") return override
+
+  const total = toNumber(contract?.contract_amount)
+  const paid = toNumber(contract?.pay_card) + toNumber(contract?.pay_cash)
+  if (total > 0 && paid >= total) return "paid"
+  if (paid > 0) return "partial"
+  return "unpaid"
+}
+
 export default function FinancePage() {
   const { t, i18n } = useTranslation("common")
   const [contracts, setContracts] = useState([])
@@ -73,32 +78,55 @@ export default function FinancePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState("")
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [activeSection, setActiveSection] = useState("transactions")
+  const [selectedAccountsCurrency, setSelectedAccountsCurrency] = useState("UZS")
   const [form, setForm] = useState(createInitialForm)
 
-  const locale = useMemo(() => {
-    return resolveLocale(i18n.resolvedLanguage || i18n.language)
-  }, [i18n.language, i18n.resolvedLanguage])
+  const locale = useMemo(() => resolveLocale(i18n.resolvedLanguage || i18n.language), [i18n.language, i18n.resolvedLanguage])
+
+  const pageHeading = showCreateForm
+    ? t("finance.transaction.pageTitle", { defaultValue: "Транзакция" })
+    : activeSection === "accounts"
+      ? t("finance.sections.accounts", { defaultValue: "Счета" })
+      : activeSection === "categories"
+        ? t("finance.sections.categories", { defaultValue: "Категории" })
+        : t("finance.title", { defaultValue: "Финансы" })
+
+  const pageSubtitle = showCreateForm
+    ? t("finance.transaction.pageSubtitle", {
+        defaultValue: "Создайте и сохраните приход или расход, чтобы операция сразу попала в финансовый учёт.",
+      })
+    : activeSection === "accounts"
+      ? t("finance.accounts.subtitle", { defaultValue: "Баланс по кассе, карте и переводам в одном экране." })
+      : activeSection === "categories"
+        ? t("finance.categories.subtitle", { defaultValue: "Сводка по типам финансовых операций." })
+        : t("finance.subtitle", { defaultValue: "Реальные суммы рассчитаны по сохранённым сделкам и оплатам." })
 
   useEffect(() => {
     let cancelled = false
+
     const loadFinance = async () => {
       setIsLoading(true)
       setError("")
       try {
         const [contractsResponse, transactionsResponse] = await Promise.all([
           getContracts({ limit: 1000 }),
-          getERPTransactions({ limit: 200, kind: "finance" }),
+          getERPTransactions({ limit: 1000, kind: "finance" }),
         ])
+
         if (!cancelled) {
           setContracts(extractArrayFromResponse(contractsResponse, ["contracts"]))
           setTransactions(extractArrayFromResponse(transactionsResponse, ["transactions"]))
         }
       } catch (loadError) {
-        if (!cancelled) setError(loadError?.message || t("finance.loadError", { defaultValue: "Не удалось загрузить финансы" }))
+        if (!cancelled) {
+          setError(loadError?.message || t("finance.loadError", { defaultValue: "Не удалось загрузить финансы" }))
+        }
       } finally {
         if (!cancelled) setIsLoading(false)
       }
     }
+
     loadFinance()
     return () => {
       cancelled = true
@@ -107,6 +135,7 @@ export default function FinancePage() {
 
   const summaries = useMemo(() => {
     const byCurrency = new Map()
+
     contracts.forEach((contract) => {
       const currency = normalizeCurrencyCode(contract?.contract_currency || contract?.currency)
       const current = byCurrency.get(currency) || { currency, total: 0, paid: 0, remaining: 0, contracts: 0 }
@@ -118,6 +147,7 @@ export default function FinancePage() {
       current.contracts += 1
       byCurrency.set(currency, current)
     })
+
     return Array.from(byCurrency.values())
   }, [contracts])
 
@@ -137,11 +167,110 @@ export default function FinancePage() {
       .slice(0, 12)
   }, [contracts])
 
-  const transactionRows = useMemo(() => {
-    return [...transactions].sort(
-      (a, b) => new Date(b?.operation_at || b?.created_at || 0) - new Date(a?.operation_at || a?.created_at || 0),
-    )
-  }, [transactions])
+  const transactionStatsByCurrency = useMemo(() => {
+    const seedByCurrency = new Map()
+
+    const ensureCurrencyStats = (currency) => {
+      const normalizedCurrency = normalizeCurrencyCode(currency)
+      if (!seedByCurrency.has(normalizedCurrency)) {
+        seedByCurrency.set(normalizedCurrency, {
+          currency: normalizedCurrency,
+          incomeTotal: 0,
+          expenseTotal: 0,
+          totalOperations: 0,
+          debtTotal: 0,
+          accountCards: [
+            { key: "cash", balance: 0, count: 0, currency: normalizedCurrency },
+            { key: "card", balance: 0, count: 0, currency: normalizedCurrency },
+            { key: "transfer", balance: 0, count: 0, currency: normalizedCurrency },
+          ],
+        })
+      }
+      return seedByCurrency.get(normalizedCurrency)
+    }
+
+    transactions.forEach((transaction) => {
+      const currency = normalizeCurrencyCode(transaction?.currency)
+      const current = ensureCurrencyStats(currency)
+      const amount = toNumber(transaction?.amount)
+      const mode = transaction?.type === "expense" ? -1 : 1
+      const paymentMethod = transaction?.payment_method || transaction?.paymentMethod
+      const metadata = transaction?.metadata || {}
+      const breakdown = metadata?.payment_breakdown || metadata?.paymentBreakdown || {}
+
+      current.totalOperations += 1
+      if (mode > 0) current.incomeTotal += amount
+      else current.expenseTotal += amount
+
+      const assignToMethod = (methodKey, methodAmount) => {
+        const account = current.accountCards.find((item) => item.key === methodKey)
+        if (!account) return
+        account.balance += mode * toNumber(methodAmount)
+        account.count += 1
+      }
+
+      if (paymentMethod === "multi") {
+        assignToMethod("cash", breakdown?.cash)
+        assignToMethod("card", breakdown?.card)
+        assignToMethod("transfer", breakdown?.transfer)
+        return
+      }
+
+      assignToMethod(paymentMethod, amount)
+    })
+
+    contracts.forEach((contract) => {
+      const currency = normalizeCurrencyCode(contract?.contract_currency || contract?.currency)
+      const current = ensureCurrencyStats(currency)
+      const total = toNumber(contract?.contract_amount)
+      const paid = toNumber(contract?.pay_card) + toNumber(contract?.pay_cash)
+      current.debtTotal += Math.max(0, total - paid)
+    })
+
+    return seedByCurrency
+  }, [contracts, transactions])
+
+  const transactionStats = useMemo(() => {
+    const current = transactionStatsByCurrency.get(selectedAccountsCurrency)
+    if (current) {
+      return {
+        ...current,
+        netRevenue: current.incomeTotal - current.expenseTotal,
+        activeAccounts: current.accountCards.filter((item) => item.count > 0 || item.balance !== 0).length,
+      }
+    }
+
+    return {
+      currency: selectedAccountsCurrency,
+      incomeTotal: 0,
+      expenseTotal: 0,
+      netRevenue: 0,
+      activeAccounts: 0,
+      totalOperations: 0,
+      debtTotal: 0,
+      accountCards: [
+        { key: "cash", balance: 0, count: 0, currency: selectedAccountsCurrency },
+        { key: "card", balance: 0, count: 0, currency: selectedAccountsCurrency },
+        { key: "transfer", balance: 0, count: 0, currency: selectedAccountsCurrency },
+      ],
+    }
+  }, [selectedAccountsCurrency, transactionStatsByCurrency])
+
+  const categoryRows = useMemo(() => {
+    const grouped = new Map()
+
+    transactions.forEach((transaction) => {
+      const category = String(transaction?.category || "").trim() || t("finance.categories.uncategorized", { defaultValue: "Без категории" })
+      const current = grouped.get(category) || { name: category, income: 0, expense: 0, count: 0, currency: normalizeCurrencyCode(transaction?.currency) }
+      const amount = toNumber(transaction?.amount)
+      if (transaction?.type === "expense") current.expense += amount
+      else current.income += amount
+      current.count += 1
+      grouped.set(category, current)
+    })
+
+    return Array.from(grouped.values()).sort((a, b) => (b.income - b.expense) - (a.income - a.expense))
+  }, [t, transactions])
 
   const submitTransaction = async () => {
     const amount = Number(form.amount)
@@ -183,7 +312,7 @@ export default function FinancePage() {
 
     setIsSaving(true)
     try {
-      const created = await createERPTransaction({
+      await createERPTransaction({
         kind: "finance",
         type: form.mode,
         category: form.category.trim(),
@@ -203,9 +332,12 @@ export default function FinancePage() {
           payment_breakdown: form.paymentMethod === "multi" ? breakdown : undefined,
         },
       })
-      setTransactions((current) => [created, ...current])
+
+      const transactionsResponse = await getERPTransactions({ limit: 1000, kind: "finance" })
+      setTransactions(extractArrayFromResponse(transactionsResponse, ["transactions"]))
       setForm(createInitialForm())
       setShowCreateForm(false)
+      setActiveSection("transactions")
       toastSuccess({ title: t("finance.transaction.saved", { defaultValue: "Транзакция сохранена" }) })
     } catch (saveError) {
       toastError({
@@ -217,25 +349,222 @@ export default function FinancePage() {
     }
   }
 
+  const renderMainContent = () => {
+    if (activeSection === "accounts") {
+      return (
+        <div className="space-y-6">
+          <div className="rounded-[18px] border border-[var(--border-default)] bg-[var(--surface)] p-5 shadow-[var(--surface-shadow)]">
+            <div className="mb-4 flex items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[18px] bg-[var(--primary)] text-[26px] font-semibold text-[var(--primary-foreground)]">
+                {selectedAccountsCurrency}
+              </div>
+              <div>
+                <div className="text-[12px] uppercase tracking-[0.18em] text-[var(--text-secondary)]">{t("finance.accounts.centerLabel", { defaultValue: "Финансовый центр" })}</div>
+                <div className="text-[34px] font-semibold text-[var(--text-primary)]">{t("finance.sections.accounts", { defaultValue: "Счета" })}</div>
+              </div>
+              <div className="ml-auto w-full max-w-[140px]">
+                <label className="mb-2 block text-[11px] uppercase tracking-[0.14em] text-[var(--text-secondary)]">
+                  {t("finance.transaction.fields.currency", { defaultValue: "Валюта" })}
+                </label>
+                <select
+                  value={selectedAccountsCurrency}
+                  onChange={(event) => setSelectedAccountsCurrency(event.target.value)}
+                  className="h-11 w-full rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 text-[14px] text-[var(--text-primary)]"
+                >
+                  {currencyReferenceOptions.map((currency) => (
+                    <option key={currency.id} value={currency.id}>
+                      {currency.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <MetricCard label={t("finance.accounts.netRevenue", { defaultValue: "Чистая выручка" })} value={formatMoney(transactionStats.netRevenue, selectedAccountsCurrency, locale)} />
+              <MetricCard label={t("finance.accounts.manualBalance", { defaultValue: "Ручной баланс" })} value={formatMoney(0, selectedAccountsCurrency, locale)} />
+              <MetricCard label={t("finance.accounts.operations", { defaultValue: "Операций" })} value={String(transactionStats.totalOperations)} />
+              <MetricCard label={t("finance.accounts.debts", { defaultValue: "Долги" })} value={formatMoney(transactionStats.debtTotal, selectedAccountsCurrency, locale)} />
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <MetricCard label={t("finance.accounts.activeAccounts", { defaultValue: "Активных счетов" })} value={String(transactionStats.activeAccounts)} />
+            <MetricCard label={t("finance.accounts.balance", { defaultValue: "Баланс" })} value={formatMoney(transactionStats.netRevenue, selectedAccountsCurrency, locale)} />
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-3">
+            {transactionStats.accountCards.map((account) => (
+              <div key={account.key} className="rounded-[18px] border border-[var(--border-default)] bg-[var(--surface)] p-5 shadow-[var(--surface-shadow)]">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-[var(--surface-elevated)] text-[28px] font-semibold text-[var(--text-primary)]">
+                      {paymentMethodLabel(t, account.key).slice(0, 1)}
+                    </div>
+                    <div>
+                      <div className="text-[24px] font-semibold text-[var(--text-primary)]">{paymentMethodLabel(t, account.key)}</div>
+                      <div className="text-[13px] text-[var(--text-secondary)]">
+                        {t("finance.accounts.typeLabel", { defaultValue: "Тип счёта" })}: {paymentMethodLabel(t, account.key)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right text-[22px] font-semibold text-[var(--text-primary)]">
+                    {formatMoney(account.balance, account.currency || "UZS", locale)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    if (activeSection === "categories") {
+      return (
+        <div className="rounded-[14px] border border-[var(--border-default)] bg-[var(--surface)] shadow-[var(--surface-shadow)]">
+          <div className="border-b border-[var(--border-subtle)] px-5 py-4 text-[18px] font-semibold text-[var(--text-primary)]">
+            {t("finance.categories.title", { defaultValue: "Категории операций" })}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-[13px] text-[var(--text-primary)]">
+              <thead className="bg-[var(--surface-elevated)] text-[var(--text-secondary)]">
+                <tr>
+                  <th className="px-5 py-4 text-left font-normal">{t("finance.categories.columns.name", { defaultValue: "Категория" })}</th>
+                  <th className="px-5 py-4 text-left font-normal">{t("finance.categories.columns.income", { defaultValue: "Приход" })}</th>
+                  <th className="px-5 py-4 text-left font-normal">{t("finance.categories.columns.expense", { defaultValue: "Расход" })}</th>
+                  <th className="px-5 py-4 text-left font-normal">{t("finance.categories.columns.balance", { defaultValue: "Баланс" })}</th>
+                  <th className="px-5 py-4 text-left font-normal">{t("finance.categories.columns.operations", { defaultValue: "Операций" })}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categoryRows.length > 0 ? categoryRows.map((row) => (
+                  <tr key={row.name} className="border-t border-[var(--border-subtle)]">
+                    <td className="px-5 py-4">{row.name}</td>
+                    <td className="px-5 py-4">{formatMoney(row.income, row.currency || "UZS", locale)}</td>
+                    <td className="px-5 py-4">{formatMoney(row.expense, row.currency || "UZS", locale)}</td>
+                    <td className="px-5 py-4">{formatMoney(row.income - row.expense, row.currency || "UZS", locale)}</td>
+                    <td className="px-5 py-4">{row.count}</td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={5} className="px-5 py-10 text-center text-[var(--text-secondary)]">
+                      {t("finance.categories.empty", { defaultValue: "Категории появятся после первых транзакций." })}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-3">
+          <StatusCard label={t("finance.statusPaid", { defaultValue: "Оплачено" })} value={statusCounts.paid} />
+          <StatusCard label={t("finance.statusPartial", { defaultValue: "Оплачено частично" })} value={statusCounts.partial} />
+          <StatusCard label={t("finance.statusUnpaid", { defaultValue: "Не оплачено" })} value={statusCounts.unpaid} />
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          {summaries.map((summary) => (
+            <div key={summary.currency} className="rounded-[14px] border border-[var(--border-default)] bg-[var(--surface)] p-5 shadow-[var(--surface-shadow)]">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-[18px] font-semibold text-[var(--text-primary)]">{summary.currency}</h2>
+                <span className="text-[12px] text-[var(--text-secondary)]">{summary.contracts} {t("finance.contracts", { defaultValue: "сделок" })}</span>
+              </div>
+              <MoneyLine label={t("finance.totalAmount", { defaultValue: "Общая сумма" })} value={formatMoney(summary.total, summary.currency, locale)} />
+              <MoneyLine label={t("finance.paidAmount", { defaultValue: "Оплачено" })} value={formatMoney(summary.paid, summary.currency, locale)} />
+              <MoneyLine label={t("finance.remainingAmount", { defaultValue: "Осталось" })} value={formatMoney(summary.remaining, summary.currency, locale)} />
+            </div>
+          ))}
+        </div>
+
+        <div className="overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--surface)] shadow-[var(--surface-shadow)]">
+          <div className="border-b border-[var(--border-subtle)] px-5 py-4 text-[18px] font-semibold text-[var(--text-primary)]">
+            {t("finance.realHistory", { defaultValue: "Реальная история сделок" })}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[860px] text-[13px] text-[var(--text-primary)]">
+              <thead className="bg-[var(--surface-elevated)] text-[var(--text-secondary)]">
+                <tr>
+                  <th className="px-5 py-4 text-left font-normal">{t("dealForm.fields.contractNumber.label")}</th>
+                  <th className="px-5 py-4 text-left font-normal">{t("clients.columns.name")}</th>
+                  <th className="px-5 py-4 text-left font-normal">{t("finance.totalAmount", { defaultValue: "Общая сумма" })}</th>
+                  <th className="px-5 py-4 text-left font-normal">{t("finance.paidAmount", { defaultValue: "Оплачено" })}</th>
+                  <th className="px-5 py-4 text-left font-normal">{t("finance.remainingAmount", { defaultValue: "Осталось" })}</th>
+                  <th className="px-5 py-4 text-left font-normal">{t("finance.paymentStatus", { defaultValue: "Статус оплаты" })}</th>
+                  <th className="px-5 py-4 text-right font-normal"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((contract) => {
+                  const total = toNumber(contract?.contract_amount)
+                  const paid = toNumber(contract?.pay_card) + toNumber(contract?.pay_cash)
+                  const remaining = Math.max(0, total - paid)
+                  const currency = normalizeCurrencyCode(contract?.contract_currency || contract?.currency)
+                  const status = paymentState(contract)
+                  return (
+                    <tr key={contract?.id || contract?._id} className="border-t border-[var(--border-subtle)]">
+                      <td className="px-5 py-4">{contract?.contract_number || "—"}</td>
+                      <td className="px-5 py-4">{contract?.client_name || "—"}</td>
+                      <td className="px-5 py-4">{formatMoney(total, currency, locale)}</td>
+                      <td className="px-5 py-4">{formatMoney(paid, currency, locale)}</td>
+                      <td className="px-5 py-4">{formatMoney(remaining, currency, locale)}</td>
+                      <td className="px-5 py-4">{t(`finance.status.${status}`, { defaultValue: status })}</td>
+                      <td className="px-5 py-4 text-right">
+                        <Link href={`/dashboard/deals/add?contractId=${contract?.id || contract?._id}&type=edit`} className="inline-flex h-8 w-8 items-center justify-center rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] hover:bg-[var(--surface-hover)]">
+                          <ArrowUpRight className="h-4 w-4" />
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="mx-auto w-[95%] max-w-[1240px] py-5">
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+    <div className="mx-auto w-[95%] max-w-[1440px] pt-10 pb-5">
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4 xl:flex-nowrap">
         <div>
           <h1 className="text-[52px] font-normal leading-none tracking-[-0.03em] text-[var(--text-primary)]">
-            {t("finance.title", { defaultValue: "Финансы" })}
+            {pageHeading}
           </h1>
           <p className="mt-3 text-[13px] text-[var(--text-secondary)]">
-            {t("finance.subtitle", { defaultValue: "Реальные суммы рассчитаны по сохранённым сделкам и оплатам." })}
+            {pageSubtitle}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
+          {!showCreateForm && sectionOptions.map((section) => (
+            <button
+              key={section}
+              type="button"
+              onClick={() => setActiveSection(section)}
+              className={activeSection === section
+                ? "inline-flex h-10 items-center rounded-[999px] border border-[var(--primary)] bg-[var(--primary)] px-4 text-[13px] font-medium text-[var(--primary-foreground)]"
+                : "inline-flex h-10 items-center rounded-[999px] border border-[var(--border-default)] bg-[var(--surface)] px-4 text-[13px] font-medium text-[var(--text-primary)]"}
+            >
+              {t(`finance.sections.${section}`, { defaultValue: section })}
+            </button>
+          ))}
           <button
             type="button"
-            onClick={() => setShowCreateForm((current) => !current)}
+            onClick={() => {
+              setShowCreateForm((current) => !current)
+              if (!showCreateForm) setActiveSection("transactions")
+            }}
             className="inline-flex h-10 items-center gap-2 rounded-[10px] border border-[var(--border-default)] bg-[var(--surface)] px-4 text-[13px] font-medium text-[var(--text-primary)] shadow-sm hover:bg-[var(--surface-hover)]"
           >
             <Plus className="h-4 w-4" />
-            {t("finance.transaction.add", { defaultValue: "Добавить транзакцию" })}
+            {showCreateForm
+              ? t("finance.transaction.backToFinance", { defaultValue: "Вернуться к финансам" })
+              : t("finance.transaction.add", { defaultValue: "Добавить транзакцию" })}
           </button>
           <Link
             href="/dashboard/deals/add"
@@ -252,21 +581,22 @@ export default function FinancePage() {
         </div>
       ) : error ? (
         <div className="rounded-[14px] border border-[var(--danger)] bg-[var(--surface)] p-10 text-center text-[var(--danger)]">{error}</div>
-      ) : contracts.length === 0 && transactions.length === 0 ? (
-        <div className="rounded-[14px] border border-[var(--border-default)] bg-[var(--surface)] p-10 text-center text-[var(--text-secondary)]">
-          {t("finance.empty", { defaultValue: "Пока нет реальных финансовых операций. Создайте сделку, чтобы увидеть расчёты." })}
-        </div>
       ) : (
         <div className="space-y-6">
           {showCreateForm ? (
             <div className="rounded-[14px] border border-[var(--border-default)] bg-[var(--surface)] p-5 shadow-[var(--surface-shadow)]">
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                <div className="text-[18px] font-semibold text-[var(--text-primary)]">
-                  {form.mode === "income"
-                    ? t("finance.transaction.formTitleIncome", { defaultValue: "Новая транзакция: приход" })
-                    : t("finance.transaction.formTitleExpense", { defaultValue: "Новая транзакция: расход" })}
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3 xl:flex-nowrap">
+                <div>
+                  <div className="text-[28px] font-semibold leading-tight text-[var(--text-primary)]">
+                    {t("finance.transaction.formPageTitle", { defaultValue: "Новая транзакция" })}
+                  </div>
+                  <p className="mt-2 text-[13px] text-[var(--text-secondary)]">
+                    {form.mode === "income"
+                      ? t("finance.transaction.formTitleIncome", { defaultValue: "Оформление прихода денежных средств" })
+                      : t("finance.transaction.formTitleExpense", { defaultValue: "Оформление расхода денежных средств" })}
+                  </p>
                 </div>
-                <div className="inline-flex rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-1">
+                <div className="inline-flex shrink-0 rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-1">
                   {transactionModes.map((mode) => (
                     <button
                       key={mode}
@@ -283,6 +613,7 @@ export default function FinancePage() {
                   ))}
                 </div>
               </div>
+
               <div className="grid gap-4 lg:grid-cols-[1.1fr_0.6fr_1fr]">
                 <Field label={t("finance.transaction.fields.amount", { defaultValue: "Сумма" })}>
                   <input value={form.amount} placeholder={t("finance.transaction.placeholders.amount", { defaultValue: "Например: 125000" })} onChange={(event) => setForm((current) => ({ ...current, amount: event.target.value }))} className="h-11 w-full rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 text-[14px] text-[var(--text-primary)]" />
@@ -345,18 +676,10 @@ export default function FinancePage() {
                 </Field>
               </div>
 
-              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              <div className="mt-4">
                 <Field label={t("finance.transaction.fields.reason", { defaultValue: "Основание" })}>
                   <input value={form.reason} onChange={(event) => setForm((current) => ({ ...current, reason: event.target.value }))} placeholder={t("finance.transaction.placeholders.reason", { defaultValue: "Номер документа или причина" })} className="h-11 w-full rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]" />
                 </Field>
-                <div className="rounded-[14px] border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4">
-                  <div className="text-[12px] text-[var(--text-secondary)]">{t("finance.transaction.preview", { defaultValue: "Маршрут операции" })}</div>
-                  <div className="mt-2 text-[14px] font-medium text-[var(--text-primary)]">
-                    {form.mode === "income"
-                      ? `${form.counterparty || "—"} -> ${paymentMethodLabel(t, form.paymentMethod)}`
-                      : `${paymentMethodLabel(t, form.paymentMethod)} -> ${form.counterparty || "—"}`}
-                  </div>
-                </div>
               </div>
 
               <div className="mt-4">
@@ -364,6 +687,7 @@ export default function FinancePage() {
                   <textarea value={form.comment} onChange={(event) => setForm((current) => ({ ...current, comment: event.target.value }))} rows={4} placeholder={t("finance.transaction.placeholders.comment", { defaultValue: "Описание операции" })} className="w-full rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]" />
                 </Field>
               </div>
+
               <div className="mt-4 flex justify-end gap-3">
                 <button type="button" onClick={() => setShowCreateForm(false)} className="h-10 rounded-[10px] border border-[var(--border-default)] bg-[var(--surface)] px-4 text-[13px] text-[var(--text-primary)]">
                   {t("common.cancel", { defaultValue: "Отмена" })}
@@ -375,121 +699,7 @@ export default function FinancePage() {
             </div>
           ) : null}
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <StatusCard label={t("finance.statusPaid", { defaultValue: "Оплачено" })} value={statusCounts.paid} />
-            <StatusCard label={t("finance.statusPartial", { defaultValue: "Оплачено частично" })} value={statusCounts.partial} />
-            <StatusCard label={t("finance.statusUnpaid", { defaultValue: "Не оплачено" })} value={statusCounts.unpaid} />
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            {summaries.map((summary) => (
-              <div key={summary.currency} className="rounded-[14px] border border-[var(--border-default)] bg-[var(--surface)] p-5 shadow-[var(--surface-shadow)]">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-[18px] font-semibold text-[var(--text-primary)]">{summary.currency}</h2>
-                  <span className="text-[12px] text-[var(--text-secondary)]">{summary.contracts} {t("finance.contracts", { defaultValue: "сделок" })}</span>
-                </div>
-                <MoneyLine label={t("finance.totalAmount", { defaultValue: "Общая сумма" })} value={formatMoney(summary.total, summary.currency, locale)} />
-                <MoneyLine label={t("finance.paidAmount", { defaultValue: "Оплачено" })} value={formatMoney(summary.paid, summary.currency, locale)} />
-                <MoneyLine label={t("finance.remainingAmount", { defaultValue: "Осталось" })} value={formatMoney(summary.remaining, summary.currency, locale)} />
-              </div>
-            ))}
-          </div>
-
-          <div className="overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--surface)] shadow-[var(--surface-shadow)]">
-            <div className="border-b border-[var(--border-subtle)] px-5 py-4 text-[18px] font-semibold text-[var(--text-primary)]">
-              {t("finance.realHistory", { defaultValue: "Реальная история сделок" })}
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[860px] text-[13px] text-[var(--text-primary)]">
-                <thead className="bg-[var(--surface-elevated)] text-[var(--text-secondary)]">
-                  <tr>
-                    <th className="px-5 py-4 text-left font-normal">{t("dealForm.fields.contractNumber.label")}</th>
-                    <th className="px-5 py-4 text-left font-normal">{t("clients.columns.name")}</th>
-                    <th className="px-5 py-4 text-left font-normal">{t("finance.totalAmount", { defaultValue: "Общая сумма" })}</th>
-                    <th className="px-5 py-4 text-left font-normal">{t("finance.paidAmount", { defaultValue: "Оплачено" })}</th>
-                    <th className="px-5 py-4 text-left font-normal">{t("finance.remainingAmount", { defaultValue: "Осталось" })}</th>
-                    <th className="px-5 py-4 text-left font-normal">{t("finance.paymentStatus", { defaultValue: "Статус оплаты" })}</th>
-                    <th className="px-5 py-4 text-right font-normal"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((contract) => {
-                    const total = toNumber(contract?.contract_amount)
-                    const paid = toNumber(contract?.pay_card) + toNumber(contract?.pay_cash)
-                    const remaining = Math.max(0, total - paid)
-                    const currency = normalizeCurrencyCode(contract?.contract_currency || contract?.currency)
-                    return (
-                      <tr key={contract?.id || contract?._id} className="border-t border-[var(--border-subtle)]">
-                        <td className="px-5 py-4">{contract?.contract_number || "—"}</td>
-                        <td className="px-5 py-4">{contract?.client_name || "—"}</td>
-                        <td className="px-5 py-4">{formatMoney(total, currency, locale)}</td>
-                        <td className="px-5 py-4">{formatMoney(paid, currency, locale)}</td>
-                        <td className="px-5 py-4">{formatMoney(remaining, currency, locale)}</td>
-                        <td className="px-5 py-4">{t(`finance.status.${paymentState(contract)}`, { defaultValue: paymentState(contract) })}</td>
-                        <td className="px-5 py-4 text-right">
-                          <Link href={`/dashboard/deals/add?contractId=${contract?.id || contract?._id}&type=edit`} className="inline-flex h-8 w-8 items-center justify-center rounded-[8px] border border-[var(--border-default)] bg-[var(--surface-elevated)] hover:bg-[var(--surface-hover)]">
-                            <ArrowUpRight className="h-4 w-4" />
-                          </Link>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--surface)] shadow-[var(--surface-shadow)]">
-            <div className="border-b border-[var(--border-subtle)] px-5 py-4 text-[18px] font-semibold text-[var(--text-primary)]">
-              {t("finance.transaction.journal", { defaultValue: "Единый журнал ERP транзакций" })}
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[980px] text-[13px] text-[var(--text-primary)]">
-                <thead className="bg-[var(--surface-elevated)] text-[var(--text-secondary)]">
-                  <tr>
-                    <th className="px-5 py-4 text-left font-normal">{t("finance.transaction.columns.document", { defaultValue: "Документ" })}</th>
-                    <th className="px-5 py-4 text-left font-normal">{t("finance.transaction.columns.kind", { defaultValue: "Контур" })}</th>
-                    <th className="px-5 py-4 text-left font-normal">{t("finance.transaction.columns.type", { defaultValue: "Тип" })}</th>
-                    <th className="px-5 py-4 text-left font-normal">{t("finance.transaction.columns.route", { defaultValue: "Маршрут" })}</th>
-                    <th className="px-5 py-4 text-left font-normal">{t("finance.transaction.columns.amount", { defaultValue: "Сумма" })}</th>
-                    <th className="px-5 py-4 text-left font-normal">{t("finance.transaction.columns.comment", { defaultValue: "Комментарий" })}</th>
-                    <th className="px-5 py-4 text-left font-normal">{t("finance.transaction.columns.date", { defaultValue: "Дата" })}</th>
-                  </tr>
-                </thead>
-                <tbody>
-              {transactionRows.length > 0 ? transactionRows.map((item) => {
-                    const currency = normalizeCurrencyCode(item?.currency || "UZS")
-                    const operationAt = item?.operation_at || item?.created_at
-                    const createdAt = operationAt ? new Date(operationAt).toLocaleString(locale) : "—"
-                    const method = paymentMethodLabel(t, item?.payment_method || item?.metadata?.payment_method || "")
-                    return (
-                      <tr key={item?.id || item?.document_id} className="border-t border-[var(--border-subtle)]">
-                        <td className="px-5 py-4">{item?.document_id || "—"}</td>
-                        <td className="px-5 py-4">{item?.kind || "—"}</td>
-                        <td className="px-5 py-4">
-                          <div className="font-medium">{item?.category || item?.type || "—"}</div>
-                          <div className="text-[12px] text-[var(--text-secondary)]">{item?.type || "—"}</div>
-                        </td>
-                        <td className="px-5 py-4">{[item?.source, item?.destination].filter(Boolean).join(" -> ") || "—"}</td>
-                        <td className="px-5 py-4">
-                          <div>{formatMoney(Number(item?.amount || 0), currency, locale)}</div>
-                          <div className="text-[12px] text-[var(--text-secondary)]">{method}</div>
-                        </td>
-                        <td className="px-5 py-4">{item?.reason || item?.comment || "—"}</td>
-                        <td className="px-5 py-4">{createdAt}</td>
-                      </tr>
-                    )
-                  }) : (
-                    <tr>
-                      <td colSpan={7} className="px-5 py-8 text-center text-[var(--text-secondary)]">
-                        {t("finance.transaction.empty", { defaultValue: "Журнал ERP транзакций пока пуст." })}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          {!showCreateForm && renderMainContent()}
         </div>
       )}
     </div>
@@ -505,20 +715,29 @@ function Field({ label, children }) {
   )
 }
 
-function StatusCard({ label, value }) {
+function MoneyLine({ label, value }) {
   return (
-    <div className="rounded-[14px] border border-[var(--border-default)] bg-[var(--surface)] p-5 shadow-[var(--surface-shadow)]">
-      <div className="text-[12px] text-[var(--text-secondary)]">{label}</div>
-      <div className="mt-2 text-[28px] font-semibold text-[var(--text-primary)]">{value}</div>
+    <div className="flex items-center justify-between gap-3 py-1 text-[13px]">
+      <span className="text-[var(--text-secondary)]">{label}</span>
+      <span className="font-medium text-[var(--text-primary)]">{value}</span>
     </div>
   )
 }
 
-function MoneyLine({ label, value }) {
+function StatusCard({ label, value }) {
   return (
-    <div className="flex items-center justify-between border-t border-[var(--border-subtle)] py-3 first:border-t-0">
-      <span className="text-[12px] text-[var(--text-secondary)]">{label}</span>
-      <span className="font-medium text-[var(--text-primary)]">{value}</span>
+    <div className="rounded-[14px] border border-[var(--border-default)] bg-[var(--surface)] p-5 shadow-[var(--surface-shadow)]">
+      <div className="text-[13px] text-[var(--text-secondary)]">{label}</div>
+      <div className="mt-3 text-[40px] font-semibold leading-none text-[var(--text-primary)]">{value}</div>
+    </div>
+  )
+}
+
+function MetricCard({ label, value }) {
+  return (
+    <div className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-4">
+      <div className="text-[13px] text-[var(--text-secondary)]">{label}</div>
+      <div className="mt-2 text-[28px] font-semibold leading-tight text-[var(--text-primary)]">{value}</div>
     </div>
   )
 }

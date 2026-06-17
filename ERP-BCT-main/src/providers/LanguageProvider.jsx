@@ -27,10 +27,9 @@ function getPreferredLanguage(fallbackLanguage) {
 
 export default function LanguageProvider({ children, initialLanguage = "ru" }) {
   const normalizedInitialLanguage = normalizeLanguage(initialLanguage);
-  const preferredLanguage = getPreferredLanguage(normalizedInitialLanguage);
 
-  if (normalizeLanguage(i18n.resolvedLanguage || i18n.language) !== preferredLanguage) {
-    i18n.changeLanguage(preferredLanguage);
+  if (normalizeLanguage(i18n.resolvedLanguage || i18n.language) !== normalizedInitialLanguage) {
+    i18n.changeLanguage(normalizedInitialLanguage);
   }
 
   useEffect(() => {

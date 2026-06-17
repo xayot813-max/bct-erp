@@ -28,6 +28,7 @@ type DealFormData = {
   currency: string
   payCard: string
   payCash: string
+  paymentStatusOverride: string
   comments: string
   guarantee: string
 }
@@ -82,7 +83,7 @@ type DealStore = {
   addProductToDeal: (payload: AddProductPayload) => void
   removeProductFromDeal: (uid: string) => void
   resetDeal: () => void
-  initializeForm: (mode: "create" | "edit") => void
+  initializeForm: (mode: "create" | "edit", preserveDraft?: boolean) => void
   setFormDataState: (payload: Partial<DealFormData>) => void
   setDealProducts: (payload: DealProduct[]) => void
   hydrateFromContract: (contract: unknown) => void
@@ -111,6 +112,7 @@ const initialFormData: DealFormData = {
   funnelId: "",
   payCard: "",
   payCash: "",
+  paymentStatusOverride: "auto",
   comments: "",
   guarantee: "",
 }
@@ -298,9 +300,9 @@ export const useDealStore = create<DealStore>((set, get) => ({
       dealProducts: [],
       formInitialized: false,
     }),
-  initializeForm: (mode) =>
+  initializeForm: (mode, preserveDraft = false) =>
     set((state) => {
-      if (state.formInitialized && mode === "create") {
+      if (mode === "create" && preserveDraft && state.formInitialized) {
         return {}
       }
       if (mode === "create") {
@@ -394,6 +396,10 @@ export const useDealStore = create<DealStore>((set, get) => ({
           initialFormData.currency,
         payCard: String(record.pay_card ?? record.card ?? ""),
         payCash: String(record.pay_cash ?? record.cash ?? ""),
+        paymentStatusOverride:
+          (typeof record.payment_status_override === "string" && record.payment_status_override) ||
+          (typeof record.paymentStatusOverride === "string" && record.paymentStatusOverride) ||
+          "auto",
         comments:
           (typeof record.comment === "string" && record.comment) ||
           (typeof record.description === "string" && record.description) ||
@@ -455,7 +461,6 @@ export const useDealStore = create<DealStore>((set, get) => ({
       const response = await getProducts({
         limit: 200,
         owner_admin_id: getCurrentAdminProfileId(),
-        is_test_data: true,
       })
       const raw = extractArray(response)
 

@@ -2,7 +2,9 @@ package config
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,9 +14,20 @@ import (
 
 var databaseName = "ecommerce"
 
+func appEnv() string {
+	env := strings.ToLower(strings.TrimSpace(os.Getenv("APP_ENV")))
+	if env == "" {
+		return "development"
+	}
+	return env
+}
+
 func ConnectDB() (*mongo.Client, error) {
 	mongoURI := os.Getenv("MONGODB_URI")
 	if mongoURI == "" {
+		if appEnv() == "production" {
+			return nil, fmt.Errorf("MONGODB_URI is required in production")
+		}
 		mongoURI = "mongodb://admin:password123@localhost:27017/ecommerce?authSource=admin"
 	}
 

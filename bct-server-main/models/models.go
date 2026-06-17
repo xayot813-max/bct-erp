@@ -91,9 +91,34 @@ type Client struct {
 	Company      string              `json:"company" bson:"company"`
 	Address      string              `json:"address" bson:"address"`
 	Comment      *string             `json:"comment,omitempty" bson:"comment,omitempty"`
+	Group        *CustomerGroupBrief `json:"group,omitempty" bson:"group,omitempty"`
 	CreatedAt    time.Time           `json:"created_at" bson:"created_at"`
 	UpdatedAt    time.Time           `json:"updated_at" bson:"updated_at"`
 	OrderHistory []OrderHistoryEntry `json:"order_history" bson:"order_history"`
+}
+
+type CustomerGroupBrief struct {
+	ID                primitive.ObjectID `json:"id" bson:"id"`
+	Code              string             `json:"code" bson:"code"`
+	Name              string             `json:"name" bson:"name"`
+	Color             string             `json:"color,omitempty" bson:"color,omitempty"`
+	PricingProfile    string             `json:"pricing_profile,omitempty" bson:"pricing_profile,omitempty"`
+	DiscountPolicyRef string             `json:"discount_policy_ref,omitempty" bson:"discount_policy_ref,omitempty"`
+}
+
+type CustomerGroup struct {
+	ID                primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Code              string             `json:"code" bson:"code"`
+	Name              string             `json:"name" bson:"name"`
+	Description       string             `json:"description,omitempty" bson:"description,omitempty"`
+	Color             string             `json:"color,omitempty" bson:"color,omitempty"`
+	PricingProfile    string             `json:"pricing_profile,omitempty" bson:"pricing_profile,omitempty"`
+	DiscountPolicyRef string             `json:"discount_policy_ref,omitempty" bson:"discount_policy_ref,omitempty"`
+	Priority          int                `json:"priority" bson:"priority"`
+	IsSystem          bool               `json:"is_system" bson:"is_system"`
+	IsActive          bool               `json:"is_active" bson:"is_active"`
+	CreatedAt         time.Time          `json:"created_at" bson:"created_at"`
+	UpdatedAt         time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
 // Counterparty model mirrors the client schema.
@@ -141,6 +166,7 @@ type Product struct {
 	Images           []string            `json:"images" bson:"image"`
 	Description      string              `json:"description" bson:"description"`
 	Guarantee        string              `json:"guarantee,omitempty" bson:"guarantee,omitempty"`
+	Currency         string              `json:"currency,omitempty" bson:"currency,omitempty"`
 	SerialNumber     string              `json:"serial_number,omitempty" bson:"serial_number,omitempty"`
 	ShtrixNumber     string              `json:"shtrix_number,omitempty" bson:"shtrix_number,omitempty"`
 	Price            FlexFloat64         `json:"price" bson:"price"`
@@ -153,12 +179,21 @@ type Product struct {
 	WarehouseID      string              `json:"warehouse_id,omitempty" bson:"warehouse_id,omitempty"`
 	Warehouse        string              `json:"warehouse,omitempty" bson:"warehouse,omitempty"`
 	StockByWarehouse map[string]int      `json:"stock_by_warehouse,omitempty" bson:"stock_by_warehouse,omitempty"`
+	SerialItems      []ProductSerialUnit `json:"serial_items,omitempty" bson:"serial_items,omitempty"`
 	NDC              FlexFloat64         `json:"NDC,omitempty" bson:"NDC,omitempty"`
 	Tax              FlexFloat64         `json:"tax,omitempty" bson:"tax,omitempty"`
 	OwnerAdminID     string              `json:"owner_admin_id,omitempty" bson:"owner_admin_id,omitempty"`
 	IsTestData       bool                `json:"is_test_data,omitempty" bson:"is_test_data,omitempty"`
 	CreatedAt        time.Time           `json:"created_at" bson:"created_at"`
 	UpdatedAt        time.Time           `json:"updated_at" bson:"updated_at"`
+}
+
+type ProductSerialUnit struct {
+	SerialNumber string    `json:"serial_number" bson:"serial_number"`
+	WarehouseID  string    `json:"warehouse_id,omitempty" bson:"warehouse_id,omitempty"`
+	Warehouse    string    `json:"warehouse,omitempty" bson:"warehouse,omitempty"`
+	CreatedAt    time.Time `json:"created_at,omitempty" bson:"created_at,omitempty"`
+	UpdatedAt    time.Time `json:"updated_at,omitempty" bson:"updated_at,omitempty"`
 }
 
 // Warehouse is the ERP warehouse directory used by inventory operations.
@@ -217,6 +252,7 @@ type Contract struct {
 	ContractCurrency string             `json:"contract_currency" bson:"contract_currency"`
 	PayCard          FlexFloat64        `json:"pay_card" bson:"pay_card"`
 	PayCash          FlexFloat64        `json:"pay_cash" bson:"pay_cash"`
+	PaymentStatusOverride string        `json:"payment_status_override,omitempty" bson:"payment_status_override,omitempty"`
 	Documents        []string           `json:"documents" bson:"documents"`
 	CreatedAt        time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt        time.Time          `json:"updated_at" bson:"updated_at"`
@@ -267,11 +303,22 @@ type About struct {
 
 // Vendor model (from schema diagram)
 type Vendor struct {
-	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Image     string             `json:"image" bson:"image"`
-	URL       string             `json:"url" bson:"url"`
-	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
-	UpdatedAt time.Time          `json:"updated_at" bson:"updated_at"`
+	ID                primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name              string             `json:"name" bson:"name"`
+	Phone             string             `json:"phone,omitempty" bson:"phone,omitempty"`
+	Agent             string             `json:"agent,omitempty" bson:"agent,omitempty"`
+	DefaultMode       string             `json:"default_mode" bson:"default_mode"`
+	AllowCash         bool               `json:"allow_cash" bson:"allow_cash"`
+	AllowDebt         bool               `json:"allow_debt" bson:"allow_debt"`
+	AllowMixed        bool               `json:"allow_mixed" bson:"allow_mixed"`
+	ActiveForSupplies bool               `json:"active_for_supplies" bson:"active_for_supplies"`
+	CurrentDebt       float64            `json:"current_debt" bson:"current_debt"`
+	DebtLimit         float64            `json:"debt_limit" bson:"debt_limit"`
+	Comment           string             `json:"comment,omitempty" bson:"comment,omitempty"`
+	Image             string             `json:"image,omitempty" bson:"image,omitempty"`
+	URL               string             `json:"url,omitempty" bson:"url,omitempty"`
+	CreatedAt         time.Time          `json:"created_at" bson:"created_at"`
+	UpdatedAt         time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
 // Project model (from schema diagram)
